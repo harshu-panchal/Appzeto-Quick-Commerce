@@ -6,7 +6,7 @@ import { HiOutlineViewGrid, HiOutlineCube, HiOutlineCurrencyDollar, HiOutlineUse
 const Dashboard = React.lazy(() => import('../pages/Dashboard'));
 const ProductManagement = React.lazy(() => import('../pages/ProductManagement'));
 const Earnings = React.lazy(() => import('../pages/Earnings'));
-const Profile = React.lazy(() => import('../../customer/pages/Profile'));
+const Profile = React.lazy(() => import('@/pages/Profile'));
 
 const navItems = [
     { label: 'Dashboard', path: '/seller', icon: HiOutlineViewGrid },

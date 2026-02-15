@@ -29,7 +29,7 @@ const ActiveDeliveryBoys = React.lazy(() => import('../pages/ActiveDeliveryBoys'
 const PendingDeliveryBoys = React.lazy(() => import('../pages/PendingDeliveryBoys'));
 const DeliveryFunds = React.lazy(() => import('../pages/DeliveryFunds'));
 const UserManagement = React.lazy(() => import('../pages/UserManagement'));
-const Profile = React.lazy(() => import('../../customer/pages/Profile'));
+const Profile = React.lazy(() => import('@/pages/Profile'));
 
 const navItems = [
     { label: 'Overview', path: '/admin', icon: HiOutlineSquares2X2, color: 'indigo' },
