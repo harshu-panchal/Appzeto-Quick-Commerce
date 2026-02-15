@@ -1,12 +1,13 @@
 import React from 'react';
 import { useAuth } from '@core/context/AuthContext';
 import { HiOutlineLogout, HiOutlineUserCircle, HiOutlineBell, HiOutlineSearch } from 'react-icons/hi';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const Topbar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = () => {
         logout();
@@ -31,7 +32,16 @@ const Topbar = () => {
                     <HiOutlineBell className="h-5 w-5 group-hover:text-primary" />
                     <span className="absolute top-2.5 right-2.5 h-2 w-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
                 </button>
-                <button className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-xl transition-all group">
+                <button
+                    onClick={() => {
+                        if (location.pathname.startsWith('/admin')) {
+                            navigate('/admin/profile');
+                        } else {
+                            navigate('/profile');
+                        }
+                    }}
+                    className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded-xl transition-all group"
+                >
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">
                         {user?.name?.[0] || 'A'}
                     </div>

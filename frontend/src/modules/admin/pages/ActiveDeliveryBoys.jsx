@@ -2,22 +2,27 @@ import React, { useState, useMemo } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
-    HiOutlineMagnifyingGlass,
-    HiOutlineFunnel,
-    HiOutlinePlus,
-    HiOutlineEllipsisVertical,
-    HiOutlinePhone,
-    HiOutlineMapPin,
-    HiOutlineTruck,
-    HiOutlineUserCircle,
-    HiOutlineStar,
-    HiOutlineCurrencyDollar,
-    HiOutlineCheckBadge,
-    HiOutlineXCircle,
-    HiOutlinePencilSquare,
-    HiOutlineTrash,
-    HiOutlineEye
-} from 'react-icons/hi2';
+    Users,
+    UserCheck,
+    Activity,
+    Trophy,
+    Search,
+    Filter,
+    Plus,
+    MoreVertical,
+    Phone,
+    MapPin,
+    Truck,
+    User,
+    Star,
+    DollarSign,
+    ShieldCheck,
+    XCircle,
+    Pencil,
+    Trash2,
+    Eye,
+    X
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -147,10 +152,10 @@ const ActiveDeliveryBoys = () => {
     };
 
     const stats = [
-        { label: 'Total Riders', value: riders.length, color: 'indigo' },
-        { label: 'Available', value: riders.filter(r => r.status === 'available').length, color: 'emerald' },
-        { label: 'Busy (On Task)', value: riders.filter(r => r.status === 'busy').length, color: 'amber' },
-        { label: 'Top Earners', value: riders.filter(r => r.rating >= 4.5).length, color: 'rose' },
+        { label: 'Total Riders', value: riders.length, color: 'indigo', icon: Users, description: 'Total fleet size' },
+        { label: 'Available', value: riders.filter(r => r.status === 'available').length, color: 'emerald', icon: UserCheck, description: 'Ready for orders' },
+        { label: 'Busy (On Task)', value: riders.filter(r => r.status === 'busy').length, color: 'amber', icon: Activity, description: 'Currently delivering' },
+        { label: 'Top Earners', value: riders.filter(r => r.rating >= 4.5).length, color: 'rose', icon: Trophy, description: 'High performance' },
     ];
 
     return (
@@ -158,18 +163,18 @@ const ActiveDeliveryBoys = () => {
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        Active Fleet
+                    <h1 className="admin-h1 flex items-center gap-3">
+                        Delivery Boys
                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     </h1>
-                    <p className="text-slate-500 font-medium mt-1">Real-time management of your delivery logistics partner.</p>
+                    <p className="admin-description mt-1">Manage all your active delivery partners here.</p>
                 </div>
                 <button
                     onClick={() => setIsOnboardModalOpen(true)}
-                    className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all shadow-xl hover:shadow-slate-200 active:scale-95"
+                    className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all shadow-xl hover:shadow-slate-200 active:scale-95 group"
                 >
-                    <HiOutlinePlus className="h-4 w-4" />
-                    <span>ONBOARD NEW RIDER</span>
+                    <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                    <span>ADD NEW RIDER</span>
                 </button>
             </div>
 
@@ -179,17 +184,17 @@ const ActiveDeliveryBoys = () => {
                     <Card key={idx} className="p-6 border-none shadow-xl ring-1 ring-slate-100 hover:ring-primary/20 transition-all group overflow-hidden relative">
                         <div className="flex justify-between items-start relative z-10">
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-2">{stat.label}</p>
-                                <h3 className="text-3xl font-black text-slate-900">{stat.value}</h3>
+                                <p className="admin-label mb-2">{stat.label}</p>
+                                <h3 className="admin-stat-value">{stat.value}</h3>
                             </div>
                             <div className={cn(
-                                "p-3 rounded-2xl bg-opacity-10",
-                                stat.color === 'indigo' ? "bg-indigo-500 text-indigo-600" :
-                                    stat.color === 'emerald' ? "bg-emerald-500 text-emerald-600" :
-                                        stat.color === 'amber' ? "bg-amber-500 text-amber-600" :
-                                            "bg-rose-500 text-rose-600"
+                                "p-3 rounded-2xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg",
+                                stat.color === 'indigo' ? "bg-indigo-500/10 text-indigo-600 shadow-indigo-100" :
+                                    stat.color === 'emerald' ? "bg-emerald-500/10 text-emerald-600 shadow-emerald-100" :
+                                        stat.color === 'amber' ? "bg-amber-500/10 text-amber-600 shadow-amber-100" :
+                                            "bg-rose-500/10 text-rose-600 shadow-rose-100"
                             )}>
-                                <HiOutlineTruck className="h-5 w-5" />
+                                <stat.icon className="h-5 w-5" strokeWidth={2.5} />
                             </div>
                         </div>
                         {/* Decorative background element */}
@@ -202,10 +207,10 @@ const ActiveDeliveryBoys = () => {
             <Card className="p-4 border-none shadow-sm ring-1 ring-slate-100 bg-white/50 backdrop-blur-xl">
                 <div className="flex flex-col lg:flex-row gap-4">
                     <div className="flex-1 relative group">
-                        <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
-                            placeholder="Identify rider by name or contact number..."
+                            placeholder="Search by name or phone number..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-12 pr-4 py-3.5 bg-slate-100/50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/10 transition-all"
@@ -229,7 +234,7 @@ const ActiveDeliveryBoys = () => {
                             ))}
                         </div>
                         <button className="p-3.5 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-600 hover:text-primary hover:ring-primary/30 transition-all shadow-sm">
-                            <HiOutlineFunnel className="h-5 w-5" />
+                            <Filter className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
@@ -253,7 +258,7 @@ const ActiveDeliveryBoys = () => {
                                         <div className="flex gap-4">
                                             <div className="relative">
                                                 <div className="h-14 w-14 rounded-[22px] bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
-                                                    <HiOutlineUserCircle className="h-8 w-8" />
+                                                    <User className="h-8 w-8" />
                                                 </div>
                                                 <div className={cn(
                                                     "absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-4 border-white shadow-sm",
@@ -264,13 +269,13 @@ const ActiveDeliveryBoys = () => {
                                             <div>
                                                 <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{rider.name}</h4>
                                                 <div className="flex items-center gap-1.5 mt-1 text-slate-500">
-                                                    <HiOutlinePhone className="h-3 w-3" />
+                                                    <Phone className="h-3 w-3" />
                                                     <span className="text-[10px] font-bold">{rider.phone}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-2 py-1 rounded-lg">
-                                            <HiOutlineStar className="h-3 w-3 fill-current" />
+                                            <Star className="h-3 w-3 fill-current" />
                                             <span className="text-[10px] font-black">{rider.rating}</span>
                                         </div>
                                     </div>
@@ -280,14 +285,14 @@ const ActiveDeliveryBoys = () => {
                                         <div className="bg-slate-50 p-3 rounded-2xl">
                                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Today Earnings</p>
                                             <div className="flex items-center gap-1.5">
-                                                <HiOutlineCurrencyDollar className="h-3.5 w-3.5 text-emerald-500" />
+                                                <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
                                                 <span className="text-xs font-black text-slate-900">₹{rider.todayEarnings}</span>
                                             </div>
                                         </div>
                                         <div className="bg-slate-50 p-3 rounded-2xl">
                                             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">Total Success</p>
                                             <div className="flex items-center gap-1.5">
-                                                <HiOutlineCheckBadge className="h-3.5 w-3.5 text-blue-500" />
+                                                <ShieldCheck className="h-3.5 w-3.5 text-blue-500" />
                                                 <span className="text-xs font-black text-slate-900">{rider.totalOrders} Deliv.</span>
                                             </div>
                                         </div>
@@ -296,11 +301,11 @@ const ActiveDeliveryBoys = () => {
                                     {/* Location & Vehicle */}
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2 text-slate-500">
-                                            <HiOutlineMapPin className="h-3.5 w-3.5 shrink-0" />
+                                            <MapPin className="h-3.5 w-3.5 shrink-0" />
                                             <span className="text-[10px] font-semibold truncate">{rider.location}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-slate-500">
-                                            <HiOutlineTruck className="h-3.5 w-3.5 shrink-0" />
+                                            <Truck className="h-3.5 w-3.5 shrink-0" />
                                             <span className="text-[10px] font-semibold truncate">{rider.vehicle} • <span className="text-slate-900 font-bold">{rider.vehicleNum}</span></span>
                                         </div>
                                     </div>
@@ -311,20 +316,20 @@ const ActiveDeliveryBoys = () => {
                                             onClick={() => handleAction('view', rider)}
                                             className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 flex items-center justify-center gap-2"
                                         >
-                                            <HiOutlineEye className="h-3.5 w-3.5" />
+                                            <Eye className="h-3.5 w-3.5" />
                                             VIEW PROFILE
                                         </button>
                                         <button
                                             onClick={() => handleAction('edit', rider)}
                                             className="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-all"
                                         >
-                                            <HiOutlinePencilSquare className="h-4.5 w-4.5" />
+                                            <Pencil className="h-4 w-4" />
                                         </button>
                                         <button
                                             onClick={() => handleAction('delete', rider)}
                                             className="p-2.5 bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 transition-all"
                                         >
-                                            <HiOutlineTrash className="h-4.5 w-4.5" />
+                                            <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
                                 </div>
@@ -355,10 +360,10 @@ const ActiveDeliveryBoys = () => {
                                 <div className="flex justify-between items-start mb-10">
                                     <div className="flex gap-6">
                                         <div className="h-24 w-24 rounded-[32px] bg-slate-100 flex items-center justify-center text-slate-400">
-                                            <HiOutlineUserCircle className="h-14 w-14" />
+                                            <User className="h-14 w-14" />
                                         </div>
                                         <div>
-                                            <h2 className="text-3xl font-black text-slate-900">{viewingRider.name}</h2>
+                                            <h2 className="admin-h1">{viewingRider.name}</h2>
                                             <div className="flex items-center gap-3 mt-2">
                                                 <Badge variant={viewingRider.status === 'available' ? 'success' : viewingRider.status === 'busy' ? 'warning' : 'neutral'} className="uppercase font-black text-[9px] px-3">
                                                     {viewingRider.status}
@@ -368,7 +373,7 @@ const ActiveDeliveryBoys = () => {
                                         </div>
                                     </div>
                                     <button onClick={() => setViewingRider(null)} className="p-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all">
-                                        <HiOutlineXCircle className="h-6 w-6 text-slate-400" />
+                                        <XCircle className="h-6 w-6 text-slate-400" />
                                     </button>
                                 </div>
 
@@ -403,7 +408,7 @@ const ActiveDeliveryBoys = () => {
                                     <div className="text-center">
                                         <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Lifetime Rating</p>
                                         <div className="flex justify-center items-center gap-1">
-                                            <HiOutlineStar className="h-4 w-4 text-amber-500 fill-current" />
+                                            <Star className="h-4 w-4 text-amber-500 fill-current" />
                                             <span className="text-lg font-black text-slate-900">{viewingRider.rating}</span>
                                         </div>
                                     </div>
@@ -423,10 +428,10 @@ const ActiveDeliveryBoys = () => {
 
                                 <div className="mt-8 flex gap-4">
                                     <button className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">
-                                        Send Notification
+                                        Send Message
                                     </button>
                                     <button className="px-6 py-4 bg-rose-50 text-rose-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95">
-                                        DEACTIVATE ACCESS
+                                        DEACTIVATE
                                     </button>
                                 </div>
                             </div>
@@ -455,11 +460,11 @@ const ActiveDeliveryBoys = () => {
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
                             className="w-full max-w-lg relative z-[120] bg-white rounded-[40px] p-10 shadow-3xl"
                         >
-                            <h3 className="text-2xl font-black text-slate-900 mb-2">
-                                {isEditModalOpen ? 'Edit Rider Profile' : 'Onboard Fleet Partner'}
+                            <h3 className="admin-h2 mb-2">
+                                {isEditModalOpen ? 'Edit Rider' : 'Add New Rider'}
                             </h3>
-                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-8">
-                                {isEditModalOpen ? 'Update credentials and identity.' : 'Securely register a new delivery logistics expert.'}
+                            <p className="admin-label mt-1 text-slate-500">
+                                {isEditModalOpen ? 'Update rider details below.' : 'Enter details to register a new delivery partner.'}
                             </p>
 
                             <form onSubmit={isEditModalOpen ? handleEditSubmit : handleOnboardSubmit} className="space-y-5">
@@ -528,7 +533,7 @@ const ActiveDeliveryBoys = () => {
                                 </div>
 
                                 <button type="submit" className="w-full py-4.5 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-slate-800 transition-all transform active:scale-[0.98] mt-4">
-                                    {isEditModalOpen ? 'UPDATE RIDER DATABASE' : 'FINALIZE RIDER ONBOARDING'}
+                                    {isEditModalOpen ? 'SAVE CHANGES' : 'ADD RIDER'}
                                 </button>
                             </form>
                         </motion.div>

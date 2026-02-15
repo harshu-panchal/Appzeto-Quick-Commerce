@@ -2,24 +2,26 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from '@shared/layout/DashboardLayout';
 import {
-    HiOutlineSquares2X2,
-    HiOutlineTag,
-    HiOutlineCube,
-    HiOutlineBuildingOffice,
-    HiOutlineTruck,
-    HiOutlineWallet,
-    HiOutlineBanknotes,
-    HiOutlineReceiptPercent,
-    HiOutlineCurrencyDollar,
-    HiOutlineUsers,
-    HiOutlineQuestionMarkCircle,
-    HiOutlineClipboardDocumentList,
-    HiOutlineReceiptRefund,
-    HiOutlineCog6Tooth,
-    HiOutlineCommandLine
-} from 'react-icons/hi2';
+    LayoutDashboard,
+    Tag,
+    Box,
+    Building2,
+    Truck,
+    Wallet,
+    Banknote,
+    Receipt,
+    CircleDollarSign,
+    Users,
+    HelpCircle,
+    ClipboardList,
+    RotateCcw,
+    Settings,
+    Terminal,
+    Sparkles
+} from 'lucide-react';
 
 const Dashboard = React.lazy(() => import('../pages/Dashboard'));
+const AdvancedAnalytics = React.lazy(() => import('../pages/AdvancedAnalytics'));
 const CategoryManagement = React.lazy(() => import('../pages/CategoryManagement'));
 const ProductManagement = React.lazy(() => import('../pages/ProductManagement'));
 const ActiveSellers = React.lazy(() => import('../pages/ActiveSellers'));
@@ -28,26 +30,72 @@ const SellerLocations = React.lazy(() => import('../pages/SellerLocations'));
 const ActiveDeliveryBoys = React.lazy(() => import('../pages/ActiveDeliveryBoys'));
 const PendingDeliveryBoys = React.lazy(() => import('../pages/PendingDeliveryBoys'));
 const DeliveryFunds = React.lazy(() => import('../pages/DeliveryFunds'));
+const AdminWallet = React.lazy(() => import('../pages/AdminWallet'));
+const WithdrawalRequests = React.lazy(() => import('../pages/WithdrawalRequests'));
+const SellerTransactions = React.lazy(() => import('../pages/SellerTransactions'));
+const CashCollection = React.lazy(() => import('../pages/CashCollection'));
+const CustomerManagement = React.lazy(() => import('../pages/CustomerManagement'));
+const CustomerDetail = React.lazy(() => import('../pages/CustomerDetail'));
 const UserManagement = React.lazy(() => import('../pages/UserManagement'));
-const Profile = React.lazy(() => import('../../customer/pages/Profile'));
+const FAQManagement = React.lazy(() => import('../pages/FAQManagement'));
+const OrdersList = React.lazy(() => import('../pages/OrdersList'));
+const OrderDetail = React.lazy(() => import('../pages/OrderDetail'));
+const SellerDetail = React.lazy(() => import('../pages/SellerDetail'));
+const SupportTickets = React.lazy(() => import('../pages/SupportTickets'));
+const FleetRadar = React.lazy(() => import('../pages/FleetRadar'));
+const ReviewModeration = React.lazy(() => import('../pages/ReviewModeration'));
+const CouponManagement = React.lazy(() => import('../pages/CouponManagement'));
+const ContentManager = React.lazy(() => import('../pages/ContentManager'));
+const NotificationComposer = React.lazy(() => import('../pages/NotificationComposer'));
+const AdminSettings = React.lazy(() => import('../pages/AdminSettings'));
+const EnvSettings = React.lazy(() => import('../pages/EnvSettings'));
+const AdminProfile = React.lazy(() => import('../pages/AdminProfile'));
 
 const navItems = [
-    { label: 'Overview', path: '/admin', icon: HiOutlineSquares2X2, color: 'indigo' },
-    { label: 'Category', path: '/admin/categories', icon: HiOutlineTag, color: 'rose' },
-    { label: 'Product', path: '/admin/products', icon: HiOutlineCube, color: 'amber' },
+    {
+        label: 'Intelligence',
+        icon: LayoutDashboard,
+        color: 'indigo',
+        children: [
+            { label: 'Control Center', path: '/admin' },
+            { label: 'Business Analytics', path: '/admin/analytics' },
+        ]
+    },
+    { label: 'Category', path: '/admin/categories', icon: Tag, color: 'rose' },
+    { label: 'Product', path: '/admin/products', icon: Box, color: 'amber' },
+    {
+        label: 'Growth Engine',
+        icon: Sparkles,
+        color: 'amber',
+        children: [
+            { label: 'Experience Studio', path: '/admin/experience-studio' },
+            { label: 'Notification Blast', path: '/admin/notifications' },
+        ]
+    },
+    {
+        label: 'Assurance',
+        icon: Receipt,
+        color: 'emerald',
+        children: [
+            { label: 'Live Radar', path: '/admin/fleet-radar' },
+            { label: 'Support Desk', path: '/admin/support-tickets' },
+            { label: 'Moderation', path: '/admin/moderation' },
+        ]
+    },
     {
         label: 'Manage Sellers',
-        icon: HiOutlineBuildingOffice,
+        icon: Building2,
         color: 'blue',
         children: [
             { label: 'Active Sellers', path: '/admin/sellers/active' },
             { label: 'Pending for Approval', path: '/admin/sellers/pending' },
             { label: 'Seller Locations', path: '/admin/seller-locations' },
+            { label: 'Coupons & Promos', path: '/admin/coupons' },
         ]
     },
     {
         label: 'Delivery Boy',
-        icon: HiOutlineTruck,
+        icon: Truck,
         color: 'emerald',
         children: [
             { label: 'Active Delivery Boy', path: '/admin/delivery-boys/active' },
@@ -55,15 +103,15 @@ const navItems = [
             { label: 'Funds Transfer', path: '/admin/delivery-funds' },
         ]
     },
-    { label: 'Wallet', path: '/admin/wallet', icon: HiOutlineWallet, color: 'violet' },
-    { label: 'Withdrawals Requests', path: '/admin/withdrawals', icon: HiOutlineBanknotes, color: 'cyan' },
-    { label: 'Seller Transactions', path: '/admin/seller-transactions', icon: HiOutlineReceiptPercent, color: 'orange' },
-    { label: 'Cash Collection', path: '/admin/cash-collection', icon: HiOutlineCurrencyDollar, color: 'green' },
-    { label: 'Customers', path: '/admin/customers', icon: HiOutlineUsers, color: 'sky' },
-    { label: 'FAQs', path: '/admin/faqs', icon: HiOutlineQuestionMarkCircle, color: 'pink' },
+    { label: 'Wallet', path: '/admin/wallet', icon: Wallet, color: 'violet' },
+    { label: 'Withdrawals Requests', path: '/admin/withdrawals', icon: Banknote, color: 'cyan' },
+    { label: 'Seller Transactions', path: '/admin/seller-transactions', icon: Receipt, color: 'orange' },
+    { label: 'Cash Collection', path: '/admin/cash-collection', icon: CircleDollarSign, color: 'green' },
+    { label: 'Customers', path: '/admin/customers', icon: Users, color: 'sky' },
+    { label: 'FAQs', path: '/admin/faqs', icon: HelpCircle, color: 'pink' },
     {
         label: 'Order List',
-        icon: HiOutlineClipboardDocumentList,
+        icon: ClipboardList,
         color: 'fuchsia',
         children: [
             { label: 'All Orders', path: '/admin/orders/all' },
@@ -75,37 +123,49 @@ const navItems = [
             { label: 'Returned', path: '/admin/orders/returned' },
         ]
     },
-    { label: 'Billing and Charges', path: '/admin/billing', icon: HiOutlineReceiptRefund, color: 'red' },
-    { label: 'Settings', path: '/admin/settings', icon: HiOutlineCog6Tooth, color: 'slate' },
-    { label: 'Env Controls', path: '/admin/env', icon: HiOutlineCommandLine, color: 'dark' },
+    { label: 'Billing and Charges', path: '/admin/billing', icon: RotateCcw, color: 'red' },
+    { label: 'Settings', path: '/admin/settings', icon: Settings, color: 'slate' },
+    { label: 'Env Controls', path: '/admin/env', icon: Terminal, color: 'dark' },
 ];
+
+const BillingCharges = React.lazy(() => import('../pages/BillingCharges'));
 
 const AdminRoutes = () => {
     return (
         <DashboardLayout navItems={navItems} title="Admin Center">
             <Routes>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/analytics" element={<AdvancedAnalytics />} />
                 <Route path="/users" element={<UserManagement />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile" element={<AdminProfile />} />
                 {/* Lazy routes for new sections */}
                 <Route path="/categories" element={<CategoryManagement />} />
                 <Route path="/products" element={<ProductManagement />} />
                 <Route path="/sellers/active" element={<ActiveSellers />} />
+                <Route path="/sellers/active/:id" element={<SellerDetail />} />
+                <Route path="/support-tickets" element={<SupportTickets />} />
+                <Route path="/fleet-radar" element={<FleetRadar />} />
+                <Route path="/moderation" element={<ReviewModeration />} />
+                <Route path="/experience-studio" element={<ContentManager />} />
+                <Route path="/notifications" element={<NotificationComposer />} />
+                <Route path="/coupons" element={<CouponManagement />} />
                 <Route path="/sellers/pending" element={<PendingSellers />} />
                 <Route path="/seller-locations" element={<SellerLocations />} />
                 <Route path="/delivery-boys/active" element={<ActiveDeliveryBoys />} />
                 <Route path="/delivery-boys/pending" element={<PendingDeliveryBoys />} />
                 <Route path="/delivery-funds" element={<DeliveryFunds />} />
-                <Route path="/wallet" element={<div className="p-8 text-gray-400">Wallet Management (WIP)</div>} />
-                <Route path="/withdrawals" element={<div className="p-8 text-gray-400">Withdrawals Requests (WIP)</div>} />
-                <Route path="/seller-transactions" element={<div className="p-8 text-gray-400">Seller Transactions (WIP)</div>} />
-                <Route path="/cash-collection" element={<div className="p-8 text-gray-400">Cash Collection (WIP)</div>} />
-                <Route path="/customers" element={<div className="p-8 text-gray-400">Customers Management (WIP)</div>} />
-                <Route path="/faqs" element={<div className="p-8 text-gray-400">FAQs Management (WIP)</div>} />
-                <Route path="/orders/*" element={<div className="p-8 text-gray-400">Orders Management System (WIP)</div>} />
-                <Route path="/billing" element={<div className="p-8 text-gray-400">Billing & Charges (WIP)</div>} />
-                <Route path="/settings" element={<div className="p-8 text-gray-400">Platform Global Settings (WIP)</div>} />
-                <Route path="/env" element={<div className="p-8 text-gray-400">Environment Controls (WIP)</div>} />
+                <Route path="/wallet" element={<AdminWallet />} />
+                <Route path="/withdrawals" element={<WithdrawalRequests />} />
+                <Route path="/seller-transactions" element={<SellerTransactions />} />
+                <Route path="/cash-collection" element={<CashCollection />} />
+                <Route path="/customers" element={<CustomerManagement />} />
+                <Route path="/customers/:id" element={<CustomerDetail />} />
+                <Route path="/faqs" element={<FAQManagement />} />
+                <Route path="/orders/:status" element={<OrdersList />} />
+                <Route path="/orders/view/:orderId" element={<OrderDetail />} />
+                <Route path="/billing" element={<BillingCharges />} />
+                <Route path="/settings" element={<AdminSettings />} />
+                <Route path="/env" element={<EnvSettings />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         </DashboardLayout>

@@ -15,8 +15,8 @@ const Card = ({ children, title, subtitle, className, headerAction, footer, ...p
             {(title || subtitle || headerAction) && (
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-gray-50/50 bg-gray-50/10 px-6 py-4">
                     <div className="space-y-1">
-                        {title && <CardTitle className="text-lg font-semibold text-gray-900">{title}</CardTitle>}
-                        {subtitle && <CardDescription className="text-sm font-medium text-gray-500">{subtitle}</CardDescription>}
+                        {title && <CardTitle className="admin-h3">{title}</CardTitle>}
+                        {subtitle && <CardDescription className="admin-description">{subtitle}</CardDescription>}
                     </div>
                     {headerAction && <div>{headerAction}</div>}
                 </CardHeader>

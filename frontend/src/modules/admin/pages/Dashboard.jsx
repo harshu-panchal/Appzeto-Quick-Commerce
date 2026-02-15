@@ -2,17 +2,20 @@ import React from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
-    HiOutlineUsers,
-    HiOutlineBadgeCheck,
-    HiOutlineDocumentReport,
-    HiOutlineStatusOnline,
-    HiOutlineDatabase,
-    HiOutlineRefresh,
-    HiOutlineClock,
-    HiOutlineTrendingUp,
-    HiOutlineShoppingBag,
-    HiOutlineTruck
-} from 'react-icons/hi';
+    Users,
+    Store,
+    Truck,
+    BarChart3,
+    Activity,
+    Database,
+    RotateCw,
+    TrendingUp,
+    ShoppingBag,
+    DollarSign,
+    ArrowUpRight,
+    Search,
+    Filter
+} from 'lucide-react';
 import {
     AreaChart,
     Area,
@@ -49,9 +52,9 @@ const AdminDashboard = () => {
         {
             label: 'Total Users',
             value: '1,280',
-            icon: HiOutlineUsers,
+            icon: Users,
             color: 'text-blue-600',
-            bg: 'bg-blue-50',
+            bg: 'bg-blue-500/10',
             border: 'border-blue-100',
             trend: '+12.5%',
             trendColor: 'text-green-600',
@@ -60,9 +63,9 @@ const AdminDashboard = () => {
         {
             label: 'Active Sellers',
             value: '84',
-            icon: HiOutlineShoppingBag,
+            icon: Store,
             color: 'text-purple-600',
-            bg: 'bg-purple-50',
+            bg: 'bg-purple-500/10',
             border: 'border-purple-100',
             trend: '+5.2%',
             trendColor: 'text-green-600',
@@ -71,9 +74,9 @@ const AdminDashboard = () => {
         {
             label: 'Total Orders',
             value: '2,456',
-            icon: HiOutlineTruck,
+            icon: Truck,
             color: 'text-orange-600',
-            bg: 'bg-orange-50',
+            bg: 'bg-orange-500/10',
             border: 'border-orange-100',
             trend: '+18.4%',
             trendColor: 'text-green-600',
@@ -82,9 +85,9 @@ const AdminDashboard = () => {
         {
             label: 'Revenue',
             value: '$42,450',
-            icon: HiOutlineDocumentReport,
+            icon: BarChart3,
             color: 'text-emerald-600',
-            bg: 'bg-emerald-50',
+            bg: 'bg-emerald-500/10',
             border: 'border-emerald-100',
             trend: '+8.2%',
             trendColor: 'text-green-600',
@@ -93,17 +96,17 @@ const AdminDashboard = () => {
     ];
 
     const healthMetrics = [
-        { label: 'API Gateway', status: 'Operational', variant: 'success', icon: HiOutlineStatusOnline },
-        { label: 'Database Cluster', status: 'Connected', variant: 'success', icon: HiOutlineDatabase },
-        { label: 'Cloud Storage', status: 'Stable', variant: 'success', icon: HiOutlineRefresh },
+        { label: 'API Gateway', status: 'Operational', variant: 'success', icon: Activity },
+        { label: 'Database Cluster', status: 'Connected', variant: 'success', icon: Database },
+        { label: 'Cloud Storage', status: 'Stable', variant: 'success', icon: RotateCw },
     ];
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Admin Dashboard</h1>
-                    <p className="text-gray-500 font-medium text-sm">Platform Performance & Statistics Overview</p>
+                    <h1 className="admin-h1">Dashboard</h1>
+                    <p className="admin-description">Overview of your platform's performance.</p>
                 </div>
                 <div className="flex items-center space-x-3">
                     <Badge variant="outline" className="px-3 py-1 bg-white border-gray-200 text-gray-600">
@@ -121,20 +124,20 @@ const AdminDashboard = () => {
                     <Card key={stat.label} className={cn("relative transition-all hover:shadow-xl border-none ring-1 ring-gray-100 group", stat.bg + "/30")}>
                         <div className="flex flex-col space-y-4">
                             <div className="flex justify-between items-center">
-                                <div className={cn("p-2.5 rounded-xl transition-transform group-hover:scale-110", stat.bg)}>
-                                    <stat.icon className={cn("h-6 w-6", stat.color)} />
+                                <div className={cn("p-2.5 rounded-xl transition-all group-hover:scale-110 shadow-lg", stat.bg)}>
+                                    <stat.icon className={cn("h-6 w-6", stat.color)} strokeWidth={2.5} />
                                 </div>
-                                <div className={cn("flex items-center text-[10px] font-semibold px-2 py-1 rounded-full", stat.trendColor, "bg-white/50")}>
-                                    <HiOutlineTrendingUp className="h-3 w-3 mr-1" />
+                                <div className={cn("flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm", stat.trendColor, "bg-white/80 backdrop-blur-sm")}>
+                                    <TrendingUp className="h-3 w-3 mr-1" />
                                     {stat.trend}
                                 </div>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest leading-none mb-2">{stat.label}</p>
+                                <p className="admin-label mb-2">{stat.label}</p>
                                 <div className="flex items-baseline space-x-2">
-                                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                                    <p className="admin-stat-value">{stat.value}</p>
                                 </div>
-                                <p className="text-[10px] text-gray-400 font-medium mt-1">{stat.description}</p>
+                                <p className="admin-description text-[10px] mt-1">{stat.description}</p>
                             </div>
                         </div>
                     </Card>
@@ -145,8 +148,8 @@ const AdminDashboard = () => {
                 {/* Revenue Analytics */}
                 <div className="lg:col-span-2">
                     <Card
-                        title="Revenue Growth"
-                        subtitle="Monthly platform revenue trends"
+                        title="Earnings"
+                        subtitle="Monthly revenue trends"
                         className="h-full border-none shadow-sm ring-1 ring-gray-100"
                     >
                         <div className="h-[350px] mt-4">
@@ -196,8 +199,8 @@ const AdminDashboard = () => {
                 {/* Categories Distribution */}
                 <div className="lg:col-span-1">
                     <Card
-                        title="Sales by Category"
-                        subtitle="Percentage distribution"
+                        title="Top Categories"
+                        subtitle="Sales breakdown by category"
                         className="h-full border-none shadow-sm ring-1 ring-gray-100"
                     >
                         <div className="h-[250px] relative">
@@ -244,18 +247,18 @@ const AdminDashboard = () => {
                 <div className="lg:col-span-2">
                     <Card
                         title="Recent Orders"
-                        subtitle="Manage and track latest customer purchases"
+                        subtitle="Track the latest customer orders"
                         className="border-none shadow-sm ring-1 ring-gray-100 h-full"
                     >
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
                                     <tr className="text-left border-b border-gray-100">
-                                        <th className="pb-4 pt-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order ID</th>
-                                        <th className="pb-4 pt-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Customer</th>
-                                        <th className="pb-4 pt-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
-                                        <th className="pb-4 pt-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Amount</th>
-                                        <th className="pb-4 pt-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time</th>
+                                        <th className="admin-table-header">Order ID</th>
+                                        <th className="admin-table-header">Customer</th>
+                                        <th className="admin-table-header">Status</th>
+                                        <th className="admin-table-header">Amount</th>
+                                        <th className="admin-table-header">Time</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -289,7 +292,7 @@ const AdminDashboard = () => {
                             </table>
                         </div>
                         <button className="w-full mt-6 py-3 rounded-xl bg-gray-50 text-xs font-bold text-gray-500 hover:bg-primary hover:text-white transition-all">
-                            VIEW FULL ORDER HISTORY
+                            VIEW ALL ORDERS
                         </button>
                     </Card>
                 </div>
@@ -297,8 +300,8 @@ const AdminDashboard = () => {
                 {/* Top Products */}
                 <div className="lg:col-span-1">
                     <Card
-                        title="Top Selling Products"
-                        subtitle="Best performers this week"
+                        title="Top Products"
+                        subtitle="Best selling items this week"
                         className="border-none shadow-sm ring-1 ring-gray-100 h-full"
                     >
                         <div className="space-y-4">
@@ -327,7 +330,7 @@ const AdminDashboard = () => {
                             ))}
                         </div>
                         <button className="w-full mt-6 py-3 border-2 border-dashed border-gray-100 rounded-xl text-xs font-bold text-gray-400 hover:border-primary hover:text-primary transition-all">
-                            SEE PRODUCT ANALYTICS
+                            VIEW ALL PRODUCTS
                         </button>
                     </Card>
                 </div>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
@@ -24,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ActiveSellers = () => {
+    const navigate = useNavigate();
     // Mock Data for Active Sellers
     const [sellers, setSellers] = useState([
         {
@@ -178,11 +180,11 @@ const ActiveSellers = () => {
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <h1 className="admin-h1 flex items-center gap-2">
                         Active Sellers
                         <Badge variant="success" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Verified</Badge>
                     </h1>
-                    <p className="text-slate-500 font-medium text-sm mt-0.5">Manage and monitor verified store partners across the platform.</p>
+                    <p className="admin-description mt-0.5">Manage and monitor verified store partners across the platform.</p>
                 </div>
                 <button
                     onClick={() => setIsOnboardingOpen(true)}
@@ -207,8 +209,8 @@ const ActiveSellers = () => {
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-bold text-slate-900">{stat.val}</h4>
+                                <p className="admin-label">{stat.label}</p>
+                                <h4 className="admin-stat-value">{stat.val}</h4>
                             </div>
                         </div>
                     </Card>
@@ -305,23 +307,26 @@ const ActiveSellers = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Store Entity</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Performance</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Business Intel</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="admin-table-header px-6">Store Entity</th>
+                                <th className="admin-table-header px-6">Performance</th>
+                                <th className="admin-table-header px-6 text-center">Business Intel</th>
+                                <th className="admin-table-header px-6">Status</th>
+                                <th className="admin-table-header px-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {filteredSellers.map((s) => (
                                 <tr key={s.id} className="hover:bg-slate-50/30 transition-colors group">
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
+                                        <div
+                                            className="flex items-center gap-4 cursor-pointer group/name"
+                                            onClick={() => navigate(`/admin/sellers/active/${s.id}`)}
+                                        >
                                             <div className="h-12 w-12 rounded-2xl overflow-hidden bg-slate-100 ring-2 ring-slate-100 group-hover:ring-primary/20 transition-all">
                                                 <img src={s.image} alt={s.shopName} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-slate-900">{s.shopName}</p>
+                                                <p className="text-sm font-bold text-slate-900 group-hover/name:text-primary transition-colors">{s.shopName}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     <span className="text-[10px] font-semibold text-slate-400">{s.ownerName}</span>
                                                     <span className="h-1 w-1 rounded-full bg-slate-300" />
@@ -359,7 +364,7 @@ const ActiveSellers = () => {
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end space-x-2">
                                             <button
-                                                onClick={() => openSellerDetails(s)}
+                                                onClick={() => navigate(`/admin/sellers/active/${s.id}`)}
                                                 className="p-2 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-primary"
                                             >
                                                 <HiOutlineEye className="h-4 w-4" />
@@ -440,8 +445,8 @@ const ActiveSellers = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                         <div className="space-y-6">
                                             <div>
-                                                <h2 className="text-2xl font-bold text-slate-900">{viewingSeller.shopName}</h2>
-                                                <p className="text-sm font-medium text-slate-500 mt-0.5">{viewingSeller.category} Super-Partner</p>
+                                                <h2 className="admin-h1">{viewingSeller.shopName}</h2>
+                                                <p className="admin-description mt-0.5">{viewingSeller.category} Super-Partner</p>
                                             </div>
 
                                             <div className="space-y-4">

@@ -2,21 +2,21 @@ import React, { useState, useMemo } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
-    HiOutlineMagnifyingGlass,
-    HiOutlineFunnel,
-    HiOutlineCheckCircle,
-    HiOutlineXCircle,
-    HiOutlineDocumentMagnifyingGlass,
-    HiOutlinePhone,
-    HiOutlineEnvelope,
-    HiOutlineTruck,
-    HiOutlineMapPin,
-    HiOutlineCalendarDays,
-    HiOutlineIdentification,
-    HiOutlineArrowPath,
-    HiOutlineCheck,
-    HiOutlineXMark
-} from 'react-icons/hi2';
+    Search,
+    Filter,
+    CheckCircle,
+    XCircle,
+    FileSearch,
+    Phone,
+    Mail,
+    Truck,
+    MapPin,
+    Calendar,
+    IdCard,
+    RotateCw,
+    Check,
+    X
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -32,7 +32,7 @@ const PendingDeliveryBoys = () => {
             location: 'Navi Mumbai, MH',
             vehicle: 'Two Wheeler (Petrol)',
             documents: ['License', 'Aadhar Card', 'Vehicle RC', 'Pan Card'],
-            status: 'pending_review', // pending_review, missing_info
+            status: 'pending', // pending, missing_info
             experience: '2 Years',
             preferredArea: 'Vashi, Belapur'
         },
@@ -99,20 +99,20 @@ const PendingDeliveryBoys = () => {
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                    <h1 className="admin-h1 flex items-center gap-3">
                         Rider Applications
-                        <Badge variant="primary" className="text-[10px] px-2 py-0.5 uppercase">Awaiting Vetting</Badge>
+                        <Badge variant="primary" className="text-[10px] px-2 py-0.5 uppercase">Pending Review</Badge>
                     </h1>
-                    <p className="text-slate-500 font-medium mt-1">Review and verify background documents for potential delivery partners.</p>
+                    <p className="admin-description mt-1">Review documents for new delivery partners.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="p-3 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-400 hover:text-primary transition-all shadow-sm">
-                        <HiOutlineArrowPath className="h-5 w-5" />
+                    <button className="p-3 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-400 hover:text-primary transition-all shadow-sm active:rotate-180 duration-500">
+                        <RotateCw className="h-5 w-5" />
                     </button>
                     <div className="h-10 w-[1px] bg-slate-200 mx-2" />
                     <div className="flex flex-col items-end">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Pending</p>
-                        <h4 className="text-xl font-black text-slate-900">{pendingRiders.length}</h4>
+                        <p className="admin-label">Total Pending</p>
+                        <h4 className="admin-h2">{pendingRiders.length}</h4>
                     </div>
                 </div>
             </div>
@@ -121,7 +121,7 @@ const PendingDeliveryBoys = () => {
             <Card className="p-4 border-none shadow-sm ring-1 ring-slate-100 bg-white/50 backdrop-blur-xl">
                 <div className="flex flex-col lg:flex-row gap-4">
                     <div className="flex-1 relative group">
-                        <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Search by name or mobile..."
@@ -132,7 +132,7 @@ const PendingDeliveryBoys = () => {
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="bg-slate-100/50 p-1 rounded-2xl flex items-center">
-                            {['all', 'pending_review', 'missing_info'].map((status) => (
+                            {['all', 'pending', 'missing_info'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setFilterStatus(status)}
@@ -143,12 +143,12 @@ const PendingDeliveryBoys = () => {
                                             : "text-slate-400 hover:text-slate-600"
                                     )}
                                 >
-                                    {status.replace('_', ' ')}
+                                    {status === 'pending' ? 'PENDING' : status.replace('_', ' ')}
                                 </button>
                             ))}
                         </div>
                         <button className="p-3.5 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-600 hover:text-primary transition-all">
-                            <HiOutlineFunnel className="h-5 w-5" />
+                            <Filter className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
@@ -160,10 +160,10 @@ const PendingDeliveryBoys = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Applicant Details</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Operational Intel</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Submission Status</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                                <th className="admin-table-header px-8">Applicant Details</th>
+                                <th className="admin-table-header px-8">Operational Intel</th>
+                                <th className="admin-table-header px-8">Submission Status</th>
+                                <th className="admin-table-header px-8 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -171,13 +171,13 @@ const PendingDeliveryBoys = () => {
                                 <tr key={rider.id} className="group hover:bg-slate-50/50 transition-colors">
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform">
-                                                <HiOutlineIdentification className="h-6 w-6" />
+                                            <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                                                <IdCard className="h-6 w-6" />
                                             </div>
                                             <div>
                                                 <p className="text-sm font-black text-slate-900">{rider.name}</p>
                                                 <div className="flex items-center gap-2 mt-1">
-                                                    <HiOutlinePhone className="h-3 w-3 text-slate-400" />
+                                                    <Phone className="h-3 w-3 text-slate-400" />
                                                     <span className="text-[10px] font-bold text-slate-500">{rider.phone}</span>
                                                 </div>
                                             </div>
@@ -186,11 +186,11 @@ const PendingDeliveryBoys = () => {
                                     <td className="px-8 py-6">
                                         <div className="space-y-1.5">
                                             <div className="flex items-center gap-2 text-slate-600">
-                                                <HiOutlineTruck className="h-3.5 w-3.5" />
+                                                <Truck className="h-3.5 w-3.5" />
                                                 <span className="text-[10px] font-bold">{rider.vehicle}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-slate-400">
-                                                <HiOutlineMapPin className="h-3.5 w-3.5" />
+                                                <MapPin className="h-3.5 w-3.5" />
                                                 <span className="text-[10px] font-bold">{rider.location}</span>
                                             </div>
                                         </div>
@@ -250,24 +250,24 @@ const PendingDeliveryBoys = () => {
                             <div className="lg:w-80 bg-slate-50 p-10 border-r border-slate-100">
                                 <div className="text-center mb-10">
                                     <div className="h-24 w-24 rounded-[32px] bg-white shadow-xl flex items-center justify-center text-slate-300 mx-auto mb-6">
-                                        <HiOutlineIdentification className="h-12 w-12" />
+                                        <IdCard className="h-12 w-12" />
                                     </div>
-                                    <h3 className="text-2xl font-black text-slate-900">{viewingRider.name}</h3>
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mt-1">Applicant Node</p>
+                                    <h3 className="admin-h2">{viewingRider.name}</h3>
+                                    <p className="admin-label text-primary mt-1">Applicant Node</p>
                                 </div>
 
                                 <div className="space-y-6">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Preferred Area</p>
                                         <div className="flex items-center gap-2 text-slate-700">
-                                            <HiOutlineMapPin className="h-4 w-4 text-slate-400" />
+                                            <MapPin className="h-4 w-4 text-slate-400" />
                                             <span className="text-xs font-bold">{viewingRider.preferredArea}</span>
                                         </div>
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Experience</p>
                                         <div className="flex items-center gap-2 text-slate-700">
-                                            <HiOutlineCalendarDays className="h-4 w-4 text-slate-400" />
+                                            <Calendar className="h-4 w-4 text-slate-400" />
                                             <span className="text-xs font-bold">{viewingRider.experience}</span>
                                         </div>
                                     </div>
@@ -285,11 +285,11 @@ const PendingDeliveryBoys = () => {
                             <div className="flex-1 p-10 lg:p-14 bg-white">
                                 <div className="flex justify-between items-start mb-10">
                                     <div>
-                                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Vetting Protocol</h2>
-                                        <p className="text-slate-500 font-medium mt-1">Verify submitted legal documents for platform entry.</p>
+                                        <h2 className="admin-h1">Vetting Protocol</h2>
+                                        <p className="admin-description mt-1">Verify submitted legal documents for platform entry.</p>
                                     </div>
                                     <button onClick={() => setViewingRider(null)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all">
-                                        <HiOutlineXMark className="h-6 w-6 text-slate-400" />
+                                        <X className="h-6 w-6 text-slate-400" />
                                     </button>
                                 </div>
 
@@ -299,13 +299,13 @@ const PendingDeliveryBoys = () => {
                                         <div className="p-6 bg-slate-50 rounded-[32px] space-y-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
-                                                    <HiOutlinePhone className="h-5 w-5" />
+                                                    <Phone className="h-5 w-5" />
                                                 </div>
                                                 <span className="text-sm font-bold text-slate-900">{viewingRider.phone}</span>
                                             </div>
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
-                                                    <HiOutlineEnvelope className="h-5 w-5" />
+                                                    <Mail className="h-5 w-5" />
                                                 </div>
                                                 <span className="text-sm font-bold text-slate-900">{viewingRider.email}</span>
                                             </div>
@@ -317,7 +317,7 @@ const PendingDeliveryBoys = () => {
                                         <div className="p-6 bg-slate-50 rounded-[32px] border-2 border-emerald-500/10">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600">
-                                                    <HiOutlineTruck className="h-6 w-6" />
+                                                    <Truck className="h-6 w-6" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-black text-slate-900">{viewingRider.vehicle}</p>
@@ -334,7 +334,7 @@ const PendingDeliveryBoys = () => {
                                         {viewingRider.documents.map((doc, idx) => (
                                             <div key={idx} className="group relative aspect-[4/3] bg-slate-100 rounded-[24px] overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all">
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                                                    <HiOutlineDocumentMagnifyingGlass className="h-8 w-8 text-slate-400 group-hover:text-primary transition-colors" />
+                                                    <FileSearch className="h-8 w-8 text-slate-400 group-hover:text-primary transition-colors" />
                                                     <p className="text-[9px] font-black text-slate-500 uppercase mt-2 text-center">{doc}</p>
                                                 </div>
                                                 <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors" />
@@ -356,7 +356,7 @@ const PendingDeliveryBoys = () => {
                                             </>
                                         ) : (
                                             <>
-                                                <HiOutlineCheck className="h-4 w-4" />
+                                                <Check className="h-4 w-4" />
                                                 APPROVE & ACTIVATE RIDER
                                             </>
                                         )}

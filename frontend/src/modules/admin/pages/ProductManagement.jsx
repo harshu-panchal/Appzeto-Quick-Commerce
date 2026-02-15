@@ -23,6 +23,7 @@ import {
     HiOutlineSwatch,
     HiOutlineSquaresPlus
 } from 'react-icons/hi2';
+import Modal from '@shared/components/ui/Modal';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -94,6 +95,8 @@ const ProductManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('all');
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
     const [modalTab, setModalTab] = useState('general');
 
@@ -146,9 +149,45 @@ const ProductManagement = () => {
         setEditingItem(null);
     };
 
+    const handleDeleteClick = (product) => {
+        setItemToDelete(product);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = () => {
+        setProducts(products.filter(p => p.id !== itemToDelete.id));
+        setIsDeleteModalOpen(false);
+        setItemToDelete(null);
+    };
+
     const openModal = (item = null) => {
         if (item) {
-            setFormData({ ...item });
+            setFormData({
+                name: item.name || '',
+                slug: item.slug || '',
+                sku: item.sku || '',
+                description: item.description || '',
+                price: item.price || '',
+                salePrice: item.salePrice || '',
+                stock: item.stock || '',
+                lowStockAlert: item.lowStockAlert || 5,
+                category: item.category || '',
+                header: item.header || '',
+                status: item.status || 'active',
+                tags: item.tags || '',
+                weight: item.weight || '',
+                brand: item.brand || '',
+                mainImage: item.image || item.mainImage || null,
+                galleryImages: item.galleryImages || [],
+                variants: item.variants || [{
+                    id: Date.now(),
+                    name: 'Default',
+                    price: item.price || '',
+                    salePrice: item.salePrice || '',
+                    stock: item.stock || '',
+                    sku: item.sku || ''
+                }]
+            });
             setEditingItem(item);
         } else {
             setFormData({
@@ -177,11 +216,11 @@ const ProductManagement = () => {
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <h1 className="admin-h1 flex items-center gap-2">
                         Product List
                         <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Live</Badge>
                     </h1>
-                    <p className="text-slate-500 font-medium text-sm mt-0.5">Track your items, prices, and how many are left in stock.</p>
+                    <p className="admin-description mt-0.5">Track your items, prices, and how many are left in stock.</p>
                 </div>
                 <button
                     onClick={() => openModal()}
@@ -206,8 +245,8 @@ const ProductManagement = () => {
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-bold text-slate-900">{stat.val}</h4>
+                                <p className="admin-label">{stat.label}</p>
+                                <h4 className="admin-stat-value">{stat.val}</h4>
                             </div>
                         </div>
                     </Card>
@@ -254,12 +293,14 @@ const ProductManagement = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Product</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">SKU</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Price</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Inventory</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="admin-table-header px-6">Product</th>
+                                <th className="admin-table-header px-6">Header</th>
+                                <th className="admin-table-header px-6">Category</th>
+                                <th className="admin-table-header px-6">Reg. Price</th>
+                                <th className="admin-table-header px-6">Sale Price</th>
+                                <th className="admin-table-header px-6 text-center">Variant</th>
+                                <th className="admin-table-header px-6 text-center">Stock</th>
+                                <th className="admin-table-header px-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -272,35 +313,34 @@ const ProductManagement = () => {
                                             </div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-900">{p.name}</p>
-                                                <p className="text-[9px] font-semibold text-slate-400">{p.category}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className="text-[10px] font-bold font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">{p.sku}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-slate-900">₹{p.salePrice || p.price}</span>
-                                            {p.salePrice && <span className="text-[9px] font-bold text-slate-400 line-through">₹{p.price}</span>}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex flex-col items-center">
-                                            <span className={cn("text-xs font-bold", p.stock === 0 ? "text-rose-500" : p.stock <= 10 ? "text-amber-500" : "text-emerald-500")}>
-                                                {p.stock} units
-                                            </span>
-                                            <div className="w-12 h-1 bg-slate-100 rounded-full mt-1 overflow-hidden">
-                                                <div
-                                                    className={cn("h-full rounded-full transition-all duration-1000", p.stock === 0 ? "bg-rose-500 w-0" : p.stock <= 10 ? "bg-amber-500 w-1/3" : "bg-emerald-500 w-full")}
-                                                />
+                                                <p className="text-[9px] font-semibold text-slate-400">SKU: {p.sku}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <StatusBadge status={p.status} stock={p.stock} />
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full">{p.header || 'Grocery'}</span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="text-[10px] font-bold text-slate-600">{p.category}</span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="text-xs font-bold text-slate-400">₹{p.price}</span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="text-xs font-bold text-emerald-600">₹{p.salePrice || p.price}</span>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
+                                            {p.variants?.[0]?.name || 'Standard'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <span className={cn("text-xs font-bold", p.stock === 0 ? "text-rose-500" : p.stock <= 10 ? "text-amber-500" : "text-emerald-500")}>
+                                            {p.stock}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
+
                                         <div className="flex items-center justify-end space-x-1.5">
                                             <button
                                                 onClick={() => openModal(p)}
@@ -308,7 +348,10 @@ const ProductManagement = () => {
                                             >
                                                 <HiOutlinePencilSquare className="h-3.5 w-3.5" />
                                             </button>
-                                            <button className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100">
+                                            <button
+                                                onClick={() => handleDeleteClick(p)}
+                                                className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100"
+                                            >
                                                 <HiOutlineTrash className="h-3.5 w-3.5" />
                                             </button>
                                         </div>
@@ -344,7 +387,7 @@ const ProductManagement = () => {
                                         <HiOutlineCube className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-900">
+                                        <h3 className="admin-h3">
                                             {editingItem ? 'Edit Product' : 'Add New Product'}
                                         </h3>
                                         <div className="flex items-center space-x-2 mt-0.5">
@@ -525,7 +568,7 @@ const ProductManagement = () => {
                                             </div>
 
                                             <div className="space-y-3">
-                                                {formData.variants.map((variant, index) => (
+                                                {(formData.variants || []).map((variant, index) => (
                                                     <div key={variant.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-12 gap-4 items-end group relative">
                                                         <div className="col-span-3 space-y-1">
                                                             <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Variant Name</label>
@@ -636,7 +679,7 @@ const ProductManagement = () => {
                                                         className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer"
                                                     >
                                                         <option value="">Select Category</option>
-                                                        {categories.find(h => h.name === formData.header)?.children.map(c => (
+                                                        {categories.find(h => h.name === formData.header)?.children?.map(c => (
                                                             <option key={c} value={c}>{c}</option>
                                                         ))}
                                                     </select>
@@ -733,6 +776,41 @@ const ProductManagement = () => {
                     </div>
                 )}
             </AnimatePresence>
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                title="Confirm Deletion"
+                size="sm"
+                footer={
+                    <>
+                        <button
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors"
+                        >
+                            CANCEL
+                        </button>
+                        <button
+                            onClick={confirmDelete}
+                            className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95"
+                        >
+                            DELETE PRODUCT
+                        </button>
+                    </>
+                }
+            >
+                <div className="flex flex-col items-center text-center py-4">
+                    <div className="h-16 w-16 bg-rose-50 rounded-full flex items-center justify-center mb-4">
+                        <HiOutlineExclamationCircle className="h-10 w-10 text-rose-500" />
+                    </div>
+                    <h3 className="text-lg font-black text-slate-900 mb-2 uppercase tracking-tight">Delete Product?</h3>
+                    <p className="text-sm text-slate-500 font-medium">
+                        Are you sure you want to delete <span className="font-bold text-slate-900">"{itemToDelete?.name}"</span>?
+                        This action cannot be undone.
+                    </p>
+                </div>
+            </Modal>
+
         </div>
     );
 };

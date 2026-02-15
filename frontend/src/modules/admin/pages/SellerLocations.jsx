@@ -127,11 +127,11 @@ const SellerLocations = () => {
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 shrink-0 px-1">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <h1 className="admin-h1 flex items-center gap-2">
                         Logistics Radar
                         <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Live Coverage</Badge>
                     </h1>
-                    <p className="text-slate-500 font-medium text-sm mt-0.5">Global view of seller service areas and delivery reach.</p>
+                    <p className="admin-description mt-0.5">Global view of seller service areas and delivery reach.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -183,7 +183,7 @@ const SellerLocations = () => {
                                 />
                             </div>
                             <div className="flex items-center justify-between px-1 relative">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Nodes ({filteredSellers.length})</span>
+                                <span className="admin-label">Active Nodes ({filteredSellers.length})</span>
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
                                     className={cn(
@@ -368,9 +368,9 @@ const SellerLocations = () => {
                                         <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                                             <HiOutlineBuildingOffice2 className="h-7 w-7" />
                                         </div>
-                                        <div>
-                                            <h4 className="text-sm font-bold text-slate-900">{selectedSeller.shopName}</h4>
-                                            <p className="text-[10px] font-bold text-primary uppercase mt-0.5">{selectedSeller.category}</p>
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="admin-h4 truncate tracking-tight">{selectedSeller.shopName}</h4>
+                                            <p className="admin-label text-primary mt-0.5">{selectedSeller.category}</p>
                                         </div>
                                     </div>
 
@@ -428,8 +428,8 @@ const SellerLocations = () => {
                                         <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-6">
                                             <HiOutlineBuildingOffice2 className="h-10 w-10" />
                                         </div>
-                                        <h3 className="text-2xl font-bold text-slate-900">{selectedSeller.shopName}</h3>
-                                        <p className="text-sm font-medium text-slate-500">Logistics & Performance Report</p>
+                                        <h3 className="admin-h2">{selectedSeller.shopName}</h3>
+                                        <p className="admin-description">Logistics & Performance Report</p>
 
                                         <div className="grid grid-cols-2 gap-4 pt-4">
                                             <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">

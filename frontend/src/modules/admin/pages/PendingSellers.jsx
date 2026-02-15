@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PendingSellers = () => {
+    const navigate = useNavigate();
     // Mock Data for Pending Sellers
     const [pendingSellers, setPendingSellers] = useState([
         {
@@ -105,11 +107,11 @@ const PendingSellers = () => {
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <h1 className="admin-h1 flex items-center gap-2">
                         Pending Approvals
-                        <Badge variant="warning" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase animate-pulse">Action Required</Badge>
+                        <Badge variant="warning" className="admin-tiny px-1.5 py-0 font-bold animate-pulse">Action Required</Badge>
                     </h1>
-                    <p className="text-slate-500 font-medium text-sm mt-0.5">Review and verify new seller registrations to maintain platform quality.</p>
+                    <p className="admin-description mt-0.5">Review and verify new seller registrations to maintain platform quality.</p>
                 </div>
                 <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-xl ring-1 ring-amber-100">
                     <HiOutlineClock className="h-4 w-4 text-amber-600" />
@@ -127,8 +129,8 @@ const PendingSellers = () => {
                     <Card key={i} className="border-none shadow-sm ring-1 ring-slate-100 p-5">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-2xl font-bold text-slate-900 mt-1">{stat.val}</h4>
+                                <p className="admin-label">{stat.label}</p>
+                                <h4 className="admin-stat-value mt-1">{stat.val}</h4>
                             </div>
                             <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center shadow-inner", stat.bg, stat.color)}>
                                 <stat.icon className="h-6 w-6" />
@@ -161,23 +163,28 @@ const PendingSellers = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Applicant Store</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Documentation</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Applied On</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="admin-table-header px-6">Applicant Store</th>
+                                <th className="admin-table-header px-6">Documentation</th>
+                                <th className="admin-table-header px-6">Applied On</th>
+                                <th className="admin-table-header px-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {filteredSellers.length > 0 ? filteredSellers.map((s) => (
                                 <tr key={s.id} className="hover:bg-slate-50/30 transition-colors group">
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg shadow-sm">
-                                                {s.shopName[0]}
+                                        <div
+                                            className="flex items-center gap-4 cursor-pointer group/name"
+                                            onClick={() => navigate(`/admin/sellers/active/${s.id}`)}
+                                        >
+                                            <div className="h-10 w-10 rounded-xl overflow-hidden bg-slate-100 ring-2 ring-slate-100 group-hover:ring-primary/20 transition-all">
+                                                <div className="h-full w-full flex items-center justify-center bg-slate-100 text-slate-400">
+                                                    <HiOutlineBuildingOffice2 className="h-5 w-5" />
+                                                </div>
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">{s.shopName}</p>
-                                                <p className="text-[10px] font-semibold text-slate-400 mt-0.5">{s.ownerName} • {s.category}</p>
+                                                <p className="text-sm font-bold text-slate-900 group-hover/name:text-primary transition-colors">{s.shopName}</p>
+                                                <p className="text-[10px] font-bold text-slate-400">{s.ownerName}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -259,7 +266,7 @@ const PendingSellers = () => {
 
                                         <div className="space-y-6">
                                             <div>
-                                                <h3 className="text-xl font-bold text-slate-900 leading-tight">{viewingSeller.shopName}</h3>
+                                                <h3 className="admin-h2 leading-tight">{viewingSeller.shopName}</h3>
                                                 <p className="text-xs font-bold text-primary mt-1 uppercase tracking-widest">{viewingSeller.category} PARTNER</p>
                                             </div>
 

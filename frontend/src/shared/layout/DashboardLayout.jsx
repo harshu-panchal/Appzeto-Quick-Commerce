@@ -8,7 +8,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
             <Sidebar items={navItems} title={title} />
             <div className="pl-64">
                 <Topbar />
-                <main className="pt-16 p-8 min-h-screen">
+                <main className="pt-24 p-8 min-h-screen">
                     <div className="max-w-7xl mx-auto">
                         {children}
                     </div>

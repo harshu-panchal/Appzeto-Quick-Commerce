@@ -298,11 +298,11 @@ const CategoryManagement = () => {
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <h1 className="admin-h1 flex items-center gap-2">
                         Manage Categories
                         <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Admin</Badge>
                     </h1>
-                    <p className="text-slate-500 font-medium text-sm mt-0.5">Organize your store by grouping items together into folders.</p>
+                    <p className="admin-description mt-0.5">Organize your store by grouping items together into folders.</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <button className="p-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
@@ -362,8 +362,8 @@ const CategoryManagement = () => {
 
                 <Card className="lg:col-span-1 border-none shadow-sm ring-1 ring-indigo-50 bg-gradient-to-tr from-indigo-50 to-white p-4 flex flex-col justify-between overflow-hidden relative">
                     <div className="z-10">
-                        <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Groups</p>
-                        <h4 className="text-2xl font-bold text-indigo-900 leading-none">254</h4>
+                        <p className="admin-label text-indigo-400 mb-1">Total Groups</p>
+                        <h4 className="admin-stat-value text-indigo-900 line-height-none">254</h4>
                         <p className="text-[10px] font-semibold text-indigo-400 mt-1">Working Fine</p>
                     </div>
                     <HiOutlineFolderOpen className="absolute -right-2 -bottom-2 h-16 w-16 text-indigo-500/5 rotate-12" />
@@ -456,7 +456,7 @@ const CategoryManagement = () => {
                                 <div className="space-y-6">
                                     <header>
                                         <Badge variant="outline" className="text-[9px] font-bold uppercase bg-slate-50 mb-1.5">{formData.type} level</Badge>
-                                        <h3 className="text-xl font-bold text-slate-900 tracking-tight">{editingItem ? 'Edit Group' : 'New Group'}</h3>
+                                        <h3 className="admin-h2">{editingItem ? 'Edit Group' : 'New Group'}</h3>
                                     </header>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
