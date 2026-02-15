@@ -37,6 +37,7 @@ const CashCollection = React.lazy(() => import('../pages/CashCollection'));
 const CustomerManagement = React.lazy(() => import('../pages/CustomerManagement'));
 const CustomerDetail = React.lazy(() => import('../pages/CustomerDetail'));
 const UserManagement = React.lazy(() => import('../pages/UserManagement'));
+const Profile = React.lazy(() => import('@/pages/Profile'));
 const FAQManagement = React.lazy(() => import('../pages/FAQManagement'));
 const OrdersList = React.lazy(() => import('../pages/OrdersList'));
 const OrderDetail = React.lazy(() => import('../pages/OrderDetail'));

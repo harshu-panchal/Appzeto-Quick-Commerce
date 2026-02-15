@@ -4,7 +4,7 @@ import DashboardLayout from '@shared/layout/DashboardLayout';
 import { HiOutlineViewGrid, HiOutlineClipboardList, HiOutlineMap, HiOutlineCurrencyDollar, HiOutlineUser } from 'react-icons/hi';
 
 const Dashboard = React.lazy(() => import('../pages/Dashboard'));
-const Profile = React.lazy(() => import('../../customer/pages/Profile'));
+const Profile = React.lazy(() => import('@/pages/Profile'));
 
 const navItems = [
     { label: 'Dashboard', path: '/delivery', icon: HiOutlineViewGrid },

@@ -8,7 +8,7 @@ const ProductManagement = React.lazy(() => import('../pages/ProductManagement'))
 const AddProduct = React.lazy(() => import('../pages/AddProduct'));
 const Orders = React.lazy(() => import('../pages/Orders'));
 const Earnings = React.lazy(() => import('../pages/Earnings'));
-const Profile = React.lazy(() => import('../../customer/pages/Profile'));
+const Profile = React.lazy(() => import('@/pages/Profile'));
 
 const navItems = [
     { label: 'Dashboard', path: '/seller', icon: HiOutlineViewGrid },
