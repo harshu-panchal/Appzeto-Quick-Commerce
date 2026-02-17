@@ -6,20 +6,20 @@ const MainLocationHeader = ({ categories = [] }) => {
     const { scrollY } = useScroll();
 
     // Smooth scroll interpolations
-    const headerPadding = useTransform(scrollY, [0, 80], [16, 8]);
-    const headerRoundness = useTransform(scrollY, [0, 80], [40, 24]);
-    const bgOpacity = useTransform(scrollY, [0, 80], [1, 0.95]);
+    const headerPadding = useTransform(scrollY, [0, 160], [12, 8]);
+    const headerRoundness = useTransform(scrollY, [0, 160], [40, 24]);
+    const bgOpacity = useTransform(scrollY, [0, 160], [1, 0.98]);
 
     // Content animations
-    const contentHeight = useTransform(scrollY, [0, 80], ["auto", "0px"]);
-    const contentOpacity = useTransform(scrollY, [0, 40], [1, 0]);
-    const navHeight = useTransform(scrollY, [0, 100], ["auto", "0px"]);
-    const navOpacity = useTransform(scrollY, [0, 60], [1, 0]);
-    const navMargin = useTransform(scrollY, [0, 100], [12, 0]);
+    const contentHeight = useTransform(scrollY, [0, 160], ["50px", "0px"]);
+    const contentOpacity = useTransform(scrollY, [0, 160], [1, 0]);
+    const navHeight = useTransform(scrollY, [0, 200], ["82px", "0px"]);
+    const navOpacity = useTransform(scrollY, [0, 200], [1, 0]);
+    const navMargin = useTransform(scrollY, [0, 200], [6, 0]);
 
     // Helper to hide elements completely when collapsed to prevent clicks
-    const displayContent = useTransform(scrollY, (value) => value > 80 ? "none" : "block");
-    const displayNav = useTransform(scrollY, (value) => value > 100 ? "none" : "flex");
+    const displayContent = useTransform(scrollY, (value) => value > 160 ? "none" : "block");
+    const displayNav = useTransform(scrollY, (value) => value > 200 ? "none" : "flex");
 
     return (
         <div className="fixed top-0 left-0 right-0 z-[100]">
@@ -58,10 +58,7 @@ const MainLocationHeader = ({ categories = [] }) => {
                         </div>
                     </div>
 
-                    {/* Profile/Star Icon */}
-                    <div className="h-9 w-9 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 shadow-sm cursor-pointer hover:bg-white/40 transition-all">
-                        <Star size={18} className="text-[#1A1A1A]" fill="currentColor" />
-                    </div>
+
                 </motion.div>
 
                 {/* Search Bar - Always Visible */}

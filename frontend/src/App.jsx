@@ -5,6 +5,7 @@ import { AuthProvider } from '@core/context/AuthContext';
 import { ToastProvider } from '@shared/components/ui/Toast';
 import Loader from '@shared/components/ui/Loader';
 import ErrorBoundary from '@shared/components/ErrorBoundary';
+import LenisScroll from '@shared/components/LenisScroll';
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
             <AuthProvider>
                 <ToastProvider>
                     <Suspense fallback={<Loader fullScreen />}>
+                        <LenisScroll />
                         <RouterProvider router={router} />
                     </Suspense>
                 </ToastProvider>

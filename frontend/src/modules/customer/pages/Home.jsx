@@ -86,9 +86,11 @@ const Home = () => {
     const { scrollY } = useScroll();
 
     // Fade out banner as user scrolls (0 to 100px)
-    const opacity = useTransform(scrollY, [0, 100], [1, 0]);
-    const y = useTransform(scrollY, [0, 100], [0, -50]);
-    const pointerEvents = useTransform(scrollY, [0, 50], ["auto", "none"]);
+    // Parallax effect for banner - moves slower than scroll
+    const opacity = useTransform(scrollY, [0, 300], [1, 0.6]);
+    const y = useTransform(scrollY, [0, 300], [0, 80]); // Positive Y moves down as we scroll up = Parallax
+    const scale = useTransform(scrollY, [0, 300], [1, 0.95]);
+    const pointerEvents = useTransform(scrollY, [0, 100], ["auto", "none"]);
 
     return (
         <CustomerLayout showHeader={false}>
@@ -98,7 +100,7 @@ const Home = () => {
 
                 {/* Promotional Banner Section - Now with higher z-index and scroll-fade */}
                 <motion.div
-                    style={{ opacity, y, pointerEvents }}
+                    style={{ opacity, y, scale, pointerEvents }}
                     className="px-5 -mt-4 relative z-[110]"
                 >
                     <motion.div
