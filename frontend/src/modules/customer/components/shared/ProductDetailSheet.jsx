@@ -29,10 +29,18 @@ const ProductDetailSheet = () => {
         if (isOpen) {
             controls.start("visible");
             document.body.style.overflow = "hidden"; // Prevent background scroll
+            document.documentElement.style.overflow = "hidden";
         } else {
             controls.start("hidden");
             document.body.style.overflow = "unset";
+            document.documentElement.style.overflow = "unset";
             setIsExpanded(false);
+        }
+
+        // Cleanup function to ensure scroll is restored if component unmounts
+        return () => {
+            document.body.style.overflow = "unset";
+            document.documentElement.style.overflow = "unset";
         }
     }, [isOpen, controls]);
 
@@ -43,7 +51,7 @@ const ProductDetailSheet = () => {
         if (offset > 150 || velocity > 200) {
             // Dragged down significantly -> Close
             closeProduct();
-        } else if (offset < -50 || velocity < -200) {
+        } else if (offset < -20 || velocity < -200) {
             // Dragged up -> Expand
             setIsExpanded(true);
         } else {
@@ -77,8 +85,19 @@ const ProductDetailSheet = () => {
 
     // Scroll handler to expand on scroll
     const handleScroll = (e) => {
-        if (!isExpanded && e.currentTarget.scrollTop > 10) {
+        if (!isExpanded && e.currentTarget.scrollTop > 5) {
             setIsExpanded(true);
+        }
+    };
+
+    // Wheel handler for expansion
+    const handleWheel = (e) => {
+        if (!isExpanded && e.deltaY > 0) {
+            setIsExpanded(true);
+            e.stopPropagation();
+        } else if (isExpanded) {
+            // Allow normal scroll but stop propagation to background
+            e.stopPropagation();
         }
     };
 
@@ -101,7 +120,7 @@ const ProductDetailSheet = () => {
                     <motion.div
                         drag={isExpanded ? false : "y"} // Only allow vertical drag when not fully expanded for closing gesture
                         dragConstraints={{ top: 0, bottom: 0 }}
-                        dragElastic={0.2}
+                        dragElastic={0.7}
                         onDragEnd={handleDragEnd}
                         initial={{
                             opacity: 0,
@@ -128,8 +147,8 @@ const ProductDetailSheet = () => {
                         exit={{ opacity: 0, scale: 0.9, y: "100vh", transition: { duration: 0.3 } }}
                         transition={{
                             type: "spring",
-                            damping: 28,
-                            stiffness: 350,
+                            damping: 25,
+                            stiffness: 400,
                             mass: 0.8
                         }}
                         className={cn(
@@ -169,8 +188,12 @@ const ProductDetailSheet = () => {
 
                         {/* Scrollable Content */}
                         <div
-                            className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-24 bg-white"
+                            className={cn(
+                                "flex-1 overflow-x-hidden no-scrollbar pb-24 bg-white",
+                                isExpanded ? "overflow-y-auto" : "overflow-y-hidden"
+                            )}
                             onScroll={handleScroll}
+                            onWheel={handleWheel}
                         >
                             {/* Product Image Stage */}
                             <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-[#F5F7F8] to-white pt-16 pb-8 px-8 flex items-center justify-center">
