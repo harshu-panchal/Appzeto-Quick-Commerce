@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import { Search, Mic, MapPin, ChevronDown, Star, Home as HomeIcon, Heart, Snowflake, Laptop, Sparkles, Clock, Apple, Baby, Dog, Coffee, Gift, Shirt } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
@@ -6,17 +7,182 @@ import ProductCard from '../components/shared/ProductCard';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
 
 const categories = [
-    { id: 1, name: 'All', icon: HomeIcon, active: true },
-    { id: 2, name: 'Groceries', icon: Apple },
-    { id: 3, name: 'Wedding', icon: Heart },
-    { id: 4, name: 'Winter', icon: Snowflake },
-    { id: 5, name: 'Electronics', icon: Laptop },
-    { id: 6, name: 'Beauty', icon: Sparkles },
-    { id: 7, name: 'Baby Care', icon: Baby },
-    { id: 8, name: 'Pet Care', icon: Dog },
-    { id: 9, name: 'Bakery', icon: Coffee },
-    { id: 10, name: 'Fashion', icon: Shirt },
-    { id: 11, name: 'Gifts', icon: Gift },
+    {
+        id: 1,
+        name: 'All',
+        icon: HomeIcon,
+        theme: {
+            gradient: "linear-gradient(to bottom, #25D366, #4ADE80)",
+            shadow: "shadow-green-500/20",
+            accent: "text-[#1A1A1A]"
+        },
+        banner: {
+            title: "HOUSEFULL",
+            subtitle: "SALE",
+            floatingElements: "sparkles",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 2,
+        name: 'Groceries',
+        icon: Apple,
+        theme: {
+            gradient: "linear-gradient(to bottom, #FF9F1C, #FFBF69)",
+            shadow: "shadow-orange-500/20",
+            accent: "text-orange-900"
+        },
+        banner: {
+            title: "SUPERSAVER",
+            subtitle: "FRESH & FAST",
+            floatingElements: "leaves",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 3,
+        name: 'Wedding',
+        icon: Heart,
+        theme: {
+            gradient: "linear-gradient(to bottom, #FF4D6D, #FF8FA3)",
+            shadow: "shadow-rose-500/20",
+            accent: "text-rose-900"
+        },
+        banner: {
+            title: "WEDDING",
+            subtitle: "BLISS",
+            floatingElements: "hearts",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 4,
+        name: 'Winter',
+        icon: Snowflake,
+        theme: {
+            gradient: "linear-gradient(to bottom, #00B4D8, #90E0EF)",
+            shadow: "shadow-cyan-500/20",
+            accent: "text-cyan-900"
+        },
+        banner: {
+            title: "WINTER",
+            subtitle: "CHILLS",
+            floatingElements: "snow",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 5,
+        name: 'Electronics',
+        icon: Laptop,
+        theme: {
+            gradient: "linear-gradient(to bottom, #7209B7, #B5179E)",
+            shadow: "shadow-purple-500/20",
+            accent: "text-purple-900"
+        },
+        banner: {
+            title: "TECH FEST",
+            subtitle: "GADGETS",
+            floatingElements: "tech",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 6,
+        name: 'Beauty',
+        icon: Sparkles,
+        theme: {
+            gradient: "linear-gradient(to bottom, #F72585, #FF70A6)",
+            shadow: "shadow-pink-500/20",
+            accent: "text-pink-900"
+        },
+        banner: {
+            title: "GLOW UP",
+            subtitle: "BEAUTY",
+            floatingElements: "stars",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 7,
+        name: 'Baby Care',
+        icon: Baby,
+        theme: {
+            gradient: "linear-gradient(to bottom, #4CC9F0, #A0E7E5)",
+            shadow: "shadow-blue-500/20",
+            accent: "text-blue-900"
+        },
+        banner: {
+            title: "LITTLE ONE",
+            subtitle: "CARE",
+            floatingElements: "bubbles",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 8,
+        name: 'Pet Care',
+        icon: Dog,
+        theme: {
+            gradient: "linear-gradient(to bottom, #FB8500, #FFB703)",
+            shadow: "shadow-yellow-500/20",
+            accent: "text-yellow-900"
+        },
+        banner: {
+            title: "PAWSOME",
+            subtitle: "DEALS",
+            floatingElements: "bones",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 9,
+        name: 'Bakery',
+        icon: Coffee,
+        theme: {
+            gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)",
+            shadow: "shadow-amber-500/20",
+            accent: "text-amber-900"
+        },
+        banner: {
+            title: "FRESHLY",
+            subtitle: "BAKED",
+            floatingElements: "smoke",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 10,
+        name: 'Fashion',
+        icon: Shirt,
+        theme: {
+            gradient: "linear-gradient(to bottom, #4361EE, #4895EF)",
+            shadow: "shadow-indigo-500/20",
+            accent: "text-indigo-900"
+        },
+        banner: {
+            title: "STYLE",
+            subtitle: "ICON",
+            floatingElements: "confetti",
+            textColor: "text-white"
+        }
+    },
+    {
+        id: 11,
+        name: 'Gifts',
+        icon: Gift,
+        theme: {
+            gradient: "linear-gradient(to bottom, #EF233C, #D90429)",
+            shadow: "shadow-red-500/20",
+            accent: "text-red-900"
+        },
+        banner: {
+            title: "JOY OF",
+            subtitle: "GIVING",
+            floatingElements: "ribbons",
+            textColor: "text-white"
+        }
+    },
 ];
 
 const bestsellerCategories = [
@@ -84,6 +250,8 @@ const bestsellerCategories = [
 
 const Home = () => {
     const { scrollY } = useScroll();
+    const navigate = useNavigate();
+    const [activeCategory, setActiveCategory] = useState(categories[0]);
 
     // Fade out banner as user scrolls (0 to 100px)
     // Parallax effect for banner - moves slower than scroll
@@ -92,11 +260,60 @@ const Home = () => {
     const scale = useTransform(scrollY, [0, 300], [1, 0.95]);
     const pointerEvents = useTransform(scrollY, [0, 100], ["auto", "none"]);
 
+    // Helper to render dynamic floating elements
+    const renderFloatingElements = (type) => {
+        const count = 12; // Number of particles
+        
+        const getParticleContent = (index) => {
+            switch(type) {
+                case 'hearts': return index % 2 === 0 ? <Heart fill="white" size={16} /> : <div className="h-2 w-2 bg-white rounded-full" />;
+                case 'snow': return <Snowflake fill="white" size={index % 2 === 0 ? 14 : 10} />;
+                case 'tech': return <div className={`border border-white/50 ${index % 2 === 0 ? 'h-3 w-3 rounded-none' : 'h-2 w-6 rounded-sm'}`} />;
+                case 'leaves': return <div className="bg-white/80 h-3 w-3 rounded-tr-[10px] rounded-bl-[10px]" />;
+                case 'stars': return <Star fill="white" size={14} className="text-white" />;
+                case 'bubbles': return <div className="rounded-full border border-white/60" style={{ width: index % 2 === 0 ? 12 : 8, height: index % 2 === 0 ? 12 : 8 }} />;
+                case 'bones': return index % 2 === 0 ? <Dog size={14} className="text-white" /> : <div className="h-2 w-2 bg-white rounded-full" />;
+                case 'confetti': return <div className={`bg-white/90 ${index % 2 === 0 ? 'h-3 w-1' : 'h-2 w-2 rounded-full'}`} />;
+                default: return <div className={`rounded-full blur-[0.5px] ${index % 3 === 0 ? 'bg-white/80 h-2 w-2' : 'bg-white/40 h-1 w-1'}`} />;
+            }
+        };
+
+        return [...Array(count)].map((_, i) => (
+             <motion.div
+                key={i}
+                className="absolute"
+                style={{
+                    top: `${Math.random() * 100}%`,
+                    left: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                    x: [0, Math.random() * 40 - 20, 0],
+                    y: [0, Math.random() * -60, 0],
+                    opacity: [0.3, 1, 0.3],
+                    scale: [0.5, 1.5, 0.5],
+                    rotate: [0, 180, 360]
+                }}
+                transition={{
+                    duration: 3 + Math.random() * 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: Math.random() * 5
+                }}
+            >
+                {getParticleContent(i)}
+            </motion.div>
+        ));
+    };
+
     return (
         <CustomerLayout showHeader={false}>
             <div className="min-h-screen bg-[#F5F7F8] pt-[230px] md:pt-[240px]">
-                {/* Top Green Gradient Section */}
-                <MainLocationHeader categories={categories} />
+                {/* Top Dynamic Gradient Section */}
+                <MainLocationHeader
+                    categories={categories}
+                    activeCategory={activeCategory}
+                    onCategorySelect={setActiveCategory}
+                />
 
                 {/* Promotional Banner Section - Now with higher z-index and scroll-fade */}
                 <motion.div
@@ -123,7 +340,9 @@ const Home = () => {
                             damping: 20,
                             boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" }
                         }}
-                        className="bg-[#25D366] rounded-2xl p-6 shadow-2xl relative overflow-hidden border-4 border-white group cursor-pointer"
+                        // Dynamic Background based on theme
+                        style={{ background: activeCategory.theme.gradient }}
+                        className="rounded-2xl p-6 shadow-2xl relative overflow-hidden border-4 border-white group cursor-pointer transition-colors duration-500"
                     >
                         {/* Shimmer Effect Overlay */}
                         <motion.div
@@ -165,9 +384,11 @@ const Home = () => {
                                 >
                                     <Sparkles size={32} fill="currentColor" className="drop-shadow-lg" />
                                 </motion.div>
-                                <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1">
-                                    HOUSEFULL
+                                
+                                <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1">
+                                    {activeCategory.banner.title}
                                 </h2>
+
                                 <motion.div
                                     className="text-yellow-400"
                                     animate={{
@@ -217,33 +438,14 @@ const Home = () => {
                                             filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"]
                                         }}
                                         transition={{ duration: 0.5, repeat: Infinity }}
-                                    >SALE</motion.span>
+                                    >
+                                        {activeCategory.banner.subtitle}
+                                    </motion.span>
                                 </h3>
                             </motion.div>
 
-                            {/* Playful Floating Elements */}
-                            {[...Array(12)].map((_, i) => (
-                                <motion.div
-                                    key={i}
-                                    className={`absolute rounded-full blur-[0.5px] ${i % 3 === 0 ? 'bg-white/80 h-2 w-2' : 'bg-white/40 h-1 w-1'}`}
-                                    style={{
-                                        top: `${Math.random() * 100}%`,
-                                        left: `${Math.random() * 100}%`,
-                                    }}
-                                    animate={{
-                                        x: [0, Math.random() * 40 - 20, 0],
-                                        y: [0, Math.random() * -60, 0],
-                                        opacity: [0.3, 1, 0.3],
-                                        scale: [0.5, 1.5, 0.5]
-                                    }}
-                                    transition={{
-                                        duration: 3 + Math.random() * 4,
-                                        repeat: Infinity,
-                                        ease: "easeInOut",
-                                        delay: Math.random() * 5
-                                    }}
-                                />
-                            ))}
+                            {/* Dynamic Playful Floating Elements */}
+                            {renderFloatingElements(activeCategory.banner.floatingElements)}
                         </div>
 
                         {/* Energetic highlight stars */}
@@ -293,6 +495,7 @@ const Home = () => {
                                 key={cat.id}
                                 whileHover={{ y: -4 }}
                                 whileTap={{ scale: 0.98 }}
+                                onClick={() => navigate(`/category/${cat.name}`)}
                                 className="flex flex-col group cursor-pointer"
                             >
                                 <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">

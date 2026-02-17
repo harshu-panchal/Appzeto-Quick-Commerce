@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import InvoiceModal from '../components/order/InvoiceModal';
 import HelpModal from '../components/order/HelpModal';
+import LiveTrackingMap from '../components/order/LiveTrackingMap';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import {
     ChevronLeft, Package, Truck, CheckCircle, Clock, MapPin,
@@ -82,42 +83,13 @@ const OrderDetailPage = () => {
 
                 <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
 
-                    {/* Status Card */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
-
-                        <div className="flex justify-between items-start mb-8 relative z-10">
-                            <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <h2 className="text-2xl font-black text-slate-800">{order.status}</h2>
-                                    <CheckCircle size={24} className="text-[#0c831f] fill-green-100" />
-                                </div>
-                                <p className="text-slate-500 font-medium text-sm">Arrived on {order.date}</p>
-                            </div>
-                            <div className="h-14 w-14 bg-gradient-to-br from-[#0c831f] to-[#149d29] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200">
-                                <Package size={28} />
-                            </div>
-                        </div>
-
-                        {/* Timeline */}
-                        <div className="relative px-2 mb-2">
-                            {/* Line */}
-                            <div className="absolute top-[14px] left-4 right-4 h-1 bg-slate-100 -z-0">
-                                <div className="h-full bg-[#0c831f] w-full rounded-full" />
-                            </div>
-
-                            <div className="flex justify-between relative z-10">
-                                {order.timeline.map((step, idx) => (
-                                    <div key={idx} className="flex flex-col items-center gap-2 w-16">
-                                        <div className={`h-8 w-8 rounded-full border-4 border-white flex items-center justify-center shadow-md transition-all duration-500 ${step.completed ? 'bg-[#0c831f] text-white scale-110' : 'bg-slate-200 text-slate-400'}`}>
-                                            {step.completed && <CheckCircle size={14} strokeWidth={3} />}
-                                        </div>
-                                        <p className="text-[10px] font-bold text-slate-700 text-center leading-tight mt-1">{step.status}</p>
-                                        <p className="text-[9px] text-slate-400 font-medium">{step.date}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    {/* Live Tracking Map */}
+                    <div className="rounded-3xl overflow-hidden shadow-sm border border-slate-100">
+                        <LiveTrackingMap
+                            status={order.status}
+                            eta={order.status === 'Delivered' ? 'Arrived' : '8 mins'}
+                            riderName="Ramesh Kumar"
+                        />
                     </div>
 
                     {/* Items List */}

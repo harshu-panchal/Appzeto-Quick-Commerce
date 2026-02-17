@@ -74,8 +74,8 @@ const ChatPage = () => {
     };
 
     return (
-        <CustomerLayout showHeader={false} fullHeight={true} showCart={false}>
-            <div className="fixed inset-0 bottom-16 md:bottom-0 bg-slate-50 flex flex-col z-40 overflow-hidden">
+        <CustomerLayout showHeader={false} fullHeight={true} showCart={false} showBottomNav={false}>
+            <div className="fixed inset-0 bottom-0 md:bottom-0 bg-slate-50 flex flex-col z-40 overflow-hidden">
                 {/* Chat Header */}
                 <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm z-30 shrink-0">
                     <div className="flex items-center gap-3">
@@ -145,7 +145,7 @@ const ChatPage = () => {
                 </div>
 
                 {/* Input Area */}
-                <div className="bg-white p-3 border-t border-slate-100 shrink-0 z-30 safe-area-bottom relative">
+                <div className="bg-white p-3 border-t border-slate-100 shrink-0 z-30 safe-area-bottom relative mb-4">
 
                     {/* Emoji Picker Popover */}
                     <AnimatePresence>

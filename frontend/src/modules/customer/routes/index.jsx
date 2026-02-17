@@ -16,6 +16,7 @@ import SupportPage from '../pages/SupportPage';
 import ChatPage from '../pages/ChatPage';
 import TermsPage from '../pages/TermsPage';
 import PrivacyPage from '../pages/PrivacyPage';
+import AboutPage from '../pages/AboutPage';
 import EditProfilePage from '../pages/EditProfilePage';
 import OrderDetailPage from '../pages/OrderDetailPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
@@ -46,6 +47,7 @@ const CustomerRoutes = () => {
                         <Route path="/chat" element={<ChatPage />} />
                         <Route path="/terms" element={<TermsPage />} />
                         <Route path="/privacy" element={<PrivacyPage />} />
+                        <Route path="/about" element={<AboutPage />} />
                         {/* <Route path="/cart" element={<CartPage />} /> */}
                         <Route path="/checkout" element={<CheckoutPage />} />
                         <Route path="/offers" element={<OffersPage />} />

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Mic, MapPin, ChevronDown, Star } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-const MainLocationHeader = ({ categories = [] }) => {
+const MainLocationHeader = ({ categories = [], activeCategory, onCategorySelect }) => {
     const { scrollY } = useScroll();
 
     // Smooth scroll interpolations
@@ -29,9 +29,10 @@ const MainLocationHeader = ({ categories = [] }) => {
                     paddingBottom: headerPadding,
                     borderBottomLeftRadius: headerRoundness,
                     borderBottomRightRadius: headerRoundness,
-                    opacity: bgOpacity
+                    opacity: bgOpacity,
+                    background: activeCategory?.theme?.gradient || "linear-gradient(to bottom, #25D366, #4ADE80)",
                 }}
-                className="bg-gradient-to-b from-[#25D366] to-[#4ADE80] px-5 shadow-lg relative overflow-hidden"
+                className="px-5 shadow-lg relative overflow-hidden transition-colors duration-500"
             >
                 {/* Collapsible Delivery Info & Location */}
                 <motion.div
@@ -90,14 +91,23 @@ const MainLocationHeader = ({ categories = [] }) => {
                         }}
                         className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 relative z-10 snap-x"
                     >
-                        {categories.map((cat) => (
-                            <div key={cat.id} className="flex flex-col items-center gap-1 group cursor-pointer flex-shrink-0 snap-start min-w-[60px]">
-                                <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 ${cat.active ? 'bg-[#1A1A1A] shadow-lg' : 'bg-white/10'}`}>
-                                    <cat.icon size={22} className={`${cat.active ? 'text-white' : 'text-[#1A1A1A]'}`} />
+                        {categories.map((cat) => {
+                            const isActive = activeCategory?.id === cat.id;
+                            return (
+                                <div 
+                                    key={cat.id} 
+                                    onClick={() => onCategorySelect && onCategorySelect(cat)}
+                                    className="flex flex-col items-center gap-1 group cursor-pointer flex-shrink-0 snap-start min-w-[60px]"
+                                >
+                                    <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-[#1A1A1A] shadow-lg scale-110' : 'bg-white/10 hover:bg-white/20'}`}>
+                                        <cat.icon size={22} className={`${isActive ? 'text-white' : 'text-[#1A1A1A]'}`} />
+                                    </div>
+                                    <span className={`text-[11px] font-bold whitespace-nowrap transition-colors ${isActive ? 'text-[#1A1A1A] scale-105' : 'text-[#1A1A1A]/60'}`}>
+                                        {cat.name}
+                                    </span>
                                 </div>
-                                <span className={`text-[11px] font-bold whitespace-nowrap ${cat.active ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/60'}`}>{cat.name}</span>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </motion.div>
                 )}
 

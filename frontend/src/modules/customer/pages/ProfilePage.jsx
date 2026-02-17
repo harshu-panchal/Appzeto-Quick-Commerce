@@ -54,7 +54,6 @@ const ProfilePage = () => {
                                 <MenuItem icon={Heart} label="Your Wishlist" sub="Your saved items" path="/wishlist" color="text-red-500" bg="bg-red-50" />
                                 <MenuItem icon={MapPin} label="Saved Addresses" sub="Manage your delivery locations" path="/addresses" color="text-orange-600" bg="bg-orange-50" />
                                 <MenuItem icon={Wallet} label="Payment Methods" sub="Manage cards, UPI and wallets" path="/wallet" color="text-purple-600" bg="bg-purple-50" />
-                                <MenuItem icon={Settings} label="General Settings" sub="Notifications, Password, etc." path="/settings" color="text-slate-600" bg="bg-slate-100" />
                             </div>
                         </div>
 
