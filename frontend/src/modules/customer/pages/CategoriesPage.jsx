@@ -37,7 +37,7 @@ const CategoriesPage = () => {
         <CustomerLayout showHeader={false}>
             <div className="min-h-screen bg-white">
                 <MainLocationHeader />
-                <div className="max-w-[1280px] mx-auto px-4 pt-4 md:pt-6 pb-20">
+                <div className="max-w-[1280px] mx-auto px-4 pt-[140px] md:pt-[150px] pb-20">
                     {categoryGroups.map((group, groupIdx) => (
                         <div key={groupIdx} className="mb-10">
                             {/* Group Title */}

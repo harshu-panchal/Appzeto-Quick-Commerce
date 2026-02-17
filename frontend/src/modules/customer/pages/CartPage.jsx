@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import { useCart } from '../context/CartContext';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
@@ -76,9 +77,9 @@ const CartPage = () => {
                             ))}
 
                             <div className="flex justify-between items-center pt-4">
-                                <a href="/products" className="text-[#0c831f] font-bold hover:underline flex items-center gap-2">
+                                <Link to="/categories" className="text-[#0c831f] font-bold hover:underline flex items-center gap-2">
                                     ← Continue Shopping
-                                </a>
+                                </Link>
                                 <button onClick={clearCart} className="text-slate-400 hover:text-red-500 text-sm font-medium">
                                     Clear Cart
                                 </button>
@@ -122,12 +123,12 @@ const CartPage = () => {
                         </div>
                         <h2 className="text-3xl font-black text-slate-800 mb-3">Your cart is empty</h2>
                         <p className="text-slate-500 text-lg mb-10 max-w-md mx-auto">Looks like you haven't added anything to your cart yet. Explore our best products!</p>
-                        <a
-                            href="/products"
+                        <Link
+                            to="/categories"
                             className="inline-flex items-center justify-center px-10 py-4 rounded-2xl bg-[#0c831f] text-white text-lg font-bold hover:bg-[#0b721b] transition-all shadow-xl shadow-green-100 hover:-translate-y-1"
                         >
                             Start Shopping
-                        </a>
+                        </Link>
                     </div>
                 )}
             </div>

@@ -28,7 +28,7 @@ const allProducts = [
         weight: '250g',
         price: 31,
         originalPrice: 46,
-        discount: '₹15 OFF',
+
         category: 'fruits',
         image: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=260&auto=format&fit=crop',
         deliveryTime: '8 mins'
@@ -39,7 +39,7 @@ const allProducts = [
         weight: '100g',
         price: 7,
         originalPrice: 14,
-        discount: '₹7 OFF',
+
         category: 'veg',
         image: 'https://images.unsplash.com/photo-1564149504817-d1378368926e?q=80&w=260&auto=format&fit=crop',
         deliveryTime: '12 mins'
@@ -50,7 +50,7 @@ const allProducts = [
         weight: '500g',
         price: 16,
         originalPrice: 28,
-        discount: '₹12 OFF',
+
         category: 'veg',
         image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=260&auto=format&fit=crop',
         deliveryTime: '10 mins'
@@ -61,7 +61,7 @@ const allProducts = [
         weight: '1 pc',
         price: 58,
         originalPrice: 102,
-        discount: '₹44 OFF',
+
         category: 'fruits',
         image: 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?q=80&w=260&auto=format&fit=crop',
         deliveryTime: '15 mins'
@@ -72,7 +72,7 @@ const allProducts = [
         weight: '100g',
         price: 5,
         originalPrice: 10,
-        discount: '₹5 OFF',
+
         category: 'veg',
         image: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?q=80&w=260&auto=format&fit=crop',
         deliveryTime: '7 mins'
@@ -83,7 +83,7 @@ const allProducts = [
         weight: '1kg',
         price: 24,
         originalPrice: 35,
-        discount: '₹11 OFF',
+
         category: 'veg',
         image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?q=80&w=260&auto=format&fit=crop',
         deliveryTime: '9 mins'
@@ -101,7 +101,7 @@ const CategoryProductsPage = () => {
 
     return (
         <ProductDetailProvider>
-            <div className="flex flex-col h-screen bg-white overflow-hidden max-w-md mx-auto relative font-sans">
+            <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative font-sans">
                 {/* Header */}
                 <header className="sticky top-0 z-50 bg-white border-b border-gray-50 px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -112,19 +112,12 @@ const CategoryProductsPage = () => {
                             {categoryName === '1' ? 'Fruits & Vegetables' : categoryName}
                         </h1>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <button className="p-1 hover:bg-gray-50 rounded-full transition-colors">
-                            <Heart size={22} className="text-gray-900" />
-                        </button>
-                        <button className="p-1 hover:bg-gray-50 rounded-full transition-colors">
-                            <Search size={22} className="text-gray-900" />
-                        </button>
-                    </div>
+
                 </header>
 
-                <div className="flex flex-1 overflow-hidden">
+                <div className="flex flex-1 relative items-start">
                     {/* Sidebar */}
-                    <aside className="w-[80px] border-r border-gray-50 flex flex-col bg-white overflow-y-auto hide-scrollbar">
+                    <aside className="w-[80px] border-r border-gray-50 flex flex-col bg-white overflow-y-auto hide-scrollbar sticky top-[60px] h-[calc(100vh-60px)]">
                         {subCategories.map((cat) => (
                             <button
                                 key={cat.id}
@@ -153,7 +146,7 @@ const CategoryProductsPage = () => {
                     </aside>
 
                     {/* Content */}
-                    <main className="flex-1 overflow-y-auto p-3 hide-scrollbar pb-24 bg-white">
+                    <main className="flex-1 p-3 pb-24 bg-white">
                         <div className="grid grid-cols-2 gap-x-2 gap-y-4">
                             {filteredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} />

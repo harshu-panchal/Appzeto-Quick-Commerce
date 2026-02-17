@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import ProductCard from '../components/shared/ProductCard';
 import { useWishlist } from '../context/WishlistContext';
@@ -7,8 +8,8 @@ const WishlistPage = () => {
     const { wishlist, clearWishlist } = useWishlist();
 
     return (
-        <CustomerLayout>
-            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 mt-36 md:mt-24">
+        <CustomerLayout showHeader={false}>
+            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 pt-10">
                 <div className="mb-8 flex flex-row items-end justify-between gap-4">
                     <div className="text-left">
                         <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#0c831f] mb-1">My Wishlist</h1>
@@ -39,9 +40,9 @@ const WishlistPage = () => {
                         </div>
                         <h3 className="text-xl font-bold text-slate-800 mb-2">Your wishlist is empty</h3>
                         <p className="text-muted-foreground mb-6">Save items you like to find them easily here later.</p>
-                        <a href="/products" className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0c831f] text-white font-bold hover:bg-[#0b721b] transition-colors shadow-lg">
+                        <Link to="/categories" className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0c831f] text-white font-bold hover:bg-[#0b721b] transition-colors shadow-lg">
                             Start Shopping
-                        </a>
+                        </Link>
                     </div>
                 )}
             </div>

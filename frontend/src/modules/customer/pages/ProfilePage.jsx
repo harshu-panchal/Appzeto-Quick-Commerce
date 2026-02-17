@@ -1,85 +1,105 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
-import { User, MapPin, Package, CreditCard, Settings, ChevronRight, LogOut, ShieldCheck } from 'lucide-react';
+import {
+    User, MapPin, Package, CreditCard, Settings, ChevronRight,
+    LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, Wallet
+} from 'lucide-react';
 
 const ProfilePage = () => {
-    const sections = [
-        { label: 'My Orders', icon: Package, count: '12 active' },
-        { label: 'Saved Addresses', icon: MapPin, count: '3 locations' },
-        { label: 'Payment Methods', icon: CreditCard, count: 'Axis Bank ...' },
-        { label: 'Privacy Settings', icon: ShieldCheck },
-        { label: 'General Settings', icon: Settings },
-    ];
-
     return (
-        <CustomerLayout>
-            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 mt-36 md:mt-24">
-                <div className="flex flex-col md:flex-row gap-10">
-                    {/* Left: User Overview */}
-                    <div className="md:w-1/3">
-                        <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-xl relative overflow-hidden text-center sticky top-28">
-                            {/* Profile BG Decoration */}
-                            <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-[#0c831f] to-[#4caf50]" />
+        <CustomerLayout showHeader={false}>
+            <div className="min-h-screen bg-slate-50 pb-24 md:pb-8 font-sans">
+                {/* Custom Hero Header Area */}
+                <div className="bg-gradient-to-br from-[#0c831f] to-[#149d29] px-5 pt-10 pb-20 relative z-10 rounded-b-[2.5rem] shadow-lg overflow-hidden">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-32 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
 
-                            <div className="relative pt-8">
-                                <div className="h-28 w-28 rounded-full bg-white p-2 mx-auto relative z-10 shadow-lg border-2 border-slate-50">
-                                    <div className="h-full w-full rounded-full bg-slate-100 flex items-center justify-center">
-                                        <User size={48} className="text-[#0c831f]" />
-                                    </div>
+                    <h1 className="text-3xl font-black text-white tracking-tight relative z-10">My Profile</h1>
+                    <p className="text-green-50 text-sm font-medium mt-1 relative z-10">Manage your account & preferences</p>
+                </div>
+
+                <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-20 space-y-6">
+
+                    {/* User Identity Card */}
+                    <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="h-16 w-16 rounded-full bg-indigo-50 flex items-center justify-center p-1 border border-indigo-100">
+                                <div className="h-full w-full rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
+                                    <User size={30} className="text-indigo-600" />
                                 </div>
-                                <h2 className="mt-6 text-2xl font-black text-slate-800">John Doe</h2>
-                                <p className="text-slate-500 font-medium">+91-9876543210</p>
-                                <span className="mt-3 inline-block px-4 py-1.5 bg-green-50 text-[#0c831f] text-xs font-bold rounded-full border border-green-100 uppercase tracking-wider">
-                                    Verified User
-                                </span>
                             </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-900 leading-tight">John Doe</h2>
+                                <p className="text-slate-500 text-sm font-medium">+91 98765 43210</p>
+                            </div>
+                        </div>
+                        <Link to="/profile/edit" className="p-3 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
+                            <Edit2 size={18} />
+                        </Link>
+                    </div>
 
-                            <div className="mt-10 pt-10 border-t border-slate-100 grid grid-cols-2 gap-4">
-                                <div className="text-center">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Loyalty Points</p>
-                                    <p className="text-xl font-black text-[#0c831f]">2,450</p>
-                                </div>
-                                <div className="text-center border-l border-slate-100">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Savings</p>
-                                    <p className="text-xl font-black text-[#0c831f]">₹4,200</p>
-                                </div>
+
+
+                    {/* Menu Sections */}
+                    <div className="space-y-4">
+                        {/* Account Section */}
+                        <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Account Settings</p>
+                            </div>
+                            <div className="divide-y divide-slate-50">
+                                <MenuItem icon={Package} label="Your Orders" sub="Track, return or buy things again" path="/orders" color="text-blue-600" bg="bg-blue-50" />
+                                <MenuItem icon={Heart} label="Your Wishlist" sub="Your saved items" path="/wishlist" color="text-red-500" bg="bg-red-50" />
+                                <MenuItem icon={MapPin} label="Saved Addresses" sub="Manage your delivery locations" path="/addresses" color="text-orange-600" bg="bg-orange-50" />
+                                <MenuItem icon={Wallet} label="Payment Methods" sub="Manage cards, UPI and wallets" path="/wallet" color="text-purple-600" bg="bg-purple-50" />
+                                <MenuItem icon={Settings} label="General Settings" sub="Notifications, Password, etc." path="/settings" color="text-slate-600" bg="bg-slate-100" />
+                            </div>
+                        </div>
+
+                        {/* Support Section */}
+                        <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                            <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Support & Legal</p>
+                            </div>
+                            <div className="divide-y divide-slate-50">
+                                <MenuItem icon={HelpCircle} label="Help & Support" path="/support" color="text-cyan-600" bg="bg-cyan-50" />
+                                <MenuItem icon={ShieldCheck} label="Privacy Policy" path="/privacy" color="text-green-600" bg="bg-green-50" />
+                                <MenuItem icon={Info} label="About Us" path="/about" color="text-indigo-600" bg="bg-indigo-50" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Right: Menu Sections */}
-                    <div className="flex-1 space-y-6">
-                        <h1 className="text-3xl font-black text-slate-800 mb-2 md:hidden">My Profile</h1>
+                    {/* Logout Button */}
+                    <button className="w-full py-4 rounded-xl border border-red-100 text-red-600 font-bold bg-white hover:bg-red-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
+                        <LogOut size={18} />
+                        Log Out
+                    </button>
 
-                        <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-xl p-2 px-4 md:p-6 md:px-8">
-                            {sections.map((section, idx) => (
-                                <div
-                                    key={section.label}
-                                    className={`flex items-center justify-between py-5 cursor-pointer group hover:bg-slate-50 px-4 rounded-2xl transition-all duration-300 ${idx !== sections.length - 1 ? 'border-b border-slate-100 md:border-none' : ''}`}
-                                >
-                                    <div className="flex items-center gap-5">
-                                        <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-[#0c831f] group-hover:text-white transition-all">
-                                            <section.icon size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-slate-800 text-lg">{section.label}</h3>
-                                            {section.count && <p className="text-slate-400 text-xs font-medium">{section.count}</p>}
-                                        </div>
-                                    </div>
-                                    <ChevronRight size={20} className="text-slate-300 group-hover:text-[#0c831f] group-hover:translate-x-1 transition-all" />
-                                </div>
-                            ))}
-                        </div>
-
-                        <button className="w-full h-16 bg-red-50 hover:bg-red-100 text-red-600 rounded-[2rem] font-bold flex items-center justify-center gap-3 transition-all group scale-100 active:scale-95">
-                            <LogOut size={22} className="group-hover:rotate-12 transition-transform" />
-                            Log Out from all devices
-                        </button>
+                    <div className="text-center pb-8">
+                        <p className="text-xs text-slate-400 font-medium">App Version 2.4.0</p>
                     </div>
+
                 </div>
             </div>
         </CustomerLayout>
     );
 };
+
+const MenuItem = ({ icon: Icon, label, sub, path, color, bg }) => (
+    <Link to={path || '#'} className="px-6 py-5 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors group">
+        <div className="flex items-center gap-4">
+            <div className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors ${color || 'text-slate-500'} ${bg || 'bg-slate-100'} group-hover:bg-[#0c831f] group-hover:text-white`}>
+                <Icon size={20} />
+            </div>
+            <div>
+                <h3 className="text-base font-bold text-slate-800">{label}</h3>
+                {sub && <p className="text-xs text-slate-400 font-medium mt-0.5">{sub}</p>}
+            </div>
+        </div>
+        <ChevronRight size={18} className="text-slate-300 group-hover:text-[#0c831f] transition-colors" />
+    </Link>
+);
 
 export default ProfilePage;

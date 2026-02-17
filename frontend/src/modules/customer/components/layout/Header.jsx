@@ -53,7 +53,7 @@ const Header = () => {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-6">
                         <Link to="/" className="text-sm font-medium transition-colors hover:text-[#0c831f]">Home</Link>
-                        <Link to="/products" className="text-sm font-medium transition-colors hover:text-[#0c831f]">Shop</Link>
+
                         <Link to="/categories" className="text-sm font-medium transition-colors hover:text-[#0c831f]">Categories</Link>
                         <Link to="/offers" className="text-sm font-medium transition-colors hover:text-[#0c831f]">Offers</Link>
                     </nav>

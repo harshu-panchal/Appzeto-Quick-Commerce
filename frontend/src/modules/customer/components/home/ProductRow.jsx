@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ProductCard from '../shared/ProductCard';
 import { ChevronRight } from 'lucide-react';
 
@@ -19,9 +20,9 @@ const ProductRow = ({ title, subtitle, products, badge }) => {
                         </h2>
                         {subtitle && <p className="text-slate-500 font-medium text-sm md:text-base">{subtitle}</p>}
                     </div>
-                    <a href="/products" className="text-sm font-bold text-[#0c831f] hover:underline whitespace-nowrap">
+                    <Link to="/categories" className="text-sm font-bold text-[#0c831f] hover:underline whitespace-nowrap">
                         See All
-                    </a>
+                    </Link>
                 </div>
 
                 <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth snap-x">

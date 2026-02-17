@@ -7,18 +7,18 @@ import ProductDetailSheet from '../shared/ProductDetailSheet';
 import { ProductDetailProvider } from '../../context/ProductDetailContext';
 import { cn } from '@/lib/utils';
 
-const CustomerLayout = ({ children, showHeader = true }) => {
+const CustomerLayout = ({ children, showHeader = true, fullHeight = false, showCart = true }) => {
 
 
     return (
         <ProductDetailProvider>
             <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
                 {showHeader && <Header />}
-                <main className={cn("flex-1 pb-16 md:pb-0", !showHeader && "pt-0")}>
+                <main className={cn("flex-1 md:pb-0", !showHeader && "pt-0", !fullHeight && "pb-16")}>
                     {children}
                 </main>
 
-                <MiniCart />
+                {showCart && <MiniCart />}
                 <ProductDetailSheet />
 
 

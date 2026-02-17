@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import ProductCard from '../shared/ProductCard';
 
 const products = [
@@ -61,9 +62,9 @@ const FeaturedProducts = () => {
                         <span className="text-brand-600 font-semibold tracking-wide uppercase text-sm">Best Seller</span>
                         <h2 className="text-3xl font-bold tracking-tight text-slate-900">Featured Products</h2>
                     </div>
-                    <a href="/products" className="hidden md:inline-flex text-brand-600 font-medium hover:text-brand-700 hover:underline">
+                    <Link to="/categories" className="hidden md:inline-flex text-brand-600 font-medium hover:text-brand-700 hover:underline">
                         View All Products &rarr;
-                    </a>
+                    </Link>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
@@ -73,9 +74,9 @@ const FeaturedProducts = () => {
                 </div>
 
                 <div className="mt-8 text-center md:hidden">
-                    <a href="/products" className="inline-flex text-brand-600 font-medium hover:text-brand-700 hover:underline">
+                    <Link to="/categories" className="inline-flex text-brand-600 font-medium hover:text-brand-700 hover:underline">
                         View All Products &rarr;
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>

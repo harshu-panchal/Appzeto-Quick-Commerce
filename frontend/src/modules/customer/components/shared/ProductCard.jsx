@@ -8,7 +8,7 @@ import { useCart } from '../../context/CartContext';
 import { useToast } from '@shared/components/ui/Toast';
 import { useCartAnimation } from '../../context/CartAnimationContext';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Clock } from 'lucide-react';
 
 import { useProductDetail } from '../../context/ProductDetailContext';
@@ -20,6 +20,7 @@ const ProductCard = ({ product, badge, className }) => {
     const { animateAddToCart, animateRemoveFromCart } = useCartAnimation();
 
     const { openProduct } = useProductDetail();
+    const [showHeartPopup, setShowHeartPopup] = React.useState(false);
 
     const imageRef = React.useRef(null);
 
@@ -37,6 +38,12 @@ const ProductCard = ({ product, badge, className }) => {
     const toggleWishlist = (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        if (!isWishlisted) {
+            setShowHeartPopup(true);
+            setTimeout(() => setShowHeartPopup(false), 1000);
+        }
+
         toggleWishlistGlobal(product);
         showToast(
             isWishlisted ? `${product.name} removed from wishlist` : `${product.name} added to wishlist`,
@@ -86,16 +93,34 @@ const ProductCard = ({ product, badge, className }) => {
                     </div>
                 )}
 
-                {/* Wishlist Button */}
                 <button
                     onClick={toggleWishlist}
                     className="absolute top-3 right-3 z-10 h-8 w-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer hover:bg-neutral-50 transition-colors"
                 >
-                    <Heart
-                        size={16}
-                        className={cn(isWishlisted ? "text-red-500 fill-current" : "text-neutral-400")}
-                    />
+                    <motion.div
+                        whileTap={{ scale: 0.8 }}
+                        animate={isWishlisted ? { scale: [1, 1.2, 1] } : {}}
+                    >
+                        <Heart
+                            size={16}
+                            className={cn(isWishlisted ? "text-red-500 fill-current" : "text-neutral-400")}
+                        />
+                    </motion.div>
                 </button>
+
+                <AnimatePresence>
+                    {showHeartPopup && (
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 1, y: 0 }}
+                            animate={{ scale: 2, opacity: 0, y: -40 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="absolute top-3 right-3 z-50 pointer-events-none text-red-500"
+                        >
+                            <Heart size={24} fill="currentColor" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <div className="block aspect-square w-full rounded-xl overflow-hidden bg-white/50 flex items-center justify-center p-1.5">
                     <img

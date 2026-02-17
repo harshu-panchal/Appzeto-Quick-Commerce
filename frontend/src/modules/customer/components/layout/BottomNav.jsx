@@ -13,7 +13,7 @@ const BottomNav = () => {
     const navItems = [
         { label: 'Home', icon: Home, path: '/' },
         { label: 'Categories', icon: Grid, path: '/categories' },
-        { label: 'Wishlist', icon: Heart, path: '/wishlist', badge: wishlistCount },
+        { label: 'My Orders', icon: ShoppingBag, path: '/orders' },
         { label: 'Profile', icon: User, path: '/profile' },
     ];
 
