@@ -16,8 +16,8 @@ const CartPage = () => {
     };
 
     return (
-        <CustomerLayout>
-            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 mt-36 md:mt-24">
+        <CustomerLayout showHeader={false}>
+            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 mt-4 md:mt-8">
                 <div className="mb-8 text-left">
                     <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#0c831f] mb-2">Shopping Cart</h1>
                     <p className="text-gray-600 text-lg">Review your items and proceed to checkout.</p>
@@ -106,9 +106,11 @@ const CartPage = () => {
                                     </div>
                                 </div>
 
-                                <Button className="w-full h-14 rounded-2xl bg-[#0c831f] hover:bg-[#0b721b] text-lg font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-100 transition-all">
-                                    Place Order <ArrowRight size={20} />
-                                </Button>
+                                <Link to="/checkout">
+                                    <Button className="w-full h-14 rounded-2xl bg-[#0c831f] hover:bg-[#0b721b] text-lg font-bold flex items-center justify-center gap-2 shadow-lg shadow-green-100 transition-all">
+                                        Place Order <ArrowRight size={20} />
+                                    </Button>
+                                </Link>
 
                                 <p className="text-center text-slate-400 text-xs mt-4 font-medium uppercase tracking-wider">
                                     Secure Checkout Guaranteed

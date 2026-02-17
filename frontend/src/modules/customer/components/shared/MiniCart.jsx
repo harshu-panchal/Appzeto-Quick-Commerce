@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { cn } from '@/lib/utils';
@@ -7,13 +7,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const MiniCart = () => {
     const { cart, cartCount } = useCart();
+    const location = useLocation();
 
     // Show up to 2 product images
     const displayItems = cart.slice(0, 2);
 
+    // Hide MiniCart on checkout page only (cart page removed)
+    const isCheckoutPage = location.pathname === '/checkout';
+
     return (
         <AnimatePresence>
-            {cart.length > 0 && (
+            {cart.length > 0 && !isCheckoutPage && (
                 <div
                     key="mini-cart-wrapper"
                     id="mini-cart-target"
@@ -27,7 +31,7 @@ const MiniCart = () => {
                         className="w-full max-w-[210px] pointer-events-auto"
                     >
                         <Link
-                            to="/cart"
+                            to="/checkout"
                             className="flex items-center gap-2 bg-gradient-to-r from-[#0c831f] via-[#149d29] to-[#0c831f] bg-[length:200%_auto] animate-gradient text-white py-1.5 px-2 pr-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-[#0b721b] transition-all hover:scale-[1.02] active:scale-95 group border border-white/20 relative overflow-hidden"
                         >
                             {/* Shimmer Effect */}

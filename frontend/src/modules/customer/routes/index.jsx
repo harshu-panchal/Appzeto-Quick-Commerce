@@ -19,6 +19,7 @@ import PrivacyPage from '../pages/PrivacyPage';
 import EditProfilePage from '../pages/EditProfilePage';
 import OrderDetailPage from '../pages/OrderDetailPage';
 import ProductDetailPage from '../pages/ProductDetailPage';
+import CheckoutPage from '../pages/CheckoutPage';
 import ScrollToTop from '../components/shared/ScrollToTop';
 import { WishlistProvider } from '../context/WishlistContext';
 import { CartProvider } from '../context/CartContext';
@@ -45,7 +46,8 @@ const CustomerRoutes = () => {
                         <Route path="/chat" element={<ChatPage />} />
                         <Route path="/terms" element={<TermsPage />} />
                         <Route path="/privacy" element={<PrivacyPage />} />
-                        <Route path="/cart" element={<CartPage />} />
+                        {/* <Route path="/cart" element={<CartPage />} /> */}
+                        <Route path="/checkout" element={<CheckoutPage />} />
                         <Route path="/offers" element={<OffersPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/profile/edit" element={<EditProfilePage />} />

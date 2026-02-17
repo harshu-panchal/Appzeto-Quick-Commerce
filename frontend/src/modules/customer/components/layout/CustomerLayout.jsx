@@ -7,7 +7,7 @@ import ProductDetailSheet from '../shared/ProductDetailSheet';
 import { ProductDetailProvider } from '../../context/ProductDetailContext';
 import { cn } from '@/lib/utils';
 
-const CustomerLayout = ({ children, showHeader = true, fullHeight = false, showCart = true }) => {
+const CustomerLayout = ({ children, showHeader = true, fullHeight = false, showCart = true, showBottomNav = true }) => {
 
 
     return (
@@ -25,7 +25,7 @@ const CustomerLayout = ({ children, showHeader = true, fullHeight = false, showC
                 <div className="hidden md:block">
                     <Footer />
                 </div>
-                <BottomNav />
+                {showBottomNav && <BottomNav />}
             </div>
         </ProductDetailProvider>
     );

@@ -32,14 +32,23 @@ const BottomNav = () => {
                             )}
                         >
                             <div className="relative">
-                                <item.icon className={cn("w-6 h-6 mb-1 group-hover:text-brand-600", isActive && "fill-current")} />
+                                <item.icon
+                                    className={cn(
+                                        "w-6 h-6 mb-1 transition-colors",
+                                        isActive ? "text-[#0c831f] stroke-[2.5]" : "text-gray-500 group-hover:text-[#0c831f]"
+                                    )}
+                                    strokeWidth={isActive ? 2.5 : 2}
+                                />
                                 {item.badge > 0 && (
                                     <div className="absolute inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#0c831f] border-2 border-white rounded-full -top-2 -end-2 shadow-sm animate-in zoom-in duration-300">
                                         {item.badge}
                                     </div>
                                 )}
                             </div>
-                            <span className="text-xs group-hover:text-brand-600">
+                            <span className={cn(
+                                "text-xs transition-colors",
+                                isActive ? "text-[#0c831f] font-semibold" : "text-gray-500 group-hover:text-[#0c831f]"
+                            )}>
                                 {item.label}
                             </span>
                         </Link>
