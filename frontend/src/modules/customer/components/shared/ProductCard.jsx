@@ -6,34 +6,51 @@ import { cn } from '@/lib/utils';
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '@shared/components/ui/Toast';
+import { useCartAnimation } from '../../context/CartAnimationContext';
 
-const ProductCard = ({ product }) => {
+import { motion } from 'framer-motion';
+import { Clock } from 'lucide-react';
+
+import { useProductDetail } from '../../context/ProductDetailContext';
+
+const ProductCard = ({ product, badge, className }) => {
     const { toggleWishlist: toggleWishlistGlobal, isInWishlist } = useWishlist();
     const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
     const { showToast } = useToast();
+    const { animateAddToCart, animateRemoveFromCart } = useCartAnimation();
 
-    // Find item in cart to get quantity
+    const { openProduct } = useProductDetail();
+
+    const imageRef = React.useRef(null);
+
     const cartItem = cart.find(item => item.id === product.id);
     const quantity = cartItem ? cartItem.quantity : 0;
-
     const isWishlisted = isInWishlist(product.id);
+
+    const handleProductClick = (e) => {
+        if (openProduct) {
+            e.preventDefault();
+            openProduct(product);
+        }
+    };
 
     const toggleWishlist = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const wasWishlisted = isWishlisted;
         toggleWishlistGlobal(product);
         showToast(
-            wasWishlisted ? `${product.name} removed from wishlist` : `${product.name} added to wishlist`,
-            wasWishlisted ? 'info' : 'success'
+            isWishlisted ? `${product.name} removed from wishlist` : `${product.name} added to wishlist`,
+            isWishlisted ? 'info' : 'success'
         );
     };
 
     const handleAddToCart = (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (imageRef.current) {
+            animateAddToCart(imageRef.current.getBoundingClientRect(), product.image);
+        }
         addToCart(product);
-        showToast(`${product.name} added to cart`, 'success');
     };
 
     const handleIncrement = (e) => {
@@ -45,98 +62,122 @@ const ProductCard = ({ product }) => {
     const handleDecrement = (e) => {
         e.preventDefault();
         e.stopPropagation();
+
         if (quantity === 1) {
+            animateRemoveFromCart(product.image);
             removeFromCart(product.id);
-            showToast(`${product.name} removed from cart`, 'info');
         } else {
             updateQuantity(product.id, -1);
         }
     };
 
     return (
-        <div className="group relative bg-white rounded-2xl border border-slate-100 p-3 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-[#0c831f]/30 h-full flex flex-col">
-            {/* Wishlist Button */}
-            <button
-                onClick={toggleWishlist}
-                className={cn(
-                    "absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 shadow-sm",
-                    isWishlisted
-                        ? "bg-red-50 text-red-500"
-                        : "bg-white/90 text-slate-400 hover:text-red-500 hover:bg-red-50"
+        <motion.div
+            whileHover={{ scale: 1.02 }}
+            className={cn("flex-shrink-0 w-full bg-[#FAFEF0] rounded-xl overflow-hidden border border-green-100 flex flex-col h-full shadow-sm cursor-pointer", className)}
+            onClick={handleProductClick}
+        >
+            {/* Top Image Section */}
+            <div className="relative p-2.5 pb-0">
+                {/* Badge (Custom or Discount) */}
+                {(badge || product.discount || product.originalPrice > product.price) && (
+                    <div className="absolute top-3 left-3 z-10 bg-[#0c831f] text-white text-[9px] font-black px-2 py-1 rounded-lg shadow-sm uppercase">
+                        {badge || product.discount || `${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF`}
+                    </div>
                 )}
-            >
-                <Heart className={cn("w-4 h-4", isWishlisted && "fill-current")} />
-            </button>
 
-            {/* Image Container */}
-            <Link to={`/product/${product.id}`} className="block relative aspect-square mb-3 overflow-hidden rounded-xl bg-slate-50">
-                <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                {/* Flash Effect */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent z-20 -translate-x-[150%] skew-x-12 transition-transform duration-700 group-hover:translate-x-[150%]" />
-            </Link>
+                {/* Wishlist Button */}
+                <button
+                    onClick={toggleWishlist}
+                    className="absolute top-3 right-3 z-10 h-8 w-8 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer hover:bg-neutral-50 transition-colors"
+                >
+                    <Heart
+                        size={16}
+                        className={cn(isWishlisted ? "text-red-500 fill-current" : "text-neutral-400")}
+                    />
+                </button>
 
-            {/* Content */}
-            <div className="flex flex-col flex-1 space-y-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-[#0c831f] bg-[#0c831f]/10 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
-                        10 MINS
-                    </span>
-                    <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                        {product.category}
-                    </span>
+                <div className="block aspect-square w-full rounded-xl overflow-hidden bg-white/50 flex items-center justify-center p-1.5">
+                    <img
+                        ref={imageRef}
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-contain mix-blend-multiply"
+                    />
                 </div>
 
-                <Link to={`/product/${product.id}`}>
-                    <h3 className="font-bold text-slate-800 line-clamp-2 text-sm leading-tight group-hover:text-[#0c831f] transition-colors">
-                        {product.name}
-                    </h3>
-                </Link>
-
-                <p className="text-xs text-slate-500 font-medium">1 kg</p>
-
-                <div className="flex flex-row items-center justify-between mt-auto pt-2 gap-2">
-                    <div className="flex flex-col">
-                        <span className="text-muted-foreground text-xs line-through decoration-slate-400/60">
-                            ₹{product.originalPrice}
-                        </span>
-                        <span className="text-slate-900 font-bold text-lg">
-                            ₹{product.price}
-                        </span>
-                    </div>
-
+                {/* Floating ADD/Quantity Button */}
+                <div className="absolute -bottom-4 right-3 z-20">
+                    {/* ... (existing button code handles stopPropagation) ... */}
                     {quantity > 0 ? (
-                        <div className="flex items-center bg-[#0c831f] text-white rounded-lg h-8 px-1 shadow-sm">
-                            <button
+                        <div className="bg-white border-2 border-green-50 text-[#0c831f] px-1.5 py-1 rounded-lg flex items-center gap-1 shadow-xl shadow-green-900/5" onClick={(e) => e.stopPropagation()}>
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
                                 onClick={handleDecrement}
-                                className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-md transition-colors"
+                                className="h-7 w-7 flex items-center justify-center hover:bg-green-50 rounded-lg transition-colors"
                             >
-                                <Minus size={14} strokeWidth={3} />
-                            </button>
-                            <span className="w-8 text-center font-bold text-xs">{quantity}</span>
-                            <button
+                                <Minus size={12} strokeWidth={3.5} />
+                            </motion.button>
+                            <span className="w-3 text-center font-black text-xs">{quantity}</span>
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
                                 onClick={handleIncrement}
-                                className="w-7 h-7 flex items-center justify-center hover:bg-white/10 rounded-md transition-colors"
+                                className="h-7 w-7 flex items-center justify-center hover:bg-green-50 rounded-lg transition-colors"
                             >
-                                <Plus size={14} strokeWidth={3} />
-                            </button>
+                                <Plus size={12} strokeWidth={3.5} />
+                            </motion.button>
                         </div>
                     ) : (
-                        <Button
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
                             onClick={handleAddToCart}
-                            size="sm"
-                            className="h-8 px-4 rounded-lg font-bold shadow-sm transition-all duration-300 text-xs bg-white text-[#0c831f] border border-[#0c831f]/30 hover:bg-[#0c831f] hover:text-white hover:border-[#0c831f]"
+                            className="bg-white border-2 border-green-50 text-[#0c831f] px-5 py-2 rounded-lg font-black text-[13px] shadow-xl shadow-green-900/5 hover:bg-green-50 transition-colors"
                         >
                             ADD
-                        </Button>
+                        </motion.button>
                     )}
                 </div>
             </div>
-        </div>
+
+            {/* Info Section */}
+            <div className="p-3 pt-4 flex flex-col gap-0.5 flex-1 bg-white/40">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                    {/* Diet Indicator (Veg default for now) */}
+                    <div className="h-3.5 w-3.5 border-2 border-green-500 rounded-full flex items-center justify-center">
+                        <div className="h-1 w-1 bg-green-500 rounded-full" />
+                    </div>
+                    {/* Weight Badge */}
+                    <div className="bg-blue-50 text-blue-600 text-[9px] font-black px-1.5 py-0.5 rounded-md">
+                        {product.weight || "1kg"}
+                    </div>
+                </div>
+
+                <div>
+                    <h4 className="font-black text-[#1A1A1A] text-[13px] leading-none line-clamp-2">{product.name}</h4>
+                </div>
+
+                {/* Delivery Time (Mocked) */}
+                <div className="flex items-center gap-1 text-gray-400 mt-0.5">
+                    <Clock size={11} className="text-green-500/60" />
+                    <span className="text-[10px] font-bold">{product.deliveryTime || "8 mins"}</span>
+                </div>
+
+                {/* Price Button with MRP */}
+                <div className="mt-1.5 pb-0.5 flex items-center gap-2">
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-[#0c831f] text-white px-3 py-1 rounded-lg font-black text-sm flex items-center gap-1 shadow-[0_3px_0_0_rgba(10,103,24,0.8)] active:shadow-none active:translate-y-[1px] transition-all"
+                    >
+                        ₹ {product.price}
+                    </motion.button>
+                    {product.originalPrice > product.price && (
+                        <span className="text-[11px] font-bold text-gray-400 line-through decoration-gray-400/50 decoration-1">
+                            ₹{product.originalPrice}
+                        </span>
+                    )}
+                </div>
+            </div>
+        </motion.div>
     );
 };
 

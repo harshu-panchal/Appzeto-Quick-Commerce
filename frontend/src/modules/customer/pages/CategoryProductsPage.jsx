@@ -1,197 +1,192 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import CustomerLayout from '../components/layout/CustomerLayout';
-import ProductCard from '../components/shared/ProductCard';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ChevronLeft, Heart, Search, Minus, Plus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { useToast } from '@shared/components/ui/Toast';
+import { cn } from '@/lib/utils';
 
-// Extended product list to ensure we have items for various categories
+import ProductCard from '../components/shared/ProductCard';
+import ProductDetailSheet from '../components/shared/ProductDetailSheet';
+import { ProductDetailProvider } from '../context/ProductDetailContext';
+import MiniCart from '../components/shared/MiniCart';
+
+const subCategories = [
+    { id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' },
+    { id: 'veg', name: 'Fresh Vegetables', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321801.png' },
+    { id: 'new', name: 'New Launches', icon: 'https://cdn-icons-png.flaticon.com/128/1147/1147832.png' },
+    { id: 'fruits', name: 'Fresh Fruits', icon: 'https://cdn-icons-png.flaticon.com/128/3194/3194761.png' },
+    { id: 'exotics', name: 'Exotics & Premium', icon: 'https://cdn-icons-png.flaticon.com/128/2909/2909808.png' },
+    { id: 'organic', name: 'Organics & More', icon: 'https://cdn-icons-png.flaticon.com/128/3014/3014498.png' },
+];
+
 const allProducts = [
     {
         id: 1,
-        name: 'Fresh Organic Strawberry',
-        category: 'Fruits',
-        price: 349,
-        originalPrice: 499,
-        image: 'https://images.unsplash.com/photo-1518635017498-87f514b751ba?q=80&w=260&auto=format&fit=crop',
+        name: 'Apple Ber',
+        weight: '250g',
+        price: 31,
+        originalPrice: 46,
+        discount: '₹15 OFF',
+        category: 'fruits',
+        image: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=260&auto=format&fit=crop',
+        deliveryTime: '8 mins'
     },
     {
         id: 2,
-        name: 'Green Bell Pepper',
-        category: 'Vegetables',
-        price: 45,
-        originalPrice: 60,
-        image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?q=80&w=260&auto=format&fit=crop',
+        name: 'Coriander Leaves',
+        weight: '100g',
+        price: 7,
+        originalPrice: 14,
+        discount: '₹7 OFF',
+        category: 'veg',
+        image: 'https://images.unsplash.com/photo-1564149504817-d1378368926e?q=80&w=260&auto=format&fit=crop',
+        deliveryTime: '12 mins'
     },
     {
         id: 3,
-        name: 'Fresh Avocado',
-        category: 'Fruits',
-        price: 120,
-        originalPrice: 180,
-        image: 'https://images.unsplash.com/photo-1601039641847-7857b994d704?q=80&w=260&auto=format&fit=crop',
+        name: 'Tomato Local',
+        weight: '500g',
+        price: 16,
+        originalPrice: 28,
+        discount: '₹12 OFF',
+        category: 'veg',
+        image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=260&auto=format&fit=crop',
+        deliveryTime: '10 mins'
     },
     {
         id: 4,
-        name: 'Organic Broccoli',
-        category: 'Vegetables',
-        price: 85,
-        originalPrice: 110,
-        image: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?q=80&w=260&auto=format&fit=crop',
+        name: 'Tender Coconut',
+        weight: '1 pc',
+        price: 58,
+        originalPrice: 102,
+        discount: '₹44 OFF',
+        category: 'fruits',
+        image: 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?q=80&w=260&auto=format&fit=crop',
+        deliveryTime: '15 mins'
     },
     {
         id: 5,
-        name: 'Fresh Red Tomato',
-        category: 'Vegetables',
-        price: 35,
-        originalPrice: 50,
-        image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=260&auto=format&fit=crop',
+        name: 'Green Chili',
+        weight: '100g',
+        price: 5,
+        originalPrice: 10,
+        discount: '₹5 OFF',
+        category: 'veg',
+        image: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?q=80&w=260&auto=format&fit=crop',
+        deliveryTime: '7 mins'
     },
     {
         id: 6,
-        name: 'Organic Banana Bunch',
-        category: 'Fruits',
-        price: 60,
-        originalPrice: 80,
-        image: 'https://images.unsplash.com/photo-1571771896612-6184984fc38b?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 7,
-        name: 'Fresh Milk',
-        category: 'Dairy',
-        price: 65,
-        originalPrice: 70,
-        image: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 8,
-        name: 'Whole Wheat Bread',
-        category: 'Bakery',
-        price: 45,
-        originalPrice: 55,
-        image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 9,
-        name: 'Orange Juice',
-        category: 'Drinks',
-        price: 180,
-        originalPrice: 220,
-        image: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 10,
-        name: 'Chicken Breast',
-        category: 'Meat',
-        price: 280,
-        originalPrice: 320,
-        image: 'https://images.unsplash.com/photo-1604503468506-a8da13d82791?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 11,
-        name: 'Brown Eggs (12 pcs)',
-        category: 'Dairy',
-        price: 90,
-        originalPrice: 110,
-        image: 'https://images.unsplash.com/photo-1516488556308-ea2447743663?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 12,
-        name: 'Potato',
-        category: 'Vegetables',
-        price: 30,
-        originalPrice: 40,
+        name: 'Potato New',
+        weight: '1kg',
+        price: 24,
+        originalPrice: 35,
+        discount: '₹11 OFF',
+        category: 'veg',
         image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 13,
-        name: 'Coca Cola 2L',
-        category: 'Drinks',
-        price: 95,
-        originalPrice: 110,
-        image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 14,
-        name: 'Chips Party Pack',
-        category: 'Snacks',
-        price: 50,
-        originalPrice: 60,
-        image: 'https://images.unsplash.com/photo-1621939514649-28b12e81658b?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 15,
-        name: 'Shampoo',
-        category: 'Personal Care',
-        price: 350,
-        originalPrice: 499,
-        image: 'https://images.unsplash.com/photo-1556228578-8d84f5ae1d41?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 16,
-        name: 'Dog Food 3kg',
-        category: 'Pet Food',
-        price: 1200,
-        originalPrice: 1400,
-        image: 'https://images.unsplash.com/photo-1589924691195-41432c84c161?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 17,
-        name: 'Detergent Powder',
-        category: 'Household',
-        price: 210,
-        originalPrice: 250,
-        image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?q=80&w=260&auto=format&fit=crop',
-    },
-    {
-        id: 18,
-        name: 'Corn Flakes',
-        category: 'Breakfast',
-        price: 320,
-        originalPrice: 380,
-        image: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=260&auto=format&fit=crop',
+        deliveryTime: '9 mins'
     },
 ];
 
 const CategoryProductsPage = () => {
     const { categoryName } = useParams();
+    const navigate = useNavigate();
+    const [selectedSubCategory, setSelectedSubCategory] = useState('all');
 
-    // Filter products based on the category name from URL
-    // We convert both to lowercase for case-insensitive matching
-    const filteredProducts = allProducts.filter(
-        product => product.category.toLowerCase() === categoryName?.toLowerCase()
+    const filteredProducts = allProducts.filter(p =>
+        selectedSubCategory === 'all' || p.category === selectedSubCategory
     );
 
-    // Format the category name for display (capitalize first letter)
-    const displayCategoryName = categoryName
-        ? categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
-        : 'Products';
-
     return (
-        <CustomerLayout>
-            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 mt-48 md:mt-24">
-                <div className="mb-8 text-left">
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#0c831f] mb-2">{displayCategoryName}</h1>
-                    <p className="text-gray-600 text-lg">
-                        {filteredProducts.length} items found in {displayCategoryName}
-                    </p>
+        <ProductDetailProvider>
+            <div className="flex flex-col h-screen bg-white overflow-hidden max-w-md mx-auto relative font-sans">
+                {/* Header */}
+                <header className="sticky top-0 z-50 bg-white border-b border-gray-50 px-4 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate(-1)} className="p-1 hover:bg-gray-50 rounded-full transition-colors">
+                            <ChevronLeft size={24} className="text-gray-900" />
+                        </button>
+                        <h1 className="text-[18px] font-bold text-gray-800 tracking-tight">
+                            {categoryName === '1' ? 'Fruits & Vegetables' : categoryName}
+                        </h1>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button className="p-1 hover:bg-gray-50 rounded-full transition-colors">
+                            <Heart size={22} className="text-gray-900" />
+                        </button>
+                        <button className="p-1 hover:bg-gray-50 rounded-full transition-colors">
+                            <Search size={22} className="text-gray-900" />
+                        </button>
+                    </div>
+                </header>
+
+                <div className="flex flex-1 overflow-hidden">
+                    {/* Sidebar */}
+                    <aside className="w-[80px] border-r border-gray-50 flex flex-col bg-white overflow-y-auto hide-scrollbar">
+                        {subCategories.map((cat) => (
+                            <button
+                                key={cat.id}
+                                onClick={() => setSelectedSubCategory(cat.id)}
+                                className={cn(
+                                    "flex flex-col items-center py-4 px-1 gap-2 transition-all relative border-l-4",
+                                    selectedSubCategory === cat.id
+                                        ? "bg-[#F7FCF5] border-[#0c831f]"
+                                        : "border-transparent hover:bg-gray-50"
+                                )}
+                            >
+                                <div className={cn(
+                                    "w-12 h-12 rounded-2xl flex items-center justify-center p-2 transition-all duration-300",
+                                    selectedSubCategory === cat.id ? "scale-110" : "grayscale opacity-70"
+                                )}>
+                                    <img src={cat.icon} alt={cat.name} className="w-full h-full object-contain" />
+                                </div>
+                                <span className={cn(
+                                    "text-[10px] text-center font-bold font-sans leading-tight px-1",
+                                    selectedSubCategory === cat.id ? "text-[#0c831f]" : "text-gray-500"
+                                )}>
+                                    {cat.name}
+                                </span>
+                            </button>
+                        ))}
+                    </aside>
+
+                    {/* Content */}
+                    <main className="flex-1 overflow-y-auto p-3 hide-scrollbar pb-24 bg-white">
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-4">
+                            {filteredProducts.map((product) => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                            {/* Visual Fill */}
+                            {filteredProducts.map((product) => (
+                                <ProductCard key={product.id + 10} product={{ ...product, id: product.id + 10 }} />
+                            ))}
+                        </div>
+                    </main>
                 </div>
 
-                {filteredProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-                        {filteredProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <h3 className="text-xl font-bold text-slate-800 mb-2">No products found</h3>
-                        <p className="text-muted-foreground">We couldn't find any products in this category.</p>
-                        <a href="/products" className="inline-block mt-4 text-[#0c831f] font-bold hover:underline">
-                            Browse all products
-                        </a>
-                    </div>
-                )}
+                <MiniCart />
+                <ProductDetailSheet />
+
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+                    
+                    body {
+                        font-family: 'Outfit', sans-serif;
+                        background-color: #f8f8f8;
+                    }
+                    .hide-scrollbar::-webkit-scrollbar {
+                        display: none;
+                    }
+                    .hide-scrollbar {
+                        -ms-overflow-style: none;
+                        scrollbar-width: none;
+                    }
+                `}} />
             </div>
-        </CustomerLayout>
+        </ProductDetailProvider>
     );
 };
 

@@ -35,12 +35,8 @@ const FlashDeals = ({ products }) => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
                     {products.map((product) => (
-                        <div key={product.id} className="relative group/card">
-                            <ProductCard product={product} />
-                            {/* Hot Badge */}
-                            <div className="absolute top-5 left-5 bg-orange-500 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg z-10 uppercase tracking-tighter">
-                                HOT DEAL
-                            </div>
+                        <div key={product.id} className="relative group/card h-full">
+                            <ProductCard product={product} badge="HOT DEAL" />
                         </div>
                     ))}
                 </div>

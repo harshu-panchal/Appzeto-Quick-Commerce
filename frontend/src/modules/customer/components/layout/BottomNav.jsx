@@ -13,14 +13,13 @@ const BottomNav = () => {
     const navItems = [
         { label: 'Home', icon: Home, path: '/' },
         { label: 'Categories', icon: Grid, path: '/categories' },
-        { label: 'Cart', icon: ShoppingBag, path: '/cart', badge: cartCount },
         { label: 'Wishlist', icon: Heart, path: '/wishlist', badge: wishlistCount },
         { label: 'Profile', icon: User, path: '/profile' },
     ];
 
     return (
         <div className="fixed bottom-0 left-0 z-50 w-full h-16 bg-white border-t border-gray-200 md:hidden flex justify-around items-center">
-            <div className="grid h-full max-w-lg grid-cols-5 w-full mx-auto font-medium">
+            <div className="grid h-full max-w-lg grid-cols-4 w-full mx-auto font-medium">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
                     return (

@@ -1,0 +1,177 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const CartAnimationContext = createContext({
+    animateAddToCart: () => { },
+    animateRemoveFromCart: () => { }
+});
+
+export const useCartAnimation = () => useContext(CartAnimationContext);
+
+export const CartAnimationProvider = ({ children }) => {
+    const [flyingItems, setFlyingItems] = useState([]);
+    const [droppingItems, setDroppingItems] = useState([]);
+
+    const animateAddToCart = (rect, imageSrc) => {
+        const id = Date.now() + Math.random();
+        setFlyingItems(prev => [...prev, { id, rect, imageSrc }]);
+
+        // Remove item after animation
+        setTimeout(() => {
+            setFlyingItems(prev => prev.filter(item => item.id !== id));
+        }, 2000);
+    };
+
+    const animateRemoveFromCart = (imageSrc) => {
+        const id = Date.now() + Math.random();
+
+        // Calculate start position immediately to handle unmounting
+        const miniCart = document.getElementById('mini-cart-target');
+        let startPos;
+
+        if (miniCart) {
+            const rect = miniCart.getBoundingClientRect();
+            startPos = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        } else {
+            // Fallback
+            const isMd = window.innerWidth >= 768;
+            const bottomOffset = isMd ? 96 : 74;
+            startPos = { x: window.innerWidth / 2, y: window.innerHeight - bottomOffset - 25 };
+        }
+
+        setDroppingItems(prev => [...prev, { id, imageSrc, startPos }]);
+
+        // Remove item after animation
+        setTimeout(() => {
+            setDroppingItems(prev => prev.filter(item => item.id !== id));
+        }, 2000);
+    };
+
+    return (
+        <CartAnimationContext.Provider value={{ animateAddToCart, animateRemoveFromCart }}>
+            {children}
+            <FlyingItemsOverlay items={flyingItems} />
+            <DroppingItemsOverlay items={droppingItems} />
+        </CartAnimationContext.Provider>
+    );
+};
+
+const FlyingItemsOverlay = ({ items }) => {
+    return (
+        <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+            <AnimatePresence>
+                {items.map(item => (
+                    <FlyingItem key={item.id} item={item} />
+                ))}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+const FlyingItem = ({ item }) => {
+    const [target, setTarget] = useState(null);
+
+    useEffect(() => {
+        // Calculate target
+        const miniCart = document.getElementById('mini-cart-target');
+        let targetX, targetY;
+
+        if (miniCart) {
+            const rect = miniCart.getBoundingClientRect();
+            targetX = rect.left + rect.width / 2;
+            targetY = rect.top + rect.height / 2;
+        } else {
+            // Fallback
+            const isMd = window.innerWidth >= 768;
+            const bottomOffset = isMd ? 96 : 74;
+            targetX = window.innerWidth / 2;
+            targetY = window.innerHeight - bottomOffset - 25;
+        }
+
+        setTarget({ x: targetX, y: targetY });
+    }, []);
+
+    if (!target) return null;
+
+    const initialSize = 48; // Start small
+    const startX = item.rect.left + (item.rect.width / 2) - (initialSize / 2);
+    const startY = item.rect.top + (item.rect.height / 2) - (initialSize / 2);
+
+    return (
+        <motion.img
+            src={item.imageSrc}
+            initial={{
+                position: 'fixed',
+                left: startX,
+                top: startY,
+                width: initialSize,
+                height: initialSize,
+                opacity: 0,
+                scale: 0.5,
+                borderRadius: '50%',
+                boxShadow: 'inset 0 4px 8px rgba(255, 255, 255, 0.8), inset 0 -4px 8px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.3)'
+            }}
+            animate={{
+                left: target.x - (initialSize / 2),
+                top: target.y - (initialSize / 2),
+                width: initialSize,
+                height: initialSize,
+                opacity: [0, 1, 1, 0], // Fade in, stay visible, fade out
+                scale: [0.5, 1.2, 1, 0.2], // Pop up, settle, then shrink into cart
+                borderRadius: '50%',
+            }}
+            transition={{
+                duration: 1.5,
+                times: [0, 0.2, 0.8, 1], // Timing for opacity/scale keyframes
+                ease: "easeInOut",
+            }}
+            className="object-cover bg-white pointer-events-none z-[100]"
+        />
+    );
+}
+
+const DroppingItemsOverlay = ({ items }) => {
+    return (
+        <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+            <AnimatePresence>
+                {items.map(item => (
+                    <DroppingItem key={item.id} item={item} />
+                ))}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+const DroppingItem = ({ item }) => {
+    const { startPos } = item;
+    const size = 40;
+
+    if (!startPos) return null;
+
+    return (
+        <motion.img
+            src={item.imageSrc}
+            initial={{
+                position: 'fixed',
+                left: startPos.x - (size / 2),
+                top: startPos.y - (size / 2),
+                width: size,
+                height: size,
+                opacity: 0,
+                scale: 0.5,
+                borderRadius: '50%',
+                boxShadow: 'inset 0 4px 8px rgba(255, 255, 255, 0.8), inset 0 -4px 8px rgba(0, 0, 0, 0.1), 0 8px 20px rgba(0, 0, 0, 0.3)'
+            }}
+            animate={{
+                top: startPos.y + 150, // Drop down 150px
+                opacity: [0, 1, 0], // Quick flash then fade
+                scale: [0.5, 1, 0.8],
+            }}
+            transition={{
+                duration: 0.8,
+                ease: "easeIn",
+            }}
+            className="object-cover bg-white pointer-events-none z-[100]"
+        />
+    );
+}

@@ -11,23 +11,26 @@ import ProductDetailPage from '../pages/ProductDetailPage';
 import ScrollToTop from '../components/shared/ScrollToTop';
 import { WishlistProvider } from '../context/WishlistContext';
 import { CartProvider } from '../context/CartContext';
+import { CartAnimationProvider } from '../context/CartAnimationContext';
 
 const CustomerRoutes = () => {
     return (
         <WishlistProvider>
             <CartProvider>
-                <ScrollToTop />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/categories" element={<CategoriesPage />} />
-                    <Route path="/products" element={<ProductsPage />} />
-                    <Route path="/category/:categoryName" element={<CategoryProductsPage />} />
-                    <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/offers" element={<OffersPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/product/:id" element={<ProductDetailPage />} />
-                </Routes>
+                <CartAnimationProvider>
+                    <ScrollToTop />
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/categories" element={<CategoriesPage />} />
+                        <Route path="/products" element={<ProductsPage />} />
+                        <Route path="/category/:categoryName" element={<CategoryProductsPage />} />
+                        <Route path="/wishlist" element={<WishlistPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/offers" element={<OffersPage />} />
+                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/product/:id" element={<ProductDetailPage />} />
+                    </Routes>
+                </CartAnimationProvider>
             </CartProvider>
         </WishlistProvider>
     );

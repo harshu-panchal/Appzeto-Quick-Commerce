@@ -1,92 +1,383 @@
 import React from 'react';
 import CustomerLayout from '../components/layout/CustomerLayout';
-import Hero from '../components/home/Hero';
-import Categories from '../components/home/Categories';
-import CategoryStories from '../components/home/CategoryStories';
-import FeaturedProducts from '../components/home/FeaturedProducts';
-import ProductRow from '../components/home/ProductRow';
-import FlashDeals from '../components/home/FlashDeals';
+import { Search, Mic, MapPin, ChevronDown, Star, Home as HomeIcon, Heart, Snowflake, Laptop, Sparkles, Clock, Apple, Baby, Dog, Coffee, Gift, Shirt } from 'lucide-react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import ProductCard from '../components/shared/ProductCard';
+import MainLocationHeader from '../components/shared/MainLocationHeader';
 
-// Mock data for new sections
-const morningEssentials = [
-    { id: 101, name: 'Premium Full Cream Milk', category: 'Dairy', price: 68, originalPrice: 72, image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?q=80&w=260&auto=format&fit=crop' },
-    { id: 102, name: 'Fresh Brown Eggs (12 pcs)', category: 'Dairy', price: 95, originalPrice: 120, image: 'https://images.unsplash.com/photo-1582722872445-44ad5c7c3488?q=80&w=260&auto=format&fit=crop' },
-    { id: 103, name: 'Salted Butter (100g)', category: 'Dairy', price: 58, originalPrice: 65, image: 'https://images.unsplash.com/photo-1589985270826-4b7bb1a5ec0d?q=80&w=260&auto=format&fit=crop' },
-    { id: 104, name: 'Multigrain Bread', category: 'Bakery', price: 45, originalPrice: 55, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=260&auto=format&fit=crop' },
-    { id: 105, name: 'Greek Yogurt (Blueberry)', category: 'Dairy', price: 40, originalPrice: 50, image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=260&auto=format&fit=crop' },
-    { id: 106, name: 'Fresh Paneer (200g)', category: 'Dairy', price: 85, originalPrice: 95, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?q=80&w=260&auto=format&fit=crop' },
+const categories = [
+    { id: 1, name: 'All', icon: HomeIcon, active: true },
+    { id: 2, name: 'Groceries', icon: Apple },
+    { id: 3, name: 'Wedding', icon: Heart },
+    { id: 4, name: 'Winter', icon: Snowflake },
+    { id: 5, name: 'Electronics', icon: Laptop },
+    { id: 6, name: 'Beauty', icon: Sparkles },
+    { id: 7, name: 'Baby Care', icon: Baby },
+    { id: 8, name: 'Pet Care', icon: Dog },
+    { id: 9, name: 'Bakery', icon: Coffee },
+    { id: 10, name: 'Fashion', icon: Shirt },
+    { id: 11, name: 'Gifts', icon: Gift },
 ];
 
-const veggieHighlights = [
-    { id: 201, name: 'Red Onion (1kg)', category: 'Vegetables', price: 35, originalPrice: 50, image: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?q=80&w=260&auto=format&fit=crop' },
-    { id: 202, name: 'Fresh Spinach (Bunch)', category: 'Vegetables', price: 25, originalPrice: 35, image: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?q=80&w=260&auto=format&fit=crop' },
-    { id: 203, name: 'Baby Potato (1kg)', category: 'Vegetables', price: 40, originalPrice: 55, image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?q=80&w=260&auto=format&fit=crop' },
-    { id: 204, name: 'Cucumber (500g)', category: 'Vegetables', price: 20, originalPrice: 30, image: 'https://images.unsplash.com/photo-1449300079323-02e209d9d02e?q=80&w=260&auto=format&fit=crop' },
-    { id: 205, name: 'Fresh Carrot (500g)', category: 'Vegetables', price: 30, originalPrice: 45, image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=260&auto=format&fit=crop' },
-    { id: 206, name: 'Cauliflower', category: 'Vegetables', price: 45, originalPrice: 60, image: 'https://images.unsplash.com/photo-1568584711075-3d021a7c3ec3?q=80&w=260&auto=format&fit=crop' },
-];
-
-const flashDeals = [
-    { id: 301, name: 'Nutella Hazelnut Spread', category: 'Snacks', price: 299, originalPrice: 450, image: 'https://images.unsplash.com/photo-1543528176-61b239510d11?q=80&w=260&auto=format&fit=crop' },
-    { id: 302, name: 'Extra Virgin Olive Oil', category: 'Household', price: 850, originalPrice: 1200, image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=260&auto=format&fit=crop' },
-    { id: 303, name: 'Mixed Fruit Juice (1L)', category: 'Drinks', price: 99, originalPrice: 160, image: 'https://images.unsplash.com/photo-1613478223719-2ab302624894?q=80&w=260&auto=format&fit=crop' },
-    { id: 304, name: 'Assorted Chocolates', category: 'Snacks', price: 499, originalPrice: 750, image: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?q=80&w=260&auto=format&fit=crop' },
-    { id: 305, name: 'Premium Coffee Beans', category: 'Drinks', price: 549, originalPrice: 899, image: 'https://images.unsplash.com/photo-1447933630911-821f7593c200?q=80&w=260&auto=format&fit=crop' },
-    { id: 306, name: 'Natural Honey (500g)', category: 'Household', price: 199, originalPrice: 350, image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=260&auto=format&fit=crop' },
+const bestsellerCategories = [
+    {
+        id: 1,
+        name: "Chips & Namkeen",
+        images: [
+            "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1613919113640-25732ec5e61f?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1599490659223-e1539e76926a?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1621444541669-451006c1103d?auto=format&fit=crop&q=80&w=200&h=200"
+        ]
+    },
+    {
+        id: 2,
+        name: "Bakery & Biscuits",
+        images: [
+            "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1550617931-e17a7b70dce2?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1581339399838-2a120c18bba3?auto=format&fit=crop&q=80&w=200&h=200"
+        ]
+    },
+    {
+        id: 3,
+        name: "Vegetable & Fruits",
+        images: [
+            "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1518843025960-d70213740685?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&q=80&w=200&h=200"
+        ]
+    },
+    {
+        id: 4,
+        name: "Oil, Ghee & Masala",
+        images: [
+            "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1596797038558-9c50f16ee64b?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1472141521881-95d0e87e2e39?auto=format&fit=crop&q=80&w=200&h=200"
+        ]
+    },
+    {
+        id: 5,
+        name: "Sweet & Chocolates",
+        images: [
+            "https://images.unsplash.com/photo-1581798459219-318e76aecc7b?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1481391243133-f96216dcb5d2?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1526081347589-7fa3cb419ee7?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1542841791-192d99906b27?auto=format&fit=crop&q=80&w=200&h=200"
+        ]
+    },
+    {
+        id: 6,
+        name: "Drinks & Juices",
+        images: [
+            "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1625772290748-39126cdd9fe9?auto=format&fit=crop&q=80&w=200&h=200",
+            "https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=200&h=200"
+        ]
+    },
 ];
 
 const Home = () => {
+    const { scrollY } = useScroll();
+
+    // Fade out banner as user scrolls (0 to 100px)
+    const opacity = useTransform(scrollY, [0, 100], [1, 0]);
+    const y = useTransform(scrollY, [0, 100], [0, -50]);
+    const pointerEvents = useTransform(scrollY, [0, 50], ["auto", "none"]);
+
     return (
-        <CustomerLayout>
-            <div className="animate-in fade-in duration-500 overflow-x-hidden">
-                <CategoryStories />
-                <Hero />
-                <Categories />
+        <CustomerLayout showHeader={false}>
+            <div className="min-h-screen bg-[#F5F7F8]">
+                {/* Top Green Gradient Section */}
+                <MainLocationHeader categories={categories} />
 
-                {/* Horizontal Shelf - Morning Essentials */}
-                <ProductRow
-                    title="Morning Essentials"
-                    subtitle="Everything you need to start your day fresh"
-                    badge="FAST DELIVERY"
-                    products={morningEssentials}
-                />
+                {/* Promotional Banner Section - Now with higher z-index and scroll-fade */}
+                <motion.div
+                    style={{ opacity, y, pointerEvents }}
+                    className="px-5 -mt-4 relative z-[110]"
+                >
+                    <motion.div
+                        initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                        animate={{
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            boxShadow: ["0px 10px 30px rgba(37, 211, 102, 0.2)", "0px 25px 60px rgba(37, 211, 102, 0.5)", "0px 10px 30px rgba(37, 211, 102, 0.2)"]
+                        }}
+                        whileHover={{
+                            scale: 1.02,
+                            rotate: [0, -1, 1, 0],
+                            transition: { duration: 0.3 }
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 260,
+                            damping: 20,
+                            boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                        }}
+                        className="bg-[#25D366] rounded-2xl p-6 shadow-2xl relative overflow-hidden border-4 border-white group cursor-pointer"
+                    >
+                        {/* Shimmer Effect Overlay */}
+                        <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full"
+                            animate={{ x: ["100%", "-100%"] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
+                        />
 
-                <FeaturedProducts />
-
-                {/* Eye-catching Flash Deals Section */}
-                <FlashDeals products={flashDeals} />
-
-                {/* Horizontal Shelf - Fresh Veggies */}
-                <ProductRow
-                    title="Healthy Veggies"
-                    subtitle="Farm fresh vegetables picked daily"
-                    badge="DIRECT FROM FARM"
-                    products={veggieHighlights}
-                />
-
-                {/* Legacy Promo Banner Section */}
-                <section className="py-12 w-full max-w-[1920px] mx-auto px-4 md:px-[50px]">
-                    <div className="relative overflow-hidden rounded-3xl bg-brand-900 px-6 py-16 shadow-2xl sm:px-12 md:px-24 group">
                         <div className="relative z-10 flex flex-col items-center text-center">
-                            <span className="text-orange-400 font-black text-xs uppercase tracking-widest mb-4">Limited Offer</span>
-                            <h2 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-6">
-                                Get <span className="text-[#0c831f]">20% OFF</span> on your first order!
-                            </h2>
-                            <p className="max-w-2xl text-lg md:text-xl text-brand-100 font-medium mb-10 opacity-90">
-                                Freshness delivered in 10 minutes. Join our community today and save big on your first grocery haul.
-                            </p>
-                            <div className="flex gap-4">
-                                <button className="rounded-2xl bg-white px-10 py-4 text-lg font-black text-brand-900 shadow-xl hover:bg-brand-50 transition-all hover:-translate-y-1 active:scale-95">
-                                    Use Code: WELCOME20
-                                </button>
-                            </div>
+                            <motion.div
+                                className="flex gap-4 mb-2 items-center"
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{
+                                    scale: [1, 1.2, 1],
+                                    opacity: 1,
+                                    y: [0, -10, 0],
+                                    rotate: [0, 3, -3, 0]
+                                }}
+                                transition={{
+                                    scale: {
+                                        duration: 0.8,
+                                        repeat: Infinity,
+                                        repeatDelay: 4.2,
+                                        type: "spring",
+                                        stiffness: 400,
+                                        damping: 10
+                                    },
+                                    y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+                                    rotate: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                                }}
+                            >
+                                <motion.div
+                                    className="text-yellow-400"
+                                    animate={{
+                                        rotate: [0, 45, -45, 0],
+                                        scale: [1, 1.5, 0.8, 1.3, 1]
+                                    }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                >
+                                    <Sparkles size={32} fill="currentColor" className="drop-shadow-lg" />
+                                </motion.div>
+                                <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1">
+                                    HOUSEFULL
+                                </h2>
+                                <motion.div
+                                    className="text-yellow-400"
+                                    animate={{
+                                        rotate: [0, -45, 45, 0],
+                                        scale: [1, 1.3, 1.5, 0.7, 1]
+                                    }}
+                                    transition={{ duration: 2.5, repeat: Infinity }}
+                                >
+                                    <Sparkles size={32} fill="currentColor" className="drop-shadow-lg" />
+                                </motion.div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ scale: 0, rotate: -20 }}
+                                animate={{
+                                    scale: [1, 1.2, 1],
+                                    rotate: [-3, 0, -3]
+                                }}
+                                transition={{
+                                    scale: {
+                                        duration: 0.8,
+                                        repeat: Infinity,
+                                        repeatDelay: 4.2,
+                                        type: "spring",
+                                        stiffness: 500,
+                                        damping: 15,
+                                        delay: 0.2
+                                    },
+                                    rotate: {
+                                        duration: 0.8,
+                                        repeat: Infinity,
+                                        repeatDelay: 4.2,
+                                        delay: 0.2
+                                    }
+                                }}
+                                whileHover={{
+                                    scale: 1.1,
+                                    rotate: 2,
+                                    boxShadow: "0px 15px 30px rgba(0,0,0,0.4)"
+                                }}
+                                className="z-20 cursor-popout"
+                            >
+                                <h3 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)] bg-[#1A1A1A] px-6 py-2 -mt-2 transform relative overflow-hidden flex items-center gap-2 rounded-lg border-t-2 border-white/20">
+                                    <motion.span
+                                        animate={{
+                                            scale: [1, 1.05, 1],
+                                            filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"]
+                                        }}
+                                        transition={{ duration: 0.5, repeat: Infinity }}
+                                    >SALE</motion.span>
+                                </h3>
+                            </motion.div>
+
+                            {/* Playful Floating Elements */}
+                            {[...Array(12)].map((_, i) => (
+                                <motion.div
+                                    key={i}
+                                    className={`absolute rounded-full blur-[0.5px] ${i % 3 === 0 ? 'bg-white/80 h-2 w-2' : 'bg-white/40 h-1 w-1'}`}
+                                    style={{
+                                        top: `${Math.random() * 100}%`,
+                                        left: `${Math.random() * 100}%`,
+                                    }}
+                                    animate={{
+                                        x: [0, Math.random() * 40 - 20, 0],
+                                        y: [0, Math.random() * -60, 0],
+                                        opacity: [0.3, 1, 0.3],
+                                        scale: [0.5, 1.5, 0.5]
+                                    }}
+                                    transition={{
+                                        duration: 3 + Math.random() * 4,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                        delay: Math.random() * 5
+                                    }}
+                                />
+                            ))}
                         </div>
 
-                        {/* Decorative circles */}
-                        <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-brand-800/30 blur-3xl" />
-                        <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 h-80 w-80 rounded-full bg-[#0c831f]/20 blur-3xl transition-transform duration-1000 group-hover:scale-125" />
+                        {/* Energetic highlight stars */}
+                        <motion.div
+                            className="absolute top-2 right-4 text-yellow-300 pointer-events-none"
+                            animate={{
+                                scale: [1, 2, 1, 1.5, 1],
+                                rotate: [0, 90, 180, 270, 360],
+                                filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"]
+                            }}
+                            transition={{ duration: 3, repeat: Infinity }}
+                        >
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>
+                        </motion.div>
+
+                        <motion.div
+                            className="absolute bottom-2 left-4 text-yellow-300 pointer-events-none"
+                            animate={{
+                                x: [0, 20, -10, 0],
+                                y: [0, -30, 10, 0],
+                                rotate: [0, -45, 45, 0]
+                            }}
+                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>
+                        </motion.div>
+
+                        {/* Playful background blobs */}
+                        <motion.div
+                            className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+                            animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.3, 0.1] }}
+                            transition={{ duration: 4, repeat: Infinity }}
+                        />
+                    </motion.div>
+                </motion.div>
+
+                {/* Bestsellers Section */}
+                <div className="p-5">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-[22px] font-black text-[#1A1A1A] tracking-tight">Bestsellers</h3>
+                        <span className="text-[#0c831f] font-extrabold text-sm hover:underline cursor-pointer">View All</span>
                     </div>
-                </section>
+
+                    <div className="grid grid-cols-3 gap-x-3 gap-y-3">
+                        {bestsellerCategories.map((cat) => (
+                            <motion.div
+                                key={cat.id}
+                                whileHover={{ y: -4 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="flex flex-col group cursor-pointer"
+                            >
+                                <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">
+                                    {/* Image Grid Area */}
+                                    <div className="p-2 gap-1.5 grid grid-cols-2 flex-1">
+                                        {cat.images.map((img, idx) => (
+                                            <div key={idx} className="bg-[#F8F9FA] rounded-lg overflow-hidden flex items-center justify-center p-1.5 border border-gray-50">
+                                                <img src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Glassy Overlay for Badge (Shifted downwards) */}
+                                    <div className="absolute bottom-[42px] left-0 right-0 flex justify-center pointer-events-none">
+                                        <div className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/60 shadow-sm transform scale-90 translate-y-2">
+                                            <span className="text-[8px] font-black text-[#1A1A1A] uppercase tracking-wider">4+ ITEMS</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Integrated Label Area */}
+                                    <div className="bg-[#F8F9FA]/50 border-t border-gray-50 px-2 py-3 mt-auto">
+                                        <span className="text-[10px] font-black text-center block leading-tight text-[#1A1A1A] group-hover:text-[#0c831f] transition-colors line-clamp-2">
+                                            {cat.name}
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Lowest Price ever Section */}
+                <div className="mt-6 mb-2">
+                    <div className="relative overflow-hidden bg-gradient-to-br from-[#0c831f]/10 via-[#0c831f]/5 to-transparent p-5 py-7 border-y border-[#0c831f]/10 shadow-sm">
+                        {/* Background Decoration */}
+                        <div className="absolute -top-10 -right-10 h-40 w-40 bg-[#0c831f]/10 rounded-full blur-3xl opacity-60" />
+                        <div className="absolute -bottom-10 -left-10 h-40 w-40 bg-yellow-400/10 rounded-full blur-3xl opacity-60" />
+
+                        <div className="relative z-10 flex justify-between items-center mb-6 px-1">
+                            <div className="flex flex-col">
+                                <h3 className="text-2xl font-black text-[#1A1A1A] tracking-tight leading-none">Lowest Price ever</h3>
+                                <div className="flex items-center gap-1.5 mt-2">
+                                    <div className="h-1 w-1 bg-[#0c831f] rounded-full animate-pulse" />
+                                    <span className="text-[11px] font-extrabold text-[#0c831f] uppercase tracking-wider">Best deals in town</span>
+                                </div>
+                            </div>
+                            <motion.div
+                                whileHover={{ x: 3 }}
+                                className="flex items-center gap-1.5 bg-white px-4 py-2 rounded-full text-[#0c831f] font-bold text-xs cursor-pointer shadow-md border border-[#0c831f]/5"
+                            >
+                                See all <ChevronDown size={14} className="-rotate-90" />
+                            </motion.div>
+                        </div>
+
+                        <div className="relative z-10 flex overflow-x-auto gap-4 pb-2 no-scrollbar -mx-5 px-5 snap-x">
+                            {[
+                                { id: 1, name: "Fresh Pineapple", price: 449, originalPrice: 499, weight: "1kg", image: "https://images.unsplash.com/photo-1550258114-b838e9766c9d?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "8 mins", ratings: 5 },
+                                { id: 2, name: "Organic Wild Honey", price: 450, originalPrice: 500, weight: "250g", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 4 },
+                                { id: 3, name: "Handcrafted Chocolate", price: 280, originalPrice: 350, weight: "100g", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
+                                { id: 4, name: "Fresh Blueberries", price: 190, originalPrice: 200, weight: "125g", image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 5 },
+                            ].map((product) => (
+                                <div key={product.id} className="w-[170px] flex-shrink-0 snap-start">
+                                    <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content Area (Scrollable Daily Essentials) */}
+                <div className="p-5 mt-2">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xl font-black text-[#1A1A1A]">Daily Essentials</h3>
+                        <span className="text-[#0c831f] font-bold text-sm">See all</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        {[
+                            { id: 101, name: "Fresh Banana", price: 60, originalPrice: 70, weight: "1 doz", image: "https://images.unsplash.com/photo-1571771894821-ad996211fdf4?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "9 mins", ratings: 4 },
+                            { id: 102, name: "Farm Fresh Eggs", price: 90, originalPrice: 110, weight: "6 pcs", image: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "11 mins", ratings: 5 },
+                            { id: 103, name: "Double Toned Milk", price: 55, originalPrice: 60, weight: "1L", image: "https://images.unsplash.com/photo-1563636619-e910019335cd?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "8 mins", ratings: 4 },
+                            { id: 104, name: "Whole Wheat Bread", price: 40, originalPrice: 50, weight: "400g", image: "https://images.unsplash.com/photo-1589367920969-ab8e050bab3e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
+                        ].map((product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                </div>
             </div>
         </CustomerLayout>
     );

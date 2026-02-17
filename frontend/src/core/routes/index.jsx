@@ -16,10 +16,7 @@ const DeliveryModule = lazy(() => import('@modules/delivery/routes'));
 const CustomerModule = lazy(() => import('@modules/customer/routes'));
 
 export const router = createBrowserRouter([
-    {
-        path: '/*',
-        element: <CustomerModule />,
-    },
+
     {
         path: '/login',
         element: <Login />,
@@ -62,14 +59,8 @@ export const router = createBrowserRouter([
         path: '/unauthorized',
         element: <div className="flex h-screen items-center justify-center">Unauthorized Access</div>,
     },
-    // NotFound is handled by CustomerModule's wildcard or specific route, 
-    // but we might want a global fallback if none match.
-    // Since CustomerModule is at /*, it will match almost everything not matched above.
-    // However, createBrowserRouter uses a "best match" or defined order. 
-    // If we put /* at the top, it might overshadow others if not careful with exact matches.
-    // Actually, distinct paths like /seller, /admin should work fine.
-    // But /login and /signup must be defined before /* if inside the same switch, or /* must be at the bottom.
-    // In createBrowserRouter array, order matters for greedy matching? 
-    // Usually explicit paths are matched first.
-    // Let's place the customer root LAST to act as the catch-all for the main app.
+    {
+        path: '/*',
+        element: <CustomerModule />,
+    },
 ]);
