@@ -86,7 +86,7 @@ const MainLocationHeader = ({ categories = [] }) => {
                             opacity: navOpacity,
                             marginTop: navMargin,
                             display: displayNav,
-                            overflow: "hidden"
+                            overflowY: "hidden"
                         }}
                         className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 relative z-10 snap-x"
                     >

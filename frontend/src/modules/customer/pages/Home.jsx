@@ -101,7 +101,7 @@ const Home = () => {
                 {/* Promotional Banner Section - Now with higher z-index and scroll-fade */}
                 <motion.div
                     style={{ opacity, y, scale, pointerEvents }}
-                    className="px-5 -mt-4 relative z-[110]"
+                    className="px-5 -mt-[21px] relative z-[110]"
                 >
                     <motion.div
                         initial={{ opacity: 0, y: 30, scale: 0.9 }}
