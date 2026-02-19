@@ -25,39 +25,42 @@ import ScrollToTop from '../components/shared/ScrollToTop';
 import { WishlistProvider } from '../context/WishlistContext';
 import { CartProvider } from '../context/CartContext';
 import { CartAnimationProvider } from '../context/CartAnimationContext';
+import { LocationProvider } from '../context/LocationContext';
 
 const CustomerRoutes = () => {
     return (
-        <WishlistProvider>
-            <CartProvider>
-                <CartAnimationProvider>
-                    <ScrollToTop />
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/categories" element={<CategoriesPage />} />
+        <LocationProvider>
+            <WishlistProvider>
+                <CartProvider>
+                    <CartAnimationProvider>
+                        <ScrollToTop />
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/categories" element={<CategoriesPage />} />
 
-                        <Route path="/category/:categoryName" element={<CategoryProductsPage />} />
-                        <Route path="/wishlist" element={<WishlistPage />} />
-                        <Route path="/orders" element={<OrdersPage />} />
-                        <Route path="/orders/:orderId" element={<OrderDetailPage />} />
-                        <Route path="/addresses" element={<AddressesPage />} />
-                        <Route path="/wallet" element={<WalletPage />} />
-                        <Route path="/settings" element={<SettingsPage />} />
-                        <Route path="/support" element={<SupportPage />} />
-                        <Route path="/chat" element={<ChatPage />} />
-                        <Route path="/terms" element={<TermsPage />} />
-                        <Route path="/privacy" element={<PrivacyPage />} />
-                        <Route path="/about" element={<AboutPage />} />
-                        {/* <Route path="/cart" element={<CartPage />} /> */}
-                        <Route path="/checkout" element={<CheckoutPage />} />
-                        <Route path="/offers" element={<OffersPage />} />
-                        <Route path="/profile" element={<ProfilePage />} />
-                        <Route path="/profile/edit" element={<EditProfilePage />} />
-                        <Route path="/product/:id" element={<ProductDetailPage />} />
-                    </Routes>
-                </CartAnimationProvider>
-            </CartProvider>
-        </WishlistProvider>
+                            <Route path="/category/:categoryName" element={<CategoryProductsPage />} />
+                            <Route path="/wishlist" element={<WishlistPage />} />
+                            <Route path="/orders" element={<OrdersPage />} />
+                            <Route path="/orders/:orderId" element={<OrderDetailPage />} />
+                            <Route path="/addresses" element={<AddressesPage />} />
+                            <Route path="/wallet" element={<WalletPage />} />
+                            <Route path="/settings" element={<SettingsPage />} />
+                            <Route path="/support" element={<SupportPage />} />
+                            <Route path="/chat" element={<ChatPage />} />
+                            <Route path="/terms" element={<TermsPage />} />
+                            <Route path="/privacy" element={<PrivacyPage />} />
+                            <Route path="/about" element={<AboutPage />} />
+                            {/* <Route path="/cart" element={<CartPage />} /> */}
+                            <Route path="/checkout" element={<CheckoutPage />} />
+                            <Route path="/offers" element={<OffersPage />} />
+                            <Route path="/profile" element={<ProfilePage />} />
+                            <Route path="/profile/edit" element={<EditProfilePage />} />
+                            <Route path="/product/:id" element={<ProductDetailPage />} />
+                        </Routes>
+                    </CartAnimationProvider>
+                </CartProvider>
+            </WishlistProvider>
+        </LocationProvider>
     );
 };
 
