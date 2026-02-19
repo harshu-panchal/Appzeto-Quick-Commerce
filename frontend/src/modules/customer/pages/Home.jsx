@@ -263,9 +263,9 @@ const Home = () => {
     // Helper to render dynamic floating elements
     const renderFloatingElements = (type) => {
         const count = 12; // Number of particles
-        
+
         const getParticleContent = (index) => {
-            switch(type) {
+            switch (type) {
                 case 'hearts': return index % 2 === 0 ? <Heart fill="white" size={16} /> : <div className="h-2 w-2 bg-white rounded-full" />;
                 case 'snow': return <Snowflake fill="white" size={index % 2 === 0 ? 14 : 10} />;
                 case 'tech': return <div className={`border border-white/50 ${index % 2 === 0 ? 'h-3 w-3 rounded-none' : 'h-2 w-6 rounded-sm'}`} />;
@@ -279,7 +279,7 @@ const Home = () => {
         };
 
         return [...Array(count)].map((_, i) => (
-             <motion.div
+            <motion.div
                 key={i}
                 className="absolute"
                 style={{
@@ -384,7 +384,7 @@ const Home = () => {
                                 >
                                     <Sparkles size={32} fill="currentColor" className="drop-shadow-lg" />
                                 </motion.div>
-                                
+
                                 <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1">
                                     {activeCategory.banner.title}
                                 </h2>
@@ -557,8 +557,8 @@ const Home = () => {
                                 { id: 3, name: "Handcrafted Chocolate", price: 280, originalPrice: 350, weight: "100g", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
                                 { id: 4, name: "Fresh Blueberries", price: 190, originalPrice: 200, weight: "125g", image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 5 },
                             ].map((product) => (
-                                <div key={product.id} className="w-[170px] flex-shrink-0 snap-start">
-                                    <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" />
+                                <div key={product.id} className="w-[135px] flex-shrink-0 snap-start">
+                                    <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" compact={true} />
                                 </div>
                             ))}
                         </div>
@@ -572,14 +572,14 @@ const Home = () => {
                         <span className="text-[#0c831f] font-bold text-sm">See all</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-2">
                         {[
                             { id: 101, name: "Fresh Banana", price: 60, originalPrice: 70, weight: "1 doz", image: "https://images.unsplash.com/photo-1571771894821-ad996211fdf4?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "9 mins", ratings: 4 },
                             { id: 102, name: "Farm Fresh Eggs", price: 90, originalPrice: 110, weight: "6 pcs", image: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "11 mins", ratings: 5 },
                             { id: 103, name: "Double Toned Milk", price: 55, originalPrice: 60, weight: "1L", image: "https://images.unsplash.com/photo-1563636619-e910019335cd?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "8 mins", ratings: 4 },
                             { id: 104, name: "Whole Wheat Bread", price: 40, originalPrice: 50, weight: "400g", image: "https://images.unsplash.com/photo-1589367920969-ab8e050bab3e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
                         ].map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                            <ProductCard key={product.id} product={product} compact={true} />
                         ))}
                     </div>
                 </div>

@@ -19,7 +19,7 @@ export const CartAnimationProvider = ({ children }) => {
         // Remove item after animation
         setTimeout(() => {
             setFlyingItems(prev => prev.filter(item => item.id !== id));
-        }, 2000);
+        }, 900);
     };
 
     const animateRemoveFromCart = (imageSrc) => {
@@ -44,7 +44,7 @@ export const CartAnimationProvider = ({ children }) => {
         // Remove item after animation
         setTimeout(() => {
             setDroppingItems(prev => prev.filter(item => item.id !== id));
-        }, 2000);
+        }, 450);
     };
 
     return (
@@ -121,7 +121,7 @@ const FlyingItem = ({ item }) => {
                 borderRadius: '50%',
             }}
             transition={{
-                duration: 1.5,
+                duration: 0.8,
                 times: [0, 0.2, 0.8, 1], // Timing for opacity/scale keyframes
                 ease: "easeInOut",
             }}
@@ -168,7 +168,7 @@ const DroppingItem = ({ item }) => {
                 scale: [0.5, 1, 0.8],
             }}
             transition={{
-                duration: 0.8,
+                duration: 0.35,
                 ease: "easeIn",
             }}
             className="object-cover bg-white pointer-events-none z-[100]"
