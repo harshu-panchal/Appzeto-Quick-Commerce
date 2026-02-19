@@ -21,7 +21,7 @@ const MiniCart = () => {
                 <div
                     key="mini-cart-wrapper"
                     id="mini-cart-target"
-                    className="fixed bottom-[74px] md:bottom-24 left-0 right-0 flex justify-center z-[55] pointer-events-none px-4"
+                    className="fixed bottom-[90px] md:bottom-24 left-0 right-0 flex justify-center z-[55] pointer-events-none px-4"
                 >
 
                     <motion.div

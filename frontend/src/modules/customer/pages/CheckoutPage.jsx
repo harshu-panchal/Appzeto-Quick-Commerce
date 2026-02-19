@@ -21,15 +21,30 @@ import {
     Tag,
     Sparkles,
     Plus,
-    Minus
+    Minus,
+    Search,
+    X,
+    Clipboard,
+    Check
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@shared/components/ui/Toast';
 import SlideToPay from '../components/shared/SlideToPay';
+import ProductCard from '../components/shared/ProductCard';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const CheckoutPage = () => {
-    const { cart, cartTotal, cartCount, updateQuantity, removeFromCart } = useCart();
+    const { cart, addToCart, cartTotal, cartCount, updateQuantity, removeFromCart } = useCart();
     const { wishlist, addToWishlist } = useWishlist();
     const { showToast } = useToast();
     const navigate = useNavigate();
@@ -40,6 +55,33 @@ const CheckoutPage = () => {
     const [selectedTip, setSelectedTip] = useState(0);
     const [showAllCartItems, setShowAllCartItems] = useState(false);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+    const [selectedCoupon, setSelectedCoupon] = useState(null);
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+    const [currentAddress, setCurrentAddress] = useState({
+        type: 'Home',
+        name: 'John Doe',
+        address: 'Flat 402, Sunshine Apartments, Sector 12, Dwarka',
+        city: 'New Delhi - 110075'
+    });
+
+    // Mock saved addresses
+    const savedAddresses = [
+        {
+            id: 1,
+            type: 'Home',
+            name: 'John Doe',
+            address: 'Flat 402, Sunshine Apartments, Sector 12, Dwarka',
+            city: 'New Delhi - 110075'
+        },
+        {
+            id: 2,
+            type: 'Work',
+            name: 'John Doe',
+            address: 'Office No. 5, Technohub, Cyber City',
+            city: 'Gurugram - 122002'
+        }
+    ];
 
     // Mock data for recommendations
     const recommendedProducts = [
@@ -83,7 +125,8 @@ const CheckoutPage = () => {
     const deliveryFee = 0;
     const platformFee = 3;
     const gst = Math.round(cartTotal * 0.05);
-    const totalAmount = cartTotal + deliveryFee + platformFee + gst + selectedTip;
+    const discountAmount = selectedCoupon ? selectedCoupon.discount : 0;
+    const totalAmount = (cartTotal - discountAmount) + deliveryFee + platformFee + gst + selectedTip;
 
     const displayCartItems = showAllCartItems ? cart : cart;
 
@@ -93,9 +136,35 @@ const CheckoutPage = () => {
         showToast(`${item.name} moved to wishlist`, 'success');
     };
 
-    const handleShare = () => {
-        showToast('Share functionality coming soon!', 'info');
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Appzeto Checkout',
+                    text: `Hey! I'm ordering some goodies from Appzeto. Total: ₹${totalAmount}`,
+                    url: window.location.href,
+                });
+            } catch (err) {
+                console.log('Error sharing:', err);
+            }
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Link copied to clipboard!', 'success');
+        }
     };
+
+    const handleApplyCoupon = (coupon) => {
+        setSelectedCoupon(coupon);
+        setIsCouponModalOpen(false);
+        showToast(`Coupon ${coupon.code} applied!`, 'success');
+    };
+
+    const handleAddToCart = (product) => {
+        addToCart(product);
+        showToast(`${product.name} added to cart!`, 'success');
+    };
+
+    const getCartItem = (productId) => cart.find(item => item.id === productId);
 
     const handlePlaceOrder = async () => {
         setIsPlacingOrder(true);
@@ -337,28 +406,10 @@ const CheckoutPage = () => {
                             className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                         >
                             <h3 className="font-black text-slate-800 text-lg mb-4">Your wishlist</h3>
-                            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                                {wishlist.slice(0, 4).map((item) => (
-                                    <div key={item.id} className="flex-shrink-0 w-32">
-                                        <div className="relative">
-                                            <div className="h-32 w-32 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 mb-2">
-                                                <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
-                                            </div>
-                                            <button className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white shadow-md flex items-center justify-center">
-                                                <Heart size={16} className="text-pink-500 fill-pink-500" />
-                                            </button>
-                                            <button className="absolute bottom-2 left-2 right-2 bg-white border-2 border-[#0c831f] text-[#0c831f] text-sm font-bold py-1.5 rounded-lg hover:bg-green-50 transition-colors">
-                                                ADD
-                                            </button>
-                                        </div>
-                                        <div className="flex items-center gap-1 mb-1">
-                                            <div className="h-3 w-3 rounded-full border-2 border-green-600 flex items-center justify-center flex-shrink-0">
-                                                <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                                            </div>
-                                            <span className="text-[10px] text-slate-500">{item.weight || '35 g'}</span>
-                                        </div>
-                                        <p className="text-xs font-bold text-slate-800 mb-1 truncate">{item.name}</p>
-                                        <p className="text-sm font-black text-slate-800">₹{item.price}</p>
+                            <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
+                                {wishlist.map((item) => (
+                                    <div key={item.id} className="flex-shrink-0 w-[140px] snap-start">
+                                        <ProductCard product={item} compact={true} />
                                     </div>
                                 ))}
                             </div>
@@ -373,19 +424,10 @@ const CheckoutPage = () => {
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                     >
                         <h3 className="font-black text-slate-800 text-lg mb-4">You might also like</h3>
-                        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
                             {recommendedProducts.map((product) => (
-                                <div key={product.id} className="flex-shrink-0 w-40">
-                                    <div className="relative">
-                                        <div className="h-40 w-40 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 mb-2">
-                                            <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
-                                        </div>
-                                        <button className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-slate-50 transition-colors">
-                                            <Heart size={16} className="text-slate-400" />
-                                        </button>
-                                    </div>
-                                    <p className="text-sm font-bold text-slate-800 mb-1 truncate">{product.name}</p>
-                                    <p className="text-base font-black text-slate-800">₹{product.price}</p>
+                                <div key={product.id} className="flex-shrink-0 w-[140px] snap-start">
+                                    <ProductCard product={product} compact={true} />
                                 </div>
                             ))}
                         </div>
@@ -403,7 +445,10 @@ const CheckoutPage = () => {
                                 <Tag size={20} className="text-orange-500" />
                                 <h3 className="font-black text-slate-800">Available Coupons</h3>
                             </div>
-                            <button className="text-[#0c831f] text-sm font-bold hover:underline">
+                            <button
+                                onClick={() => setIsCouponModalOpen(true)}
+                                className="text-[#0c831f] text-sm font-bold hover:underline"
+                            >
                                 See All
                             </button>
                         </div>
@@ -414,8 +459,15 @@ const CheckoutPage = () => {
                                         <p className="font-black text-slate-800 text-sm">{coupon.code}</p>
                                         <p className="text-xs text-slate-600">{coupon.description}</p>
                                     </div>
-                                    <button className="px-4 py-2 bg-[#0c831f] text-white text-xs font-bold rounded-lg hover:bg-[#0b721b] transition-colors">
-                                        Apply
+                                    <button
+                                        onClick={() => handleApplyCoupon(coupon)}
+                                        className={`px-4 py-2 text-xs font-bold rounded-lg transition-colors ${selectedCoupon?.code === coupon.code
+                                            ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                                            : 'bg-[#0c831f] text-white hover:bg-[#0b721b]'
+                                            }`}
+                                        disabled={selectedCoupon?.code === coupon.code}
+                                    >
+                                        {selectedCoupon?.code === coupon.code ? 'Applied' : 'Apply'}
                                     </button>
                                 </div>
                             ))}
@@ -434,17 +486,17 @@ const CheckoutPage = () => {
                                 <MapPin size={20} className="text-[#0c831f]" />
                                 <h3 className="font-black text-slate-800">Delivery Address</h3>
                             </div>
-                            <Link
-                                to="/addresses"
+                            <button
+                                onClick={() => setIsAddressModalOpen(true)}
                                 className="text-[#0c831f] text-sm font-bold hover:underline"
                             >
                                 Change
-                            </Link>
+                            </button>
                         </div>
                         <div className="pl-7">
-                            <p className="text-slate-800 font-bold text-sm">{deliveryAddress.name}</p>
-                            <p className="text-slate-600 text-sm leading-relaxed">{deliveryAddress.address}</p>
-                            <p className="text-slate-600 text-sm">{deliveryAddress.city}</p>
+                            <p className="text-slate-800 font-bold text-sm">{currentAddress.name}</p>
+                            <p className="text-slate-600 text-sm leading-relaxed">{currentAddress.address}</p>
+                            <p className="text-slate-600 text-sm">{currentAddress.city}</p>
                         </div>
                     </motion.div>
 
@@ -543,6 +595,15 @@ const CheckoutPage = () => {
                                 <span className="text-slate-600">GST (5%)</span>
                                 <span className="font-bold text-slate-800">₹{gst}</span>
                             </div>
+                            {selectedCoupon && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-[#0c831f] flex items-center gap-1">
+                                        <Tag size={12} />
+                                        Coupon ({selectedCoupon.code})
+                                    </span>
+                                    <span className="font-bold text-[#0c831f]">-₹{selectedCoupon.discount}</span>
+                                </div>
+                            )}
                             {selectedTip > 0 && (
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-600 flex items-center gap-1">
@@ -571,19 +632,125 @@ const CheckoutPage = () => {
                         />
                     </div>
                 </div>
+
+                {/* Address Selection Modal */}
+                <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Select Delivery Address</DialogTitle>
+                            <DialogDescription>
+                                Choose where you want your order delivered.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            {savedAddresses.map((addr) => (
+                                <button
+                                    key={addr.id}
+                                    onClick={() => {
+                                        setCurrentAddress(addr);
+                                        setIsAddressModalOpen(false);
+                                    }}
+                                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${currentAddress.id === addr.id
+                                        ? 'border-[#0c831f] bg-green-50 shadow-sm'
+                                        : 'border-slate-100 bg-white hover:border-slate-200'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className={`p-2 rounded-full ${currentAddress.id === addr.id ? 'bg-[#0c831f] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                            <MapPin size={16} />
+                                        </div>
+                                        <span className="font-black text-slate-800 uppercase tracking-widest text-[10px]">{addr.type}</span>
+                                    </div>
+                                    <p className="text-sm font-bold text-slate-800">{addr.name}</p>
+                                    <p className="text-xs text-slate-500 leading-relaxed mb-1">{addr.address}</p>
+                                    <p className="text-xs text-slate-400">{addr.city}</p>
+                                </button>
+                            ))}
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                className="w-full border-green-600 text-green-600 hover:bg-green-50"
+                                onClick={() => navigate('/addresses')}
+                            >
+                                <Plus size={16} className="mr-2" /> Add New Address
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Coupon Selection Modal */}
+                <Dialog open={isCouponModalOpen} onOpenChange={setIsCouponModalOpen}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Apply Coupon</DialogTitle>
+                            <DialogDescription>
+                                Browse available offers and save more.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                            {coupons.map((coupon) => (
+                                <div
+                                    key={coupon.code}
+                                    className={`p-4 rounded-2xl border-2 transition-all relative overflow-hidden ${selectedCoupon?.code === coupon.code
+                                        ? 'border-[#0c831f] bg-green-50 shadow-sm'
+                                        : 'border-slate-100 bg-white hover:border-slate-200'
+                                        }`}
+                                >
+                                    {selectedCoupon?.code === coupon.code && (
+                                        <div className="absolute top-0 right-0 p-1.5 bg-[#0c831f] text-white rounded-bl-xl">
+                                            <Check size={12} strokeWidth={4} />
+                                        </div>
+                                    )}
+                                    <div className="flex items-start gap-3">
+                                        <div className={`p-3 rounded-2xl ${selectedCoupon?.code === coupon.code ? 'bg-[#0c831f]/10 text-[#0c831f]' : 'bg-orange-50 text-orange-500'}`}>
+                                            <Tag size={20} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-black text-slate-800 tracking-wider mb-1">{coupon.code}</p>
+                                            <p className="text-xs text-slate-500 leading-relaxed mb-3">{coupon.description}</p>
+                                            <button
+                                                onClick={() => handleApplyCoupon(coupon)}
+                                                disabled={selectedCoupon?.code === coupon.code}
+                                                className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all ${selectedCoupon?.code === coupon.code
+                                                    ? 'bg-white text-[#0c831f] border-2 border-[#0c831f] cursor-default'
+                                                    : 'bg-[#0c831f] text-white hover:bg-[#0b721b]'
+                                                    }`}
+                                            >
+                                                {selectedCoupon?.code === coupon.code ? 'Applied' : 'Apply Now'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="pt-2">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                <Input
+                                    placeholder="Enter coupon code manually"
+                                    className="pl-10 h-12 rounded-xl focus-visible:ring-[#0c831f]"
+                                />
+                                <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0c831f] font-bold text-xs">
+                                    CHECK
+                                </button>
+                            </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <style dangerouslySetInnerHTML={{
                 __html: `
-                .scrollbar-hide::-webkit-scrollbar {
+                .no-scrollbar::-webkit-scrollbar {
                     display: none;
                 }
-                .scrollbar-hide {
+                .no-scrollbar {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                 }
             `}} />
-        </CustomerLayout>
+        </CustomerLayout >
     );
 };
 

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import { Search, Mic, MapPin, ChevronDown, Star, Home as HomeIcon, Heart, Snowflake, Laptop, Sparkles, Clock, Apple, Baby, Dog, Coffee, Gift, Shirt } from 'lucide-react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { BlurFade } from '@/components/ui/blur-fade';
+import { WordPullUp } from '@/components/ui/word-pull-up';
 import ProductCard from '../components/shared/ProductCard';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
 
@@ -385,9 +387,10 @@ const Home = () => {
                                     <Sparkles size={32} fill="currentColor" className="drop-shadow-lg" />
                                 </motion.div>
 
-                                <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1">
-                                    {activeCategory.banner.title}
-                                </h2>
+                                <WordPullUp
+                                    className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1 flex"
+                                    words={activeCategory.banner.title}
+                                />
 
                                 <motion.div
                                     className="text-yellow-400"
@@ -490,39 +493,40 @@ const Home = () => {
                     </div>
 
                     <div className="grid grid-cols-3 gap-x-3 gap-y-3">
-                        {bestsellerCategories.map((cat) => (
-                            <motion.div
-                                key={cat.id}
-                                whileHover={{ y: -4 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => navigate(`/category/${cat.name}`)}
-                                className="flex flex-col group cursor-pointer"
-                            >
-                                <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">
-                                    {/* Image Grid Area */}
-                                    <div className="p-2 gap-1.5 grid grid-cols-2 flex-1">
-                                        {cat.images.map((img, idx) => (
-                                            <div key={idx} className="bg-[#F8F9FA] rounded-lg overflow-hidden flex items-center justify-center p-1.5 border border-gray-50">
-                                                <img src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
-                                            </div>
-                                        ))}
-                                    </div>
+                        {bestsellerCategories.map((cat, idx) => (
+                            <BlurFade key={cat.id} delay={0.25 + (idx * 0.05)} inView={true}>
+                                <motion.div
+                                    whileHover={{ y: -4 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate(`/category/${cat.name}`)}
+                                    className="flex flex-col group cursor-pointer"
+                                >
+                                    <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">
+                                        {/* Image Grid Area */}
+                                        <div className="p-2 gap-1.5 grid grid-cols-2 flex-1">
+                                            {cat.images.map((img, idx) => (
+                                                <div key={idx} className="bg-[#F8F9FA] rounded-lg overflow-hidden flex items-center justify-center p-1.5 border border-gray-50">
+                                                    <img src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                                                </div>
+                                            ))}
+                                        </div>
 
-                                    {/* Glassy Overlay for Badge (Shifted downwards) */}
-                                    <div className="absolute bottom-[42px] left-0 right-0 flex justify-center pointer-events-none">
-                                        <div className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/60 shadow-sm transform scale-90 translate-y-2">
-                                            <span className="text-[8px] font-black text-[#1A1A1A] uppercase tracking-wider">4+ ITEMS</span>
+                                        {/* Glassy Overlay for Badge (Shifted downwards) */}
+                                        <div className="absolute bottom-[42px] left-0 right-0 flex justify-center pointer-events-none">
+                                            <div className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/60 shadow-sm transform scale-90 translate-y-2">
+                                                <span className="text-[8px] font-black text-[#1A1A1A] uppercase tracking-wider">4+ ITEMS</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Integrated Label Area */}
+                                        <div className="bg-[#F8F9FA]/50 border-t border-gray-50 px-2 py-3 mt-auto">
+                                            <span className="text-[10px] font-black text-center block leading-tight text-[#1A1A1A] group-hover:text-[#0c831f] transition-colors line-clamp-2">
+                                                {cat.name}
+                                            </span>
                                         </div>
                                     </div>
-
-                                    {/* Integrated Label Area */}
-                                    <div className="bg-[#F8F9FA]/50 border-t border-gray-50 px-2 py-3 mt-auto">
-                                        <span className="text-[10px] font-black text-center block leading-tight text-[#1A1A1A] group-hover:text-[#0c831f] transition-colors line-clamp-2">
-                                            {cat.name}
-                                        </span>
-                                    </div>
-                                </div>
-                            </motion.div>
+                                </motion.div>
+                            </BlurFade>
                         ))}
                     </div>
                 </div>
@@ -556,10 +560,12 @@ const Home = () => {
                                 { id: 2, name: "Organic Wild Honey", price: 450, originalPrice: 500, weight: "250g", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 4 },
                                 { id: 3, name: "Handcrafted Chocolate", price: 280, originalPrice: 350, weight: "100g", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
                                 { id: 4, name: "Fresh Blueberries", price: 190, originalPrice: 200, weight: "125g", image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 5 },
-                            ].map((product) => (
-                                <div key={product.id} className="w-[135px] flex-shrink-0 snap-start">
-                                    <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" compact={true} />
-                                </div>
+                            ].map((product, idx) => (
+                                <BlurFade key={product.id} delay={0.6 + (idx * 0.05)} inView={true}>
+                                    <div className="w-[135px] flex-shrink-0 snap-start">
+                                        <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" compact={true} />
+                                    </div>
+                                </BlurFade>
                             ))}
                         </div>
                     </div>
@@ -578,8 +584,12 @@ const Home = () => {
                             { id: 102, name: "Farm Fresh Eggs", price: 90, originalPrice: 110, weight: "6 pcs", image: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "11 mins", ratings: 5 },
                             { id: 103, name: "Double Toned Milk", price: 55, originalPrice: 60, weight: "1L", image: "https://images.unsplash.com/photo-1563636619-e910019335cd?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "8 mins", ratings: 4 },
                             { id: 104, name: "Whole Wheat Bread", price: 40, originalPrice: 50, weight: "400g", image: "https://images.unsplash.com/photo-1589367920969-ab8e050bab3e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
-                        ].map((product) => (
-                            <ProductCard key={product.id} product={product} compact={true} />
+                        ].map((product, idx) => (
+                            <BlurFade key={product.id} delay={0.4 + (idx * 0.05)} inView={true}>
+                                <div className="h-full">
+                                    <ProductCard product={product} compact={true} />
+                                </div>
+                            </BlurFade>
                         ))}
                     </div>
                 </div>

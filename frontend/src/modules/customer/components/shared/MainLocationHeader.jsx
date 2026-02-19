@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Mic, MapPin, ChevronDown, Star } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 const MainLocationHeader = ({ categories = [], activeCategory, onCategorySelect }) => {
     const { scrollY } = useScroll();
@@ -91,21 +92,22 @@ const MainLocationHeader = ({ categories = [], activeCategory, onCategorySelect 
                         }}
                         className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 relative z-10 snap-x"
                     >
-                        {categories.map((cat) => {
+                        {categories.map((cat, idx) => {
                             const isActive = activeCategory?.id === cat.id;
                             return (
-                                <div 
-                                    key={cat.id} 
-                                    onClick={() => onCategorySelect && onCategorySelect(cat)}
-                                    className="flex flex-col items-center gap-1 group cursor-pointer flex-shrink-0 snap-start min-w-[60px]"
-                                >
-                                    <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-[#1A1A1A] shadow-lg scale-110' : 'bg-white/10 hover:bg-white/20'}`}>
-                                        <cat.icon size={22} className={`${isActive ? 'text-white' : 'text-[#1A1A1A]'}`} />
+                                <BlurFade key={cat.id} delay={0.05 * idx} inView={true}>
+                                    <div
+                                        onClick={() => onCategorySelect && onCategorySelect(cat)}
+                                        className="flex flex-col items-center gap-1 group cursor-pointer flex-shrink-0 snap-start min-w-[60px]"
+                                    >
+                                        <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-[#1A1A1A] shadow-lg scale-110' : 'bg-white/10 hover:bg-white/20'}`}>
+                                            <cat.icon size={22} className={`${isActive ? 'text-white' : 'text-[#1A1A1A]'}`} />
+                                        </div>
+                                        <span className={`text-[11px] font-bold whitespace-nowrap transition-colors ${isActive ? 'text-[#1A1A1A] scale-105' : 'text-[#1A1A1A]/60'}`}>
+                                            {cat.name}
+                                        </span>
                                     </div>
-                                    <span className={`text-[11px] font-bold whitespace-nowrap transition-colors ${isActive ? 'text-[#1A1A1A] scale-105' : 'text-[#1A1A1A]/60'}`}>
-                                        {cat.name}
-                                    </span>
-                                </div>
+                                </BlurFade>
                             );
                         })}
                     </motion.div>

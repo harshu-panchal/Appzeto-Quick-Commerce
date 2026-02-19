@@ -17,7 +17,8 @@ import {
     HiOutlineChevronRight,
     HiOutlineMapPin,
     HiOutlinePhone,
-    HiOutlineCalendarDays
+    HiOutlineCalendarDays,
+    HiOutlineChartBar
 } from 'react-icons/hi2';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -92,39 +93,69 @@ const MOCK_ORDERS = [
     }
 ];
 
+import { MagicCard } from '@/components/ui/magic-card';
+import { BlurFade } from '@/components/ui/blur-fade';
+import ShimmerButton from '@/components/ui/shimmer-button';
+
+
 const Orders = () => {
+    const [orders, setOrders] = useState(MOCK_ORDERS);
     const [activeTab, setActiveTab] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedOrder, setSelectedOrder] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isQuickViewModalOpen, setIsQuickViewModalOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
-    const tabs = ['All', 'Pending', 'Processing', 'Ready to Ship', 'Shipped', 'Delivered', 'Cancelled'];
+    const tabs = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
     const filteredOrders = useMemo(() => {
-        return MOCK_ORDERS.filter(order => {
-            const matchesTab = activeTab === 'All' || order.status === activeTab;
+        return orders.filter(order => {
             const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesTab && matchesSearch;
+            const matchesTab = activeTab === 'All' || order.status === activeTab;
+            return matchesSearch && matchesTab;
         });
-    }, [activeTab, searchTerm]);
+    }, [orders, searchTerm, activeTab]);
 
-    const stats = [
-        { label: 'Total Orders', value: MOCK_ORDERS.length, icon: HiOutlineTruck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-        { label: 'Pending', value: MOCK_ORDERS.filter(o => o.status === 'Pending').length, icon: HiOutlineClock, color: 'text-amber-600', bg: 'bg-amber-50' },
-        { label: 'Earnings', value: '$' + MOCK_ORDERS.reduce((acc, curr) => acc + curr.total, 0).toFixed(2), icon: HiOutlineBanknotes, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-        { label: 'Cancelled', value: MOCK_ORDERS.filter(o => o.status === 'Cancelled').length, icon: HiOutlineArchiveBoxXMark, color: 'text-rose-600', bg: 'bg-rose-50' },
-    ];
+    const stats = useMemo(() => [
+        {
+            label: 'Total Orders',
+            value: orders.length,
+            icon: HiOutlineArchiveBoxXMark,
+            color: 'text-indigo-600',
+            bg: 'bg-indigo-50'
+        },
+        {
+            label: 'Pending',
+            value: orders.filter(o => o.status === 'Pending').length,
+            icon: HiOutlineClock,
+            color: 'text-amber-600',
+            bg: 'bg-amber-50'
+        },
+        {
+            label: 'Processing',
+            value: orders.filter(o => o.status === 'Processing').length,
+            icon: HiOutlineTruck,
+            color: 'text-blue-600',
+            bg: 'bg-blue-50'
+        },
+        {
+            label: 'Delivered',
+            value: orders.filter(o => o.status === 'Delivered').length,
+            icon: HiOutlineCheck,
+            color: 'text-emerald-600',
+            bg: 'bg-emerald-50'
+        }
+    ], [orders]);
 
     const getStatusColor = (status) => {
         switch (status) {
             case 'Pending': return 'warning';
-            case 'Processing': return 'info';
-            case 'Ready to Ship': return 'indigo';
-            case 'Shipped': return 'primary';
+            case 'Processing': return 'primary';
+            case 'Shipped': return 'info';
             case 'Delivered': return 'success';
             case 'Cancelled': return 'error';
-            default: return 'gray';
+            default: return 'secondary';
         }
     };
 
@@ -133,199 +164,337 @@ const Orders = () => {
         setIsDetailsModalOpen(true);
     };
 
+    const handleStatusUpdate = (orderId, newStatus) => {
+        setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+        if (selectedOrder && selectedOrder.id === orderId) {
+            setSelectedOrder({ ...selectedOrder, status: newStatus });
+        }
+    };
+
+    const exportOrders = () => {
+        console.log('Exporting orders...');
+        alert('Exporting ' + orders.length + ' orders as Excel/CSV (Simulation)');
+    };
+
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
-            {/* Page Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-                        Order Management
-                        <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">Real-time</Badge>
-                    </h1>
-                    <p className="text-slate-500 text-sm mt-0.5 font-medium">Process and track your customer orders with ease.</p>
+        <div className="space-y-6 pb-16">
+            <BlurFade delay={0.1}>
+                {/* Page Header */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                            Order Management
+                            <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">Real-time</Badge>
+                        </h1>
+                        <p className="text-slate-500 text-sm mt-0.5 font-medium">Process and track your customer orders with ease.</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            onClick={exportOrders}
+                            variant="outline"
+                            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border-slate-200"
+                        >
+                            <HiOutlinePrinter className="h-4 w-4" />
+                            <span>EXPORT ALL</span>
+                        </Button>
+                        <ShimmerButton
+                            onClick={() => setIsQuickViewModalOpen(true)}
+                            className="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-xl flex items-center space-x-2"
+                        >
+                            <HiOutlineEye className="h-4 w-4 mr-2" />
+                            <span>QUICK VIEW</span>
+                        </ShimmerButton>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <button className="flex items-center space-x-2 px-5 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-                        <HiOutlinePrinter className="h-4 w-4" />
-                        <span>EXPORT ALL</span>
-                    </button>
-                    <button className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:bg-slate-800 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center space-x-2">
-                        <HiOutlineEye className="h-4 w-4" />
-                        <span>QUICK VIEW</span>
-                    </button>
-                </div>
-            </div>
+            </BlurFade>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
-                    <Card key={i} className="border-none shadow-sm ring-1 ring-slate-100 p-4 relative overflow-hidden group">
-                        <div className="flex items-center gap-3">
-                            <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300", stat.bg, stat.color)}>
-                                <stat.icon className="h-5 w-5" />
+                    <BlurFade key={i} delay={0.1 + (i * 0.05)}>
+                        <MagicCard
+                            className="border-none shadow-sm ring-1 ring-slate-100 p-0 overflow-hidden group bg-white"
+                            gradientColor={stat.bg.includes('indigo') ? "#eef2ff" : stat.bg.includes('amber') ? "#fffbeb" : stat.bg.includes('emerald') ? "#ecfdf5" : "#fff1f2"}
+                        >
+                            <div className="flex items-center gap-3 p-4 relative z-10">
+                                <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300 shadow-sm", stat.bg, stat.color)}>
+                                    <stat.icon className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                    <h4 className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</h4>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-black text-slate-900 tracking-tight">{stat.value}</h4>
-                            </div>
-                        </div>
-                    </Card>
+                        </MagicCard>
+                    </BlurFade>
                 ))}
             </div>
 
             {/* Main Content Area */}
-            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl bg-white">
-                {/* Tabs */}
-                <div className="border-b border-slate-100 bg-slate-50/30 overflow-x-auto scrollbar-hide">
-                    <div className="flex px-6 items-center">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={cn(
-                                    "relative py-4 px-4 text-xs font-bold whitespace-nowrap transition-all duration-300",
-                                    activeTab === tab
-                                        ? "text-primary scale-105"
-                                        : "text-slate-400 hover:text-slate-600"
-                                )}
-                            >
-                                {tab}
-                                {activeTab === tab && (
-                                    <motion.div
-                                        layoutId="tab-underline"
-                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full mx-4"
-                                    />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Toolbox */}
-                <div className="p-4 border-b border-slate-100 flex flex-col lg:flex-row gap-3 items-center">
-                    <div className="relative flex-1 group w-full">
-                        <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search by Order ID or Customer Name..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-xl text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
-                        />
-                    </div>
-                    <div className="flex gap-2 shrink-0 w-full lg:w-auto">
-                        <button className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm w-full lg:w-auto">
-                            <HiOutlineFunnel className="h-4 w-4" />
-                            <span>DATE FILTER</span>
-                        </button>
-                    </div>
-                </div>
-
-                {/* Order Table */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order Details</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            <AnimatePresence mode="popLayout">
-                                {filteredOrders.map((order) => (
-                                    <motion.tr
-                                        layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        key={order.id}
-                                        className="hover:bg-slate-50/50 transition-colors group"
-                                    >
-                                        <td className="px-6 py-4">
-                                            <div>
-                                                <span className="text-xs font-bold text-slate-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => handleViewDetails(order)}>
-                                                    #{order.id}
-                                                </span>
-                                                <div className="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400 mt-1">
-                                                    <HiOutlineCalendarDays className="h-3 w-3" />
-                                                    {order.date} • {order.time}
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-2 ring-white">
-                                                    {order.customer.avatar}
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-900">{order.customer.name}</p>
-                                                    <p className="text-[9px] font-semibold text-slate-400">{order.customer.phone}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="text-xs font-bold text-slate-900">₹{order.total.toLocaleString()}</span>
-                                                <span className="text-[9px] font-semibold text-slate-400">{order.items.length} items</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={getStatusColor(order.status)} className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                                {order.status}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end space-x-1.5">
-                                                <button
-                                                    onClick={() => handleViewDetails(order)}
-                                                    className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100"
-                                                >
-                                                    <HiOutlineEye className="h-4 w-4" />
-                                                </button>
-                                                {order.status === 'Pending' && (
-                                                    <>
-                                                        <button className="p-1.5 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100">
-                                                            <HiOutlineCheck className="h-4 w-4" />
-                                                        </button>
-                                                        <button className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100">
-                                                            <HiOutlineXMark className="h-4 w-4" />
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </motion.tr>
-                                ))}
-                            </AnimatePresence>
-                        </tbody>
-                    </table>
-                    {filteredOrders.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-20 px-6">
-                            <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-                                <HiOutlineInboxStack className="h-8 w-8" />
-                            </div>
-                            <h3 className="text-sm font-bold text-slate-900">No orders found</h3>
-                            <p className="text-xs text-slate-400 font-medium max-w-xs text-center mt-1">We couldn't find any orders matching your current filters. Try adjusting your search.</p>
-                            <Button variant="outline" className="mt-6 rounded-xl text-xs" onClick={() => { setActiveTab('All'); setSearchTerm(''); }}>CLEAR ALL FILTERS</Button>
+            <BlurFade delay={0.3}>
+                <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl bg-white">
+                    {/* Tabs */}
+                    <div className="border-b border-slate-100 bg-slate-50/30 overflow-x-auto scrollbar-hide">
+                        <div className="flex px-6 items-center">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={cn(
+                                        "relative py-4 px-4 text-xs font-bold whitespace-nowrap transition-all duration-300",
+                                        activeTab === tab
+                                            ? "text-primary scale-105"
+                                            : "text-slate-400 hover:text-slate-600"
+                                    )}
+                                >
+                                    {tab}
+                                    {activeTab === tab && (
+                                        <motion.div
+                                            layoutId="tab-underline"
+                                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full mx-4"
+                                        />
+                                    )}
+                                </button>
+                            ))}
                         </div>
-                    )}
-                </div>
-
-                <div className="p-4 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between px-6">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                        Showing {filteredOrders.length} of {MOCK_ORDERS.length} Orders
-                    </p>
-                    <div className="flex gap-1">
-                        <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 opacity-50 cursor-not-allowed"><HiOutlineChevronRight className="h-3.5 w-3.5 rotate-180" /></button>
-                        <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 opacity-50 cursor-not-allowed"><HiOutlineChevronRight className="h-3.5 w-3.5" /></button>
                     </div>
-                </div>
-            </Card>
+
+                    {/* Toolbox */}
+                    <div className="p-4 border-b border-slate-100 flex flex-col lg:flex-row gap-3 items-center">
+                        <div className="relative flex-1 group w-full">
+                            <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search by Order ID or Customer Name..."
+                                className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-xl text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
+                            />
+                        </div>
+                        <div className="flex gap-2 shrink-0 w-full lg:w-auto">
+                            <button className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm w-full lg:w-auto">
+                                <HiOutlineFunnel className="h-4 w-4" />
+                                <span>DATE FILTER</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Order Table */}
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50/50 border-b border-slate-100">
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order Details</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                <AnimatePresence mode="popLayout">
+                                    {filteredOrders.map((order) => (
+                                        <motion.tr
+                                            layout
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            key={order.id}
+                                            className="hover:bg-slate-50/50 transition-colors group"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <div>
+                                                    <span className="text-xs font-bold text-slate-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => handleViewDetails(order)}>
+                                                        #{order.id}
+                                                    </span>
+                                                    <div className="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400 mt-1">
+                                                        <HiOutlineCalendarDays className="h-3 w-3" />
+                                                        {order.date} • {order.time}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-[10px] font-black text-white shadow-sm ring-2 ring-white">
+                                                        {order.customer.avatar}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold text-slate-900">{order.customer.name}</p>
+                                                        <p className="text-[9px] font-semibold text-slate-400">{order.customer.phone}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-slate-900">₹{order.total.toLocaleString()}</span>
+                                                    <span className="text-[9px] font-semibold text-slate-400">{order.items.length} items</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <Badge variant={getStatusColor(order.status)} className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                                    {order.status}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end space-x-1.5">
+                                                    <button
+                                                        onClick={() => handleViewDetails(order)}
+                                                        className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100"
+                                                    >
+                                                        <HiOutlineEye className="h-4 w-4" />
+                                                    </button>
+                                                    {order.status === 'Pending' && (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleStatusUpdate(order.id, 'Processing');
+                                                                }}
+                                                                className="p-1.5 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100"
+                                                            >
+                                                                <HiOutlineCheck className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleStatusUpdate(order.id, 'Cancelled');
+                                                                }}
+                                                                className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100"
+                                                            >
+                                                                <HiOutlineXMark className="h-4 w-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </AnimatePresence>
+                            </tbody>
+                        </table>
+                        {filteredOrders.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-20 px-6">
+                                <div className="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+                                    <HiOutlineInboxStack className="h-8 w-8" />
+                                </div>
+                                <h3 className="text-sm font-bold text-slate-900">No orders found</h3>
+                                <p className="text-xs text-slate-400 font-medium max-w-xs text-center mt-1">We couldn't find any orders matching your current filters. Try adjusting your search.</p>
+                                <Button variant="outline" className="mt-6 rounded-xl text-xs" onClick={() => { setActiveTab('All'); setSearchTerm(''); }}>CLEAR ALL FILTERS</Button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="p-4 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between px-6">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            Showing {filteredOrders.length} of {MOCK_ORDERS.length} Orders
+                        </p>
+                        <div className="flex gap-1">
+                            <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 opacity-50 cursor-not-allowed"><HiOutlineChevronRight className="h-3.5 w-3.5 rotate-180" /></button>
+                            <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 opacity-50 cursor-not-allowed"><HiOutlineChevronRight className="h-3.5 w-3.5" /></button>
+                        </div>
+                    </div>
+                </Card>
+            </BlurFade>
 
             {/* Order Details Modal */}
+            {/* ... (existing details modal) */}
+
+            {/* Quick View Summary Modal */}
+            <AnimatePresence>
+                {isQuickViewModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+                            onClick={() => setIsQuickViewModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="w-full max-w-lg relative z-10 bg-white rounded-3xl shadow-2xl overflow-hidden"
+                        >
+                            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                                        <HiOutlineChartBar className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-black text-slate-900">Quick Snapshot</h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Today's Performance</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setIsQuickViewModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400">
+                                    <HiOutlineXMark className="h-5 w-5" />
+                                </button>
+                            </div>
+
+                            <div className="p-6 space-y-6">
+                                {/* Summary Grid */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
+                                        <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Revenue</p>
+                                        <p className="text-xl font-black text-indigo-700">₹{orders.reduce((acc, o) => acc + o.total, 0).toLocaleString()}</p>
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                                        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Avg. Order Value</p>
+                                        <p className="text-xl font-black text-emerald-700">₹{(orders.reduce((acc, o) => acc + o.total, 0) / orders.length).toFixed(0)}</p>
+                                    </div>
+                                </div>
+
+                                {/* Recent Pending */}
+                                <div>
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center justify-between">
+                                        Latest Pending Orders
+                                        <span className="text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">{orders.filter(o => o.status === 'Pending').length} Action needed</span>
+                                    </h4>
+                                    <div className="space-y-2">
+                                        {orders.filter(o => o.status === 'Pending').slice(0, 3).map((order) => (
+                                            <div key={order.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-[10px] font-black text-white">
+                                                        {order.customer.avatar}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold text-slate-900">#{order.id}</p>
+                                                        <p className="text-[10px] font-medium text-slate-400">₹{order.total.toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => {
+                                                        setIsQuickViewModalOpen(false);
+                                                        handleViewDetails(order);
+                                                    }}
+                                                    className="text-[10px] font-black text-primary uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    Process
+                                                </button>
+                                            </div>
+                                        ))}
+                                        {orders.filter(o => o.status === 'Pending').length === 0 && (
+                                            <p className="text-xs text-center text-slate-400 py-4 font-medium italic">All caught up! No pending orders.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-slate-50 border-t border-slate-100">
+                                <Button
+                                    onClick={() => {
+                                        setIsQuickViewModalOpen(false);
+                                        setActiveTab('Pending');
+                                    }}
+                                    className="w-full py-3 text-xs font-bold"
+                                >
+                                    VIEW ALL PENDING ORDERS
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
             <AnimatePresence>
                 {isDetailsModalOpen && selectedOrder && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 lg:p-12">
@@ -444,7 +613,10 @@ const Orders = () => {
                                 <div className="flex gap-2">
                                     <button onClick={() => setIsDetailsModalOpen(false)} className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100 transition-all">CLOSE</button>
                                     {selectedOrder.status === 'Pending' && (
-                                        <button className="bg-slate-900 text-white px-8 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all">
+                                        <button
+                                            onClick={() => handleStatusUpdate(selectedOrder.id, 'Processing')}
+                                            className="bg-slate-900 text-white px-8 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all"
+                                        >
                                             ACCEPT ORDER
                                         </button>
                                     )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, useMotionValue, useTransform } from 'framer-motion';
-import { ChevronRight, Check } from 'lucide-react';
+import { ChevronRight, Check, ChevronsRight } from 'lucide-react';
 
 const SlideToPay = ({
     onSuccess,
@@ -20,7 +20,8 @@ const SlideToPay = ({
 
     // Transform x to background opacity or color if needed
     const opacity = useTransform(x, [0, maxDrag], [1, 0]);
-    const textOpacity = useTransform(x, [0, maxDrag * 0.7], [1, 0]);
+    const textOpacity = useTransform(x, [0, maxDrag * 0.5], [1, 0]);
+    const shimmerOpacity = useTransform(x, [0, maxDrag * 0.3], [1, 0]);
 
     // Rotation transform based on drag position
     const rotate = useTransform(x, [0, maxDrag], [0, 360]);
@@ -29,8 +30,8 @@ const SlideToPay = ({
     // Opacity for the checkmark to fade in
     const checkOpacity = useTransform(x, [maxDrag * 0.5, maxDrag], [0, 1]);
 
-    // Gradient width follows the slider
-    const progressWidth = useTransform(x, [0, maxDrag], [sliderWidth + 8, containerWidth]);
+    // Background fill progress
+    const fillWidth = useTransform(x, [0, maxDrag], [0, containerWidth]);
 
     const handleDragEnd = async () => {
         const currentX = x.get();
@@ -49,63 +50,71 @@ const SlideToPay = ({
 
     useEffect(() => {
         if (isLoading) {
-            // Reset if loading starts (optional, or handle differently)
+            // Loading state if handled externally
         }
-        if (!isLoading && isCompleted && !disabled) {
-            // Maybe reset after success if needed, but usually we navigate away
-        }
-    }, [isLoading, isCompleted, disabled]);
+    }, [isLoading]);
 
 
     return (
         <div
-            className="relative h-16 w-full bg-[#0c831f] rounded-full overflow-hidden select-none touch-none shadow-lg shadow-green-200"
+            className="relative h-16 w-full bg-green-50 rounded-full overflow-hidden select-none touch-none shadow-inner border border-green-200"
             ref={(el) => el && setContainerWidth(el.offsetWidth)}
         >
-            {/* Shimmer Effect Background */}
-            <div className="absolute inset-0 overflow-hidden">
-                <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-20deg]"
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear", delay: 1 }}
-                />
-            </div>
+            {/* Progress Fill */}
+            <motion.div
+                className="absolute inset-y-0 left-0 bg-[#0c831f]"
+                style={{ width: fillWidth }}
+            />
+
+            {/* Shimmer Effect Background (Only visible when not dragged much) */}
+            <motion.div
+                className="absolute inset-0 overflow-hidden"
+                style={{ opacity: shimmerOpacity }}
+            >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] w-[200%] animate-[shimmer_2s_infinite]" />
+            </motion.div>
 
             {/* Text Label */}
             <motion.div
                 className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
                 style={{ opacity: textOpacity }}
             >
-                <span className="text-white font-bold text-lg tracking-wide">
-                    {text} <span className="mx-1">|</span> ₹{amount}
+                <span className="text-[#0c831f]/70 font-black text-sm tracking-widest uppercase flex items-center gap-2">
+                    {text} <span className="text-[#0c831f]/30">|</span> <span className="text-slate-900">₹{amount}</span>
                 </span>
 
-                {/* Visual Cue Arrows */}
-                <div className="absolute left-20 flex opacity-50 animate-pulse">
-                    <ChevronRight size={16} className="text-green-200" />
-                    <ChevronRight size={16} className="text-green-100 -ml-2" />
+                <div className="absolute right-4 animate-pulse text-[#0c831f]/50">
+                    <ChevronsRight size={20} />
                 </div>
             </motion.div>
 
-            {/* Progress Background (fills behind the slider) */}
-            {/* <motion.div
-                className="absolute left-0 top-0 bottom-0 bg-blue-700 rounded-full z-0"
-                style={{ width: progressWidth }}
-            /> */}
+            {/* Success State Text */}
+            {isCompleted && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+                >
+                    <span className="text-white font-black text-lg tracking-wide uppercase flex items-center gap-2">
+                        Processing <span className="animate-pulse">...</span>
+                    </span>
+                </motion.div>
+            )}
 
             {/* Draggable Circle */}
             <motion.div
-                className="absolute left-1 top-1 bottom-1 w-14 h-14 bg-white rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing z-20 shadow-md"
-                drag="x"
+                className="absolute left-1 top-1 bottom-1 w-14 h-14 bg-white rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing z-20 shadow-[0_2px_10px_rgba(0,0,0,0.1)] border border-slate-100"
+                drag={!isCompleted && !isLoading ? "x" : false}
                 dragConstraints={{ left: 0, right: maxDrag }}
-                dragElastic={0.1} // Some resistance
+                dragElastic={0.05}
                 dragMomentum={false}
                 onDragEnd={handleDragEnd}
                 animate={controls}
-                style={{ x, rotate }}
+                style={{ x }}
                 whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05 }}
             >
-                {isLoading ? (
+                {isLoading || isCompleted ? (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -113,21 +122,8 @@ const SlideToPay = ({
                     />
                 ) : (
                     <div className="relative w-full h-full flex items-center justify-center">
-                        <motion.div
-                            className="absolute inset-0 flex items-center justify-center"
-                            style={{ opacity: checkOpacity }}
-                        >
-                            <Check size={24} className="text-green-600" strokeWidth={3} />
-                        </motion.div>
-
-                        <motion.div
-                            className="absolute inset-0 flex items-center justify-center"
-                            style={{ opacity: arrowsOpacity }}
-                        >
-                            <div className="flex">
-                                <ChevronRight size={24} className="text-[#0c831f] ml-0.5" strokeWidth={3} />
-                                <ChevronRight size={24} className="text-[#4ade80] -ml-3" strokeWidth={3} />
-                            </div>
+                        <motion.div className="text-[#0c831f]" style={{ opacity: arrowsOpacity }}>
+                            <ChevronRight size={28} strokeWidth={3} />
                         </motion.div>
                     </div>
                 )}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
+import { BlurFade } from '@/components/ui/blur-fade';
 
 const categoryGroups = [
     {
@@ -47,23 +48,24 @@ const CategoriesPage = () => {
 
                             {/* Categories Grid */}
                             <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-8">
-                                {group.categories.map((category) => (
-                                    <Link
-                                        key={category.id}
-                                        to={`/category/${category.id}`}
-                                        className="flex flex-col group cursor-pointer"
-                                    >
-                                        <div className={`aspect-square ${category.color} rounded-[24px] md:rounded-[32px] p-2.5 flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-105 shadow-sm group-hover:shadow-md`}>
-                                            <img
-                                                src={category.image}
-                                                alt={category.name}
-                                                className="w-full h-full object-contain mix-blend-multiply"
-                                            />
-                                        </div>
-                                        <span className="text-[10px] md:text-[12px] font-bold text-[#333] leading-tight text-center px-1 group-hover:text-[#0c831f] transition-colors">
-                                            {category.name}
-                                        </span>
-                                    </Link>
+                                {group.categories.map((category, idx) => (
+                                    <BlurFade key={category.id} delay={0.1 + (idx * 0.05)} inView={true} className="flex flex-col group cursor-pointer">
+                                        <Link
+                                            to={`/category/${category.id}`}
+                                            className="contents"
+                                        >
+                                            <div className={`aspect-square ${category.color} rounded-[24px] md:rounded-[32px] p-2.5 flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-105 shadow-sm group-hover:shadow-md`}>
+                                                <img
+                                                    src={category.image}
+                                                    alt={category.name}
+                                                    className="w-full h-full object-contain mix-blend-multiply"
+                                                />
+                                            </div>
+                                            <span className="text-[10px] md:text-[12px] font-bold text-[#333] leading-tight text-center px-1 group-hover:text-[#0c831f] transition-colors">
+                                                {category.name}
+                                            </span>
+                                        </Link>
+                                    </BlurFade>
                                 ))}
                             </div>
                         </div>

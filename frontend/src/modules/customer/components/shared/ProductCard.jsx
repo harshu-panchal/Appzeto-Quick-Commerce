@@ -141,42 +141,68 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                 </div>
 
                 {/* Floating ADD/Quantity Button */}
-                <div className={cn("absolute z-20", compact ? "-bottom-3 right-1.5" : "-bottom-4 right-3")}>
+                <div className={cn("absolute z-20", compact ? "-bottom-3.5 right-1.5" : "-bottom-5 right-3")}>
                     {quantity > 0 ? (
                         <div
                             className={cn(
-                                "bg-white border-2 border-green-50 text-[#0c831f] rounded-lg flex items-center shadow-xl shadow-green-900/5",
+                                "bg-white border-2 border-[#0c831f] text-[#0c831f] rounded-lg flex items-center shadow-lg shadow-green-900/5 overflow-hidden",
                                 compact ? "px-1 py-0.5 gap-0.5" : "px-1.5 py-1 gap-1"
                             )}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <motion.button
-                                whileTap={{ scale: 0.9 }}
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={handleDecrement}
-                                className={cn("flex items-center justify-center hover:bg-green-50 rounded-lg transition-colors", compact ? "h-5 w-5" : "h-7 w-7")}
+                                className={cn("rounded-lg hover:bg-green-50 text-[#0c831f]", compact ? "h-6 w-6" : "h-9 w-9")}
                             >
-                                <Minus size={compact ? 10 : 12} strokeWidth={3.5} />
-                            </motion.button>
-                            <span className={cn("text-center font-black", compact ? "w-2.5 text-[10px]" : "w-3 text-xs")}>{quantity}</span>
-                            <motion.button
-                                whileTap={{ scale: 0.9 }}
+                                <Minus size={compact ? 12 : 14} strokeWidth={3.5} />
+                            </Button>
+
+                            <div className={cn("relative flex items-center justify-center overflow-hidden", compact ? "w-4 h-5" : "w-6 h-7")}>
+                                <AnimatePresence mode="popLayout" initial={false}>
+                                    <motion.span
+                                        key={quantity}
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        exit={{ y: -20, opacity: 0 }}
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                        className={cn("absolute font-black", compact ? "text-[11px]" : "text-sm")}
+                                    >
+                                        {quantity}
+                                    </motion.span>
+                                </AnimatePresence>
+                            </div>
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={handleIncrement}
-                                className={cn("flex items-center justify-center hover:bg-green-50 rounded-lg transition-colors", compact ? "h-5 w-5" : "h-7 w-7")}
+                                className={cn("rounded-lg hover:bg-green-50 text-[#0c831f]", compact ? "h-6 w-6" : "h-9 w-9")}
                             >
-                                <Plus size={compact ? 10 : 12} strokeWidth={3.5} />
-                            </motion.button>
+                                <Plus size={compact ? 12 : 14} strokeWidth={3.5} />
+                            </Button>
                         </div>
                     ) : (
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={handleAddToCart}
-                            className={cn(
-                                "bg-white border-2 border-green-50 text-[#0c831f] rounded-lg font-black shadow-xl shadow-green-900/5 hover:bg-green-50 transition-colors",
-                                compact ? "px-3 py-1 text-[10px]" : "px-5 py-2 text-[13px]"
-                            )}
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.9 }}
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         >
-                            ADD
-                        </motion.button>
+                            <Button
+                                variant="outline"
+                                onClick={handleAddToCart}
+                                className={cn(
+                                    "font-black shadow-lg shadow-green-900/5",
+                                    "border-2 border-[#0c831f] text-[#0c831f] bg-white hover:bg-green-50 transition-colors uppercase",
+                                    compact ? "h-8 px-4 text-[11px]" : "h-11 px-7 text-base"
+                                )}
+                            >
+                                ADD
+                            </Button>
+                        </motion.div>
                     )}
                 </div>
             </div>
@@ -195,7 +221,7 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                     </div>
                 </div>
 
-                <div>
+                <div className={cn(compact ? "h-8" : "h-9")}>
                     <h4 className={cn("font-bold text-[#1A1A1A] leading-tight line-clamp-2", compact ? "text-[11px]" : "text-[13px]")}>{product.name}</h4>
                 </div>
 

@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority";
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 
@@ -19,6 +20,8 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        brand: "bg-brand-600 text-white shadow-sm hover:bg-brand-700",
+        brandOutline: "border-2 border-brand-50 bg-white text-brand-600 shadow-sm hover:bg-brand-50",
       },
       size: {
         default: "h-9 px-4 py-2",
@@ -35,12 +38,24 @@ const buttonVariants = cva(
 )
 
 const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button"
+  // If asChild is true, we use the Slot component (no built-in motion on the wrapper)
+  // If asChild is false, we use motion.button
+  const Comp = asChild ? Slot : motion.button
+
+  // Only apply motion props if we are rendering the motion.button
+  const motionProps = asChild ? {} : {
+    whileHover: { scale: 1.02 },
+    whileTap: { scale: 0.95 },
+    transition: { type: "spring", stiffness: 400, damping: 10 }
+  }
+
   return (
     <Comp
       className={cn(buttonVariants({ variant, size, className }))}
       ref={ref}
-      {...props} />
+      {...motionProps}
+      {...props}
+    />
   );
 })
 Button.displayName = "Button"

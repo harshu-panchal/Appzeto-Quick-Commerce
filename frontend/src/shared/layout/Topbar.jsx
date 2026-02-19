@@ -36,6 +36,8 @@ const Topbar = () => {
                     onClick={() => {
                         if (location.pathname.startsWith('/admin')) {
                             navigate('/admin/profile');
+                        } else if (location.pathname.startsWith('/seller')) {
+                            navigate('/seller/profile');
                         } else {
                             navigate('/profile');
                         }

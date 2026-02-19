@@ -19,7 +19,7 @@ export const CartAnimationProvider = ({ children }) => {
         // Remove item after animation
         setTimeout(() => {
             setFlyingItems(prev => prev.filter(item => item.id !== id));
-        }, 900);
+        }, 1100);
     };
 
     const animateRemoveFromCart = (imageSrc) => {
@@ -44,7 +44,7 @@ export const CartAnimationProvider = ({ children }) => {
         // Remove item after animation
         setTimeout(() => {
             setDroppingItems(prev => prev.filter(item => item.id !== id));
-        }, 450);
+        }, 600);
     };
 
     return (
@@ -72,23 +72,43 @@ const FlyingItem = ({ item }) => {
     const [target, setTarget] = useState(null);
 
     useEffect(() => {
-        // Calculate target
-        const miniCart = document.getElementById('mini-cart-target');
-        let targetX, targetY;
+        // Function to find target
+        const findTarget = () => {
+            const miniCart = document.getElementById('mini-cart-target');
+            const headerCart = document.getElementById('header-cart-icon');
 
-        if (miniCart) {
-            const rect = miniCart.getBoundingClientRect();
-            targetX = rect.left + rect.width / 2;
-            targetY = rect.top + rect.height / 2;
-        } else {
-            // Fallback
-            const isMd = window.innerWidth >= 768;
-            const bottomOffset = isMd ? 96 : 74;
-            targetX = window.innerWidth / 2;
-            targetY = window.innerHeight - bottomOffset - 25;
-        }
+            if (miniCart) {
+                const rect = miniCart.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+            } else if (headerCart) {
+                const rect = headerCart.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+            } else {
+                // Fallback
+                const isMd = window.innerWidth >= 768;
+                const bottomOffset = isMd ? 96 : 74;
+                return {
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight - bottomOffset - 25
+                };
+            }
+        };
 
-        setTarget({ x: targetX, y: targetY });
+        // Initial calculation
+        setTarget(findTarget());
+
+        // Update target after a short delay to account for entrance animations
+        const timer = setTimeout(() => {
+            setTarget(findTarget());
+        }, 100);
+
+        return () => clearTimeout(timer);
     }, []);
 
     if (!target) return null;
@@ -121,7 +141,7 @@ const FlyingItem = ({ item }) => {
                 borderRadius: '50%',
             }}
             transition={{
-                duration: 0.8,
+                duration: 1.0,
                 times: [0, 0.2, 0.8, 1], // Timing for opacity/scale keyframes
                 ease: "easeInOut",
             }}
@@ -168,7 +188,7 @@ const DroppingItem = ({ item }) => {
                 scale: [0.5, 1, 0.8],
             }}
             transition={{
-                duration: 0.35,
+                duration: 0.5,
                 ease: "easeIn",
             }}
             className="object-cover bg-white pointer-events-none z-[100]"

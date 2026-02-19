@@ -28,10 +28,15 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
+import { MagicCard } from '@/components/ui/magic-card';
+import { BlurFade } from '@/components/ui/blur-fade';
+import ShimmerButton from '@/components/ui/shimmer-button';
+
+
 const ProductManagement = () => {
     const navigate = useNavigate();
 
-    // Mock Data (Filterable)
+    // Mock Data
     const [products, setProducts] = useState([
         {
             id: 'p1',
@@ -65,6 +70,21 @@ const ProductManagement = () => {
         },
         {
             id: 'p3',
+            name: 'Samsung Galaxy S24 Ultra',
+            slug: 'samsung-galaxy-s24-ultra',
+            sku: 'ELE-MOB-001',
+            price: 129000,
+            salePrice: 119000,
+            stock: 5,
+            category: 'Smartphone',
+            header: 'Electronics',
+            status: 'active',
+            image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=200',
+            sales: 45,
+            rating: 4.7
+        },
+        {
+            id: 'p4',
             name: 'Organic Whole Wheat Bread',
             slug: 'organic-whole-wheat-bread',
             sku: 'BRD-WHT-001',
@@ -77,26 +97,12 @@ const ProductManagement = () => {
             image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=200',
             sales: 320,
             rating: 4.5
-        },
-        {
-            id: 'p4',
-            name: 'Samsung Galaxy Buds Pro',
-            slug: 'galaxy-buds-pro',
-            sku: 'ELE-AUD-005',
-            price: 15999,
-            salePrice: 12999,
-            stock: 8,
-            category: 'Wearables',
-            header: 'Electronics',
-            status: 'active',
-            image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&q=80&w=200',
-            sales: 450,
-            rating: 4.6
         }
     ]);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('All');
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
@@ -135,9 +141,15 @@ const ProductManagement = () => {
             const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 p.sku.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesCategory = filterCategory === 'all' || p.category === filterCategory || p.header === filterCategory;
-            return matchesSearch && matchesCategory;
+
+            let matchesStatus = filterStatus === 'All';
+            if (filterStatus === 'Active') matchesStatus = p.status === 'active';
+            if (filterStatus === 'Low Stock') matchesStatus = p.stock > 0 && p.stock <= 10;
+            if (filterStatus === 'Out of Stock') matchesStatus = p.stock === 0;
+
+            return matchesSearch && matchesCategory && matchesStatus;
         });
-    }, [products, searchTerm, filterCategory]);
+    }, [products, searchTerm, filterCategory, filterStatus]);
 
     const stats = useMemo(() => ({
         total: products.length,
@@ -148,10 +160,22 @@ const ProductManagement = () => {
 
     const handleSave = () => {
         if (editingItem) {
-            setProducts(products.map(p => p.id === editingItem.id ? { ...p, ...formData, image: formData.mainImage || p.image } : p));
+            setProducts(products.map(p => p.id === editingItem.id ? { ...p, ...formData } : p));
+        } else {
+            const newProduct = {
+                ...formData,
+                id: Date.now().toString(),
+                image: 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?auto=format&fit=crop&q=80&w=200'
+            };
+            setProducts([newProduct, ...products]);
         }
         setIsProductModalOpen(false);
         setEditingItem(null);
+    };
+
+    const exportProducts = () => {
+        console.log('Exporting products...');
+        alert('Exporting ' + products.length + ' products as CSV (Simulation)');
     };
 
     const handleDeleteClick = (product) => {
@@ -165,196 +189,221 @@ const ProductManagement = () => {
         setItemToDelete(null);
     };
 
-    const openEditModal = (item) => {
-        setFormData({
-            name: item.name || '',
-            slug: item.slug || '',
-            sku: item.sku || '',
-            description: item.description || '',
-            price: item.price || '',
-            salePrice: item.salePrice || '',
-            stock: item.stock || '',
-            lowStockAlert: item.lowStockAlert || 5,
-            category: item.category || '',
-            header: item.header || '',
-            status: item.status || 'active',
-            tags: item.tags || '',
-            weight: item.weight || '',
-            brand: item.brand || '',
-            mainImage: item.image || item.mainImage || null,
-            galleryImages: item.galleryImages || [],
-            variants: item.variants || [{
-                id: Date.now(),
-                name: 'Default',
+    const openEditModal = (item = null) => {
+        if (item) {
+            setFormData({
+                name: item.name || '',
+                slug: item.slug || '',
+                sku: item.sku || '',
+                description: item.description || '',
                 price: item.price || '',
                 salePrice: item.salePrice || '',
                 stock: item.stock || '',
-                sku: item.sku || ''
-            }]
-        });
-        setEditingItem(item);
+                lowStockAlert: item.lowStockAlert || 5,
+                category: item.category || '',
+                header: item.header || '',
+                status: item.status || 'active',
+                tags: item.tags || '',
+                weight: item.weight || '',
+                brand: item.brand || '',
+                mainImage: item.image || item.mainImage || null,
+                galleryImages: item.galleryImages || [],
+                variants: item.variants || [{
+                    id: Date.now(),
+                    name: 'Default',
+                    price: item.price || '',
+                    salePrice: item.salePrice || '',
+                    stock: item.stock || '',
+                    sku: item.sku || ''
+                }]
+            });
+            setEditingItem(item);
+        } else {
+            setFormData({
+                name: '', slug: '', sku: '', description: '',
+                price: '', salePrice: '', stock: '', lowStockAlert: 5,
+                category: '', header: '', status: 'active',
+                tags: '', weight: '', brand: '',
+                mainImage: null, galleryImages: [],
+                variants: [{ id: Date.now(), name: 'Default', price: '', salePrice: '', stock: '', sku: '' }]
+            });
+            setEditingItem(null);
+        }
         setModalTab('general');
         setIsProductModalOpen(true);
     };
 
-    const StatusBadge = ({ status, stock }) => {
-        if (stock === 0) return <Badge variant="error" className="text-[10px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Out of Stock</Badge>;
-        if (stock <= 10) return <Badge variant="warning" className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Low Stock</Badge>;
-        if (status === 'active') return <Badge variant="success" className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Active</Badge>;
-        return <Badge variant="gray" className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Draft</Badge>;
-    };
-
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
-            {/* Page Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2 text-slate-900">
-                        Product List
-                        <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">Live</Badge>
-                    </h1>
-                    <p className="text-slate-500 text-sm mt-0.5">Track your items, prices, and how many are left in stock.</p>
+        <div className="space-y-6 pb-16">
+            <BlurFade delay={0.1}>
+                {/* Page Header */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold flex items-center gap-2 text-slate-900">
+                            Product List
+                            <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">Live</Badge>
+                        </h1>
+                        <p className="text-slate-500 text-sm mt-0.5">Track your items, prices, and how many are left in stock.</p>
+                    </div>
+                    <ShimmerButton
+                        onClick={() => navigate('/seller/products/add')}
+                        className="px-6 py-2.5 rounded-xl text-xs font-bold shadow-xl flex items-center space-x-2 text-white"
+                        background="#0f172a"
+                    >
+                        <HiOutlinePlus className="h-4 w-4 mr-2" />
+                        <span>ADD NEW PRODUCT</span>
+                    </ShimmerButton>
                 </div>
-                <button
-                    onClick={() => navigate('/seller/products/add')}
-                    className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:bg-slate-800 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center space-x-2"
-                >
-                    <HiOutlinePlus className="h-4 w-4" />
-                    <span>ADD NEW PRODUCT</span>
-                </button>
-            </div>
+            </BlurFade>
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { label: 'All Items', val: stats.total, icon: HiOutlineCube, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                    { label: 'Active Items', val: stats.active, icon: HiOutlineCheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                    { label: 'Low Stock', val: stats.lowStock, icon: HiOutlineExclamationCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    { label: 'Out of Stock', val: stats.outOfStock, icon: HiOutlineArchiveBox, color: 'text-rose-600', bg: 'bg-rose-50' }
+                    { label: 'All Items', val: stats.total, icon: HiOutlineCube, color: 'text-indigo-600', bg: 'bg-indigo-50', status: 'All' },
+                    { label: 'Active Items', val: stats.active, icon: HiOutlineCheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50', status: 'Active' },
+                    { label: 'Low Stock', val: stats.lowStock, icon: HiOutlineExclamationCircle, color: 'text-amber-600', bg: 'bg-amber-50', status: 'Low Stock' },
+                    { label: 'Out of Stock', val: stats.outOfStock, icon: HiOutlineArchiveBox, color: 'text-rose-600', bg: 'bg-rose-50', status: 'Out of Stock' }
                 ].map((stat, i) => (
-                    <Card key={i} className="border-none shadow-sm ring-1 ring-slate-100 p-4 relative overflow-hidden group">
-                        <div className="flex items-center gap-3">
-                            <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300", stat.bg, stat.color)}>
-                                <stat.icon className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <h4 className="text-xl font-black text-slate-900 tracking-tight">{stat.val}</h4>
-                            </div>
+                    <BlurFade key={i} delay={0.1 + (i * 0.05)}>
+                        <div
+                            onClick={() => setFilterStatus(stat.status)}
+                            className={cn(
+                                "cursor-pointer rounded-2xl transition-all duration-300",
+                                filterStatus === stat.status ? "ring-2 ring-indigo-500 shadow-lg" : "hover:shadow-md"
+                            )}
+                        >
+                            <MagicCard
+                                className="border-none shadow-sm ring-1 ring-slate-100 p-0 overflow-hidden group bg-white"
+                                gradientColor={stat.bg.includes('indigo') ? "#eef2ff" : stat.bg.includes('emerald') ? "#ecfdf5" : stat.bg.includes('amber') ? "#fffbeb" : "#fff1f2"}
+                            >
+                                <div className="flex items-center gap-3 p-4 relative z-10">
+                                    <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300 shadow-sm", stat.bg, stat.color)}>
+                                        <stat.icon className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                        <h4 className="text-2xl font-black text-slate-900 tracking-tight">{stat.val}</h4>
+                                    </div>
+                                </div>
+                            </MagicCard>
                         </div>
-                    </Card>
+                    </BlurFade>
                 ))}
             </div>
 
             {/* Toolbox */}
-            <Card className="border-none shadow-sm ring-1 ring-slate-100 p-3 bg-white/60 backdrop-blur-xl">
-                <div className="flex flex-col lg:flex-row gap-3 items-center">
-                    <div className="relative flex-1 group w-full">
-                        <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search by name or SKU..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-xl text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
-                        />
+            <BlurFade delay={0.25}>
+                <Card className="border-none shadow-sm ring-1 ring-slate-100 p-3 bg-white/60 backdrop-blur-xl">
+                    <div className="flex flex-col lg:flex-row gap-3 items-center">
+                        <div className="relative flex-1 group w-full">
+                            <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search by name or SKU..."
+                                className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-xl text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
+                            />
+                        </div>
+                        <div className="flex gap-2 shrink-0 w-full lg:w-auto">
+                            <select
+                                value={filterCategory}
+                                onChange={(e) => setFilterCategory(e.target.value)}
+                                className="flex-1 lg:flex-none px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary/5 outline-none appearance-none cursor-pointer"
+                            >
+                                <option value="all">All Categories</option>
+                                {categories.map(h => (
+                                    <optgroup key={h.id} label={h.name}>
+                                        {h.children.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </optgroup>
+                                ))}
+                            </select>
+                            <button className="flex items-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                                <HiOutlineFunnel className="h-4 w-4" />
+                                <span>Filters</span>
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex gap-2 shrink-0 w-full lg:w-auto">
-                        <select
-                            value={filterCategory}
-                            onChange={(e) => setFilterCategory(e.target.value)}
-                            className="flex-1 lg:flex-none px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary/5 outline-none appearance-none cursor-pointer"
-                        >
-                            <option value="all">All Categories</option>
-                            {categories.map(h => (
-                                <optgroup key={h.id} label={h.name}>
-                                    {h.children.map(c => <option key={c} value={c}>{c}</option>)}
-                                </optgroup>
-                            ))}
-                        </select>
-                        <button className="flex items-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
-                            <HiOutlineFunnel className="h-4 w-4" />
-                            <span>Filters</span>
-                        </button>
-                    </div>
-                </div>
-            </Card>
+                </Card>
+            </BlurFade>
 
             {/* Product Table */}
-            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Product</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Header</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Category</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Reg. Price</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Sale Price</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Variant</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Stock</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                            {filteredProducts.map((p) => (
-                                <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 ring-1 ring-slate-200">
-                                                <img src={p.image} alt={p.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-bold text-slate-900">{p.name}</p>
-                                                <p className="text-[9px] font-semibold text-slate-400">SKU: {p.sku}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full">{p.header || 'Grocery'}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold text-slate-600">{p.category}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-xs font-bold text-slate-400">₹{p.price}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-xs font-bold text-emerald-600">₹{p.salePrice || p.price}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
-                                            {p.variants?.[0]?.name || 'Standard'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={cn("text-xs font-bold", p.stock === 0 ? "text-rose-500" : p.stock <= 10 ? "text-amber-500" : "text-emerald-500")}>
-                                            {p.stock}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end space-x-1.5">
-                                            <button
-                                                onClick={() => openEditModal(p)}
-                                                className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100"
-                                            >
-                                                <HiOutlinePencilSquare className="h-3.5 w-3.5" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteClick(p)}
-                                                className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100"
-                                            >
-                                                <HiOutlineTrash className="h-3.5 w-3.5" />
-                                            </button>
-                                        </div>
-                                    </td>
+            <BlurFade delay={0.3}>
+                <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50/50 border-b border-slate-100">
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Product</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Header</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Category</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Reg. Price</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">Sale Price</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Variant</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">Stock</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {filteredProducts.map((p) => (
+                                    <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 ring-1 ring-slate-200">
+                                                    <img src={p.image} alt={p.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-bold text-slate-900">{p.name}</p>
+                                                    <p className="text-[9px] font-semibold text-slate-400">SKU: {p.sku}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full">{p.header || 'Grocery'}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-[10px] font-bold text-slate-600">{p.category}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs font-bold text-slate-400">₹{p.price}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-xs font-bold text-emerald-600">₹{p.salePrice || p.price}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
+                                                {p.variants?.[0]?.name || 'Standard'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={cn("text-xs font-bold", p.stock === 0 ? "text-rose-500" : p.stock <= 10 ? "text-amber-500" : "text-emerald-500")}>
+                                                {p.stock}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end space-x-1.5">
+                                                <button
+                                                    onClick={() => openEditModal(p)}
+                                                    className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100"
+                                                >
+                                                    <HiOutlinePencilSquare className="h-3.5 w-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(p)}
+                                                    className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100"
+                                                >
+                                                    <HiOutlineTrash className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
 
-                    </table>
-                </div>
-            </Card>
+                        </table>
+                    </div>
+                </Card>
+            </BlurFade>
 
             {/* Edit Modal (Copy from Admin) */}
             <AnimatePresence>
@@ -599,7 +648,7 @@ const ProductManagement = () => {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     );
 };
 
