@@ -8,6 +8,10 @@ import { UserRole } from '@core/constants/roles';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import NotFound from '@/pages/NotFound';
+import Auth from '@modules/seller/pages/Auth';
+import AdminAuth from '@modules/admin/pages/AdminAuth';
+import DeliveryAuth from '@modules/delivery/pages/DeliveryAuth';
+
 
 // Lazy load modules
 const SellerModule = lazy(() => import('@modules/seller/routes'));
@@ -25,6 +29,19 @@ export const router = createBrowserRouter([
         path: '/signup',
         element: <Signup />,
     },
+    {
+        path: '/seller/auth',
+        element: <Auth />,
+    },
+    {
+        path: '/admin/auth',
+        element: <AdminAuth />,
+    },
+    {
+        path: '/delivery/auth',
+        element: <DeliveryAuth />,
+    },
+
     {
         path: '/seller/*',
         element: (

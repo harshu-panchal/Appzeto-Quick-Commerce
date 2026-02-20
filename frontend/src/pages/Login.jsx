@@ -83,6 +83,12 @@ const Login = () => {
                                 Sign up
                             </span>
                         </p>
+                        <p className="mt-2 text-sm text-gray-600">
+                            Are you a seller?{' '}
+                            <span className="cursor-pointer font-medium text-primary-600 hover:text-primary-500" onClick={() => navigate('/seller/auth')}>
+                                Join as Partner
+                            </span>
+                        </p>
                     </div>
                 </form>
             </div>
