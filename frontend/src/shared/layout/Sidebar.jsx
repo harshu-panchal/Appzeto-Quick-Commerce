@@ -109,6 +109,7 @@ const SidebarItem = ({
                             <NavLink
                                 key={child.path}
                                 to={child.path}
+                                end={child.end !== undefined ? child.end : false}
                                 className={({ isActive }) =>
                                     cn(
                                         "block text-sm py-2 px-3 rounded-lg transition-all duration-300 relative",
@@ -136,6 +137,7 @@ const SidebarItem = ({
     return (
         <NavLink
             to={item.path}
+            end={item.end !== undefined ? item.end : false}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             className={({ isActive }) =>

@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 
 const Dashboard = React.lazy(() => import('../pages/Dashboard'));
-const AdvancedAnalytics = React.lazy(() => import('../pages/AdvancedAnalytics'));
 const CategoryManagement = React.lazy(() => import('../pages/CategoryManagement'));
 const ProductManagement = React.lazy(() => import('../pages/ProductManagement'));
 const ActiveSellers = React.lazy(() => import('../pages/ActiveSellers'));
@@ -43,8 +42,8 @@ const OrdersList = React.lazy(() => import('../pages/OrdersList'));
 const OrderDetail = React.lazy(() => import('../pages/OrderDetail'));
 const SellerDetail = React.lazy(() => import('../pages/SellerDetail'));
 const SupportTickets = React.lazy(() => import('../pages/SupportTickets'));
-const FleetRadar = React.lazy(() => import('../pages/FleetRadar'));
 const ReviewModeration = React.lazy(() => import('../pages/ReviewModeration'));
+const FleetTracking = React.lazy(() => import('../pages/FleetTracking'));
 const CouponManagement = React.lazy(() => import('../pages/CouponManagement'));
 const ContentManager = React.lazy(() => import('../pages/ContentManager'));
 const NotificationComposer = React.lazy(() => import('../pages/NotificationComposer'));
@@ -53,15 +52,7 @@ const EnvSettings = React.lazy(() => import('../pages/EnvSettings'));
 const AdminProfile = React.lazy(() => import('../pages/AdminProfile'));
 
 const navItems = [
-    {
-        label: 'Intelligence',
-        icon: LayoutDashboard,
-        color: 'indigo',
-        children: [
-            { label: 'Control Center', path: '/admin' },
-            { label: 'Business Analytics', path: '/admin/analytics' },
-        ]
-    },
+    { label: 'Dashboard', path: '/admin', icon: LayoutDashboard, color: 'indigo', end: true },
     { label: 'Category', path: '/admin/categories', icon: Tag, color: 'rose' },
     { label: 'Product', path: '/admin/products', icon: Box, color: 'amber' },
     {
@@ -78,7 +69,6 @@ const navItems = [
         icon: Receipt,
         color: 'emerald',
         children: [
-            { label: 'Live Radar', path: '/admin/fleet-radar' },
             { label: 'Support Desk', path: '/admin/support-tickets' },
             { label: 'Moderation', path: '/admin/moderation' },
         ]
@@ -101,6 +91,7 @@ const navItems = [
         children: [
             { label: 'Active Delivery Boy', path: '/admin/delivery-boys/active' },
             { label: 'Pending for Approval', path: '/admin/delivery-boys/pending' },
+            { label: 'Fleet Tracking', path: '/admin/tracking' },
             { label: 'Funds Transfer', path: '/admin/delivery-funds' },
         ]
     },
@@ -136,7 +127,6 @@ const AdminRoutes = () => {
         <DashboardLayout navItems={navItems} title="Admin Center">
             <Routes>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/analytics" element={<AdvancedAnalytics />} />
                 <Route path="/users" element={<UserManagement />} />
                 <Route path="/profile" element={<AdminProfile />} />
                 {/* Lazy routes for new sections */}
@@ -145,7 +135,6 @@ const AdminRoutes = () => {
                 <Route path="/sellers/active" element={<ActiveSellers />} />
                 <Route path="/sellers/active/:id" element={<SellerDetail />} />
                 <Route path="/support-tickets" element={<SupportTickets />} />
-                <Route path="/fleet-radar" element={<FleetRadar />} />
                 <Route path="/moderation" element={<ReviewModeration />} />
                 <Route path="/experience-studio" element={<ContentManager />} />
                 <Route path="/notifications" element={<NotificationComposer />} />
@@ -154,6 +143,7 @@ const AdminRoutes = () => {
                 <Route path="/seller-locations" element={<SellerLocations />} />
                 <Route path="/delivery-boys/active" element={<ActiveDeliveryBoys />} />
                 <Route path="/delivery-boys/pending" element={<PendingDeliveryBoys />} />
+                <Route path="/tracking" element={<FleetTracking />} />
                 <Route path="/delivery-funds" element={<DeliveryFunds />} />
                 <Route path="/wallet" element={<AdminWallet />} />
                 <Route path="/withdrawals" element={<WithdrawalRequests />} />
