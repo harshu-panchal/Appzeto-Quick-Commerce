@@ -1,0 +1,210 @@
+import React, { useState } from 'react';
+import { X, Search, MapPin, Plus, Smartphone, MessageSquare, Home, MoreHorizontal, Share2, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from '../../context/LocationContext';
+
+const LocationDrawer = ({ isOpen, onClose }) => {
+    const { currentLocation, savedAddresses, updateLocation, addAddress } = useLocation();
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const handleSelectCurrentLocation = () => {
+        // Mocking fetching current location
+        const newLoc = {
+            name: "Amitesh Nagar, Indore",
+            storeName: "DHAKAD SNAZZY",
+            time: "10-12 mins"
+        };
+        updateLocation(newLoc);
+        onClose();
+    };
+
+    const handleSelectAddress = (address) => {
+        const newLoc = {
+            name: address.address,
+            storeName: "DHAKAD SNAZZY", // Store could vary by location in real app
+            time: "12-15 mins"
+        };
+        updateLocation(newLoc);
+        onClose();
+    };
+
+    const handleAddAddress = () => {
+        // Mock adding a new random address for demo
+        const mockAddresses = [
+            "56, Scheme No 54, Vijay Nagar, Indore",
+            "102, Silver Springs, AB Road, Indore",
+            "14, Palasia Square, Indore",
+            "78, M.G. Road, Indore"
+        ];
+        const randomAddr = mockAddresses[Math.floor(Math.random() * mockAddresses.length)];
+
+        addAddress({
+            label: "Work",
+            address: randomAddr,
+            phone: "9876543210"
+        });
+    };
+
+    const handleRequestAddress = () => {
+        // Mock feature not working
+        alert("Request address feature coming soon!");
+    };
+
+    // Filter saved addresses
+    const filteredAddresses = savedAddresses.filter(addr =>
+        addr.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        addr.address.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    return (
+        <AnimatePresence>
+            {isOpen && (
+                <>
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[210]"
+                    />
+
+                    {/* Drawer */}
+                    <motion.div
+                        initial={{ y: '100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '100%' }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        className="fixed bottom-0 left-0 right-0 bg-[#F3F4F6] rounded-t-[32px] z-[220] max-h-[90vh] overflow-y-auto outline-none shadow-2xl pb-8"
+                    >
+                        {/* Header */}
+                        <div className="sticky top-0 bg-[#F3F4F6] px-6 pt-6 pb-4 flex flex-col gap-4 z-20">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-extrabold text-[#1A1A1A]">Select delivery location</h2>
+                                <button
+                                    onClick={onClose}
+                                    className="h-10 w-10 bg-black/5 hover:bg-black/10 rounded-full flex items-center justify-center transition-colors"
+                                >
+                                    <X size={20} className="text-[#1A1A1A]" />
+                                </button>
+                            </div>
+
+                            {/* Search Bar */}
+                            <div className="relative group">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                                    <Search size={20} className="text-[#1A1A1A]/40 group-focus-within:text-[#0c831f] transition-colors" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search for area, street name.."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-white border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-semibold placeholder:text-[#1A1A1A]/40 shadow-sm focus:ring-2 focus:ring-[#0c831f]/20 transition-all outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Options List */}
+                        <div className="px-4 flex flex-col gap-3">
+                            {/* Current Location */}
+                            <button
+                                onClick={handleSelectCurrentLocation}
+                                className="flex items-center gap-4 bg-white p-4 rounded-2xl hover:bg-slate-50 transition-colors group text-left shadow-sm"
+                            >
+                                <div className="h-10 w-10 flex items-center justify-center text-[#0c831f]">
+                                    <MapPin size={24} className="group-hover:scale-110 transition-transform" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-[#0c831f] text-[15px]">Use your current location</h3>
+                                    <p className="text-[13px] text-slate-500 font-medium">Amitesh Nagar</p>
+                                </div>
+                                <ChevronRight size={20} className="text-slate-300" />
+                            </button>
+
+                            {/* Add Address */}
+                            <button
+                                onClick={handleAddAddress}
+                                className="flex items-center gap-4 bg-white p-4 rounded-2xl hover:bg-slate-50 transition-colors group text-left shadow-sm"
+                            >
+                                <div className="h-10 w-10 flex items-center justify-center text-[#0c831f]">
+                                    <Plus size={24} className="group-hover:rotate-90 transition-transform" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-[#0c831f] text-[15px]">Add new address</h3>
+                                </div>
+                                <ChevronRight size={20} className="text-slate-300" />
+                            </button>
+
+
+                            {/* Request Address */}
+                            <button
+                                onClick={handleRequestAddress}
+                                className="flex items-center gap-4 bg-white p-4 rounded-2xl hover:bg-slate-50 transition-colors group text-left shadow-sm"
+                            >
+                                <div className="h-10 w-10 rounded-lg bg-[#25D366]/10 flex items-center justify-center text-[#25D366]">
+                                    <MessageSquare size={20} fill="currentColor" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="font-bold text-slate-800 text-[15px]">Request address from someone else</h3>
+                                </div>
+                                <ChevronRight size={20} className="text-slate-300" />
+                            </button>
+
+                            {/* Saved Addresses Section */}
+                            <div className="mt-4 px-2">
+                                <h4 className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-4">Your saved addresses</h4>
+
+                                <div className="flex flex-col gap-4">
+                                    {filteredAddresses.map((addr) => (
+                                        <div
+                                            key={addr.id}
+                                            onClick={() => handleSelectAddress(addr)}
+                                            className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group cursor-pointer hover:bg-slate-50 transition-colors"
+                                        >
+                                            <div className="flex items-start gap-4">
+                                                <div className="h-12 w-12 bg-slate-50 rounded-xl flex items-center justify-center text-yellow-500 flex-shrink-0">
+                                                    {addr.label === "Home" ? <Home size={26} fill="currentColor" className="opacity-80" /> : <MapPin size={26} fill="currentColor" className="opacity-80" />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <h3 className="font-bold text-[#1A1A1A] text-lg">{addr.label}</h3>
+                                                        {(addr.address === currentLocation.name || addr.isCurrent) && (
+                                                            <span className="text-[10px] bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-tight border border-teal-100">You are here</span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[13px] text-slate-500 font-medium leading-relaxed mb-3">
+                                                        {addr.address}
+                                                    </p>
+                                                    <p className="text-[12px] text-slate-400 font-bold mb-4">
+                                                        Phone number: {addr.phone}
+                                                    </p>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <button className="h-10 w-10 bg-slate-50 hover:bg-slate-100 rounded-full flex items-center justify-center text-slate-400 transition-colors">
+                                                            <MoreHorizontal size={20} />
+                                                        </button>
+                                                        <button className="h-10 w-10 bg-slate-50 hover:bg-slate-100 rounded-full flex items-center justify-center text-slate-400 transition-colors">
+                                                            <Share2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Selection Glow */}
+                                            {(addr.address === currentLocation.name || addr.isCurrent) && (
+                                                <div className="absolute top-0 right-0 h-1 w-24 bg-gradient-to-l from-[#0c831f] to-transparent opacity-50" />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    );
+};
+
+export default LocationDrawer;
+
