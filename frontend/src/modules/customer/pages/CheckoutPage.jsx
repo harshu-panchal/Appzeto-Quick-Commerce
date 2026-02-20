@@ -60,19 +60,20 @@ const CheckoutPage = () => {
     const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
     const [currentAddress, setCurrentAddress] = useState({
         type: 'Home',
-        name: 'John Doe',
-        address: 'Flat 402, Sunshine Apartments, Sector 12, Dwarka',
-        city: 'New Delhi - 110075'
+        name: 'Harshvardhan Panchal',
+        address: '81 Pipliyahana Road, Near 214',
+        city: 'Indore - 452018'
     });
+    const [isLocationConfirmed, setIsLocationConfirmed] = useState(true);
 
     // Mock saved addresses
     const savedAddresses = [
         {
             id: 1,
             type: 'Home',
-            name: 'John Doe',
-            address: 'Flat 402, Sunshine Apartments, Sector 12, Dwarka',
-            city: 'New Delhi - 110075'
+            name: 'Harshvardhan Panchal',
+            address: '81 Pipliyahana Road, Near 214',
+            city: 'Indore - 452018'
         },
         {
             id: 2,
@@ -336,6 +337,7 @@ const CheckoutPage = () => {
 
                 <div className="max-w-4xl mx-auto px-4 -mt-8 relative z-20 space-y-4">
 
+
                     {/* Delivery Time Banner */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -347,10 +349,94 @@ const CheckoutPage = () => {
                                 <Clock size={24} className="text-[#0c831f]" />
                             </div>
                             <div>
-                                <h3 className="font-black text-slate-800 text-lg">Delivery in 8 minutes</h3>
+                                <h3 className="font-black text-slate-800 text-lg">Delivery in 12-15 mins</h3>
                                 <p className="text-sm text-slate-500">Shipment of {cartCount} items</p>
                             </div>
                         </div>
+                    </motion.div>
+
+                    {/* Delivery Address Section - New UI */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
+                    >
+                        <div className="flex justify-between items-center mb-3">
+                            <span className="text-xs text-slate-500 font-medium">Ordering for someone else?</span>
+                            <button className="text-[#0c831f] text-xs font-bold hover:underline">Add details</button>
+                        </div>
+                        <div className="mb-3">
+                            <h3 className="font-black text-slate-800 text-base">Delivery Address</h3>
+                            <p className="text-xs text-slate-500">Select or edit your saved address</p>
+                        </div>
+
+                        {/* Address Card */}
+                        <div
+                            className={`border rounded-xl p-3 mb-3 relative cursor-pointer transition-all ${isLocationConfirmed
+                                ? 'border-[#0c831f] bg-green-50/50'
+                                : 'border-slate-200 hover:bg-slate-50'
+                                }`}
+                            onClick={() => setIsLocationConfirmed(!isLocationConfirmed)}
+                        >
+                            <div className="flex items-start gap-3">
+                                {/* Radio/Check Button */}
+                                <div className="mt-1">
+                                    {isLocationConfirmed ? (
+                                        <div className="h-5 w-5 rounded-full bg-[#0c831f] flex items-center justify-center">
+                                            <Check size={12} className="text-white stroke-[4]" />
+                                        </div>
+                                    ) : (
+                                        <div className="h-5 w-5 rounded-full border-2 border-slate-300" />
+                                    )}
+                                </div>
+
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-start">
+                                        <h4 className="font-bold text-slate-800 text-sm">{currentAddress.name}</h4>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsAddressModalOpen(true);
+                                            }}
+                                            className="text-[#0c831f] text-xs font-bold hover:underline"
+                                        >
+                                            Edit
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-slate-500 font-medium mt-0.5">6268423925</p>
+                                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                                        {currentAddress.address}, {currentAddress.city}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Location Actions */}
+                        <AnimatePresence mode="wait">
+                            {isLocationConfirmed ? (
+                                <motion.button
+                                    key="update-btn"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="w-full py-3 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center gap-2 text-[#0c831f] font-bold text-sm hover:bg-green-100 transition-colors"
+                                >
+                                    <MapPin size={18} />
+                                    Update Precise Location on Map
+                                </motion.button>
+                            ) : (
+                                <motion.div
+                                    key="precise-banner"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="bg-green-50 border border-green-100 rounded-xl p-3 flex items-center justify-center gap-2 overflow-hidden"
+                                >
+                                    <Check size={16} className="text-[#0c831f] stroke-[3]" />
+                                    <span className="text-[#0c831f] font-bold text-sm">Precise Location Selected</span>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
 
                     {/* Cart Items */}
@@ -474,31 +560,7 @@ const CheckoutPage = () => {
                         </div>
                     </motion.div>
 
-                    {/* Delivery Address */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
-                    >
-                        <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <MapPin size={20} className="text-[#0c831f]" />
-                                <h3 className="font-black text-slate-800">Delivery Address</h3>
-                            </div>
-                            <button
-                                onClick={() => setIsAddressModalOpen(true)}
-                                className="text-[#0c831f] text-sm font-bold hover:underline"
-                            >
-                                Change
-                            </button>
-                        </div>
-                        <div className="pl-7">
-                            <p className="text-slate-800 font-bold text-sm">{currentAddress.name}</p>
-                            <p className="text-slate-600 text-sm leading-relaxed">{currentAddress.address}</p>
-                            <p className="text-slate-600 text-sm">{currentAddress.city}</p>
-                        </div>
-                    </motion.div>
+
 
                     {/* Tip for Partner */}
                     <motion.div

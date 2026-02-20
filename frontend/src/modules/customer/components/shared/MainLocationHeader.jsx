@@ -70,9 +70,10 @@ const MainLocationHeader = ({ categories = [], activeCategory, onCategorySelect 
     // Content animations
     const contentHeight = useTransform(scrollY, [0, 160], ["50px", "0px"]);
     const contentOpacity = useTransform(scrollY, [0, 160], [1, 0]);
-    const navHeight = useTransform(scrollY, [0, 200], ["82px", "0px"]);
+    const navHeight = useTransform(scrollY, [0, 200], ["88px", "0px"]);
     const navOpacity = useTransform(scrollY, [0, 200], [1, 0]);
     const navMargin = useTransform(scrollY, [0, 200], [6, 0]);
+    const categorySpacing = useTransform(scrollY, [0, 200], [12, 0]);
 
     // Helper to hide elements completely when collapsed to prevent clicks
     const displayContent = useTransform(scrollY, (value) => value > 160 ? "none" : "block");
@@ -142,11 +143,11 @@ const MainLocationHeader = ({ categories = [], activeCategory, onCategorySelect 
                         style={{
                             height: navHeight,
                             opacity: navOpacity,
-                            marginTop: navMargin,
+                            marginTop: categorySpacing,
                             display: displayNav,
                             overflowY: "hidden"
                         }}
-                        className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 relative z-10 snap-x"
+                        className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2 relative z-10 snap-x"
                     >
                         {categories.map((cat, idx) => {
                             const isActive = activeCategory?.id === cat.id;
