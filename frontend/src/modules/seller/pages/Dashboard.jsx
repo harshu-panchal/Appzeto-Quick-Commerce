@@ -37,31 +37,32 @@ const Dashboard = () => {
     ];
 
     return (
-        <div className="space-y-8 p-6">
+        <div className="space-y-10 p-2">
             <BlurFade delay={0.1}>
                 {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {stats.map((stat, idx) => (
                         <BlurFade key={stat.label} delay={0.1 + (idx * 0.1)}>
-                            <div onClick={() => navigate(stat.path)} className="cursor-pointer">
+                            <div onClick={() => navigate(stat.path)} className="cursor-pointer group">
                                 <MagicCard
-                                    className="border-none shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden bg-white"
-                                    gradientColor={stat.bg.includes('emerald') ? "#ecfdf5" : stat.bg.includes('blue') ? "#eff6ff" : "#f5f3ff"}
+                                    className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-hidden bg-white rounded-[2.5rem]"
+                                    gradientColor={stat.bg.includes('emerald') ? "#d1fae5" : stat.bg.includes('blue') ? "#dbeafe" : "#ede9fe"}
                                 >
-                                    <div className="flex items-start justify-between p-6 relative z-10">
+                                    <div className="flex items-start justify-between p-8 relative z-10 transition-transform duration-500 group-hover:scale-[1.02]">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-                                            <p className="text-4xl font-black text-gray-900 mt-2 tracking-tight">{stat.value}</p>
-                                            <div className="flex items-center mt-3 text-sm text-green-600 font-bold bg-green-50 w-fit px-2 py-0.5 rounded-full">
-                                                <HiOutlineTrendingUp className="mr-1" />
-                                                <span>{stat.trend}</span>
-                                                <span className="text-gray-400 ml-1 font-medium">vs last week</span>
+                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">{stat.label}</p>
+                                            <p className="text-4xl font-black text-gray-900 tracking-tighter group-hover:text-primary transition-colors">{stat.value}</p>
+                                            <div className="flex items-center mt-5 text-sm font-black bg-white/50 backdrop-blur-sm border border-gray-100 shadow-sm w-fit px-3 py-1.5 rounded-2xl group-hover:border-primary/20 group-hover:bg-primary/5 transition-all duration-500">
+                                                <HiOutlineTrendingUp className={cn("mr-1.5 h-4 w-4", stat.color)} />
+                                                <span className={stat.color}>{stat.trend}</span>
+                                                <span className="text-gray-400 ml-2 font-bold italic">than last week</span>
                                             </div>
                                         </div>
-                                        <div className={cn("p-4 rounded-2xl shadow-sm", stat.bg, stat.color)}>
-                                            <stat.icon className="h-8 w-8" />
+                                        <div className={cn("p-5 rounded-3xl shadow-xl transform group-hover:rotate-12 transition-all duration-500", stat.bg, stat.color)}>
+                                            <stat.icon className="h-9 w-9" />
                                         </div>
                                     </div>
+                                    <div className={cn("absolute bottom-0 left-0 right-0 h-1.5 opacity-30", stat.bg)}></div>
                                 </MagicCard>
                             </div>
                         </BlurFade>
@@ -69,28 +70,56 @@ const Dashboard = () => {
                 </div>
             </BlurFade>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {/* Revenue Chart */}
-                <BlurFade delay={0.4} className="lg:col-span-2 h-full">
-                    <Card title="Revenue Overview" className="h-full border-none shadow-md bg-white rounded-3xl overflow-hidden">
-                        <div className="h-[350px] w-full mt-4 -ml-2">
+                <BlurFade delay={0.4} className="lg:col-span-2 h-full uppercase">
+                    <Card title="Revenue Intelligence" subtitle="Daily revenue performance analysis" className="h-full border-none shadow-xl bg-white rounded-[2.5rem] overflow-hidden">
+                        <div className="h-[380px] w-full mt-6 -ml-4">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={data}>
                                     <defs>
                                         <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                                            <stop offset="50%" stopColor="#6366f1" stopOpacity={0.1} />
+                                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} tickFormatter={(value) => `$${value}`} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                        itemStyle={{ color: '#10b981', fontWeight: 700 }}
-                                        cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis 
+                                        dataKey="name" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} 
+                                        dy={15} 
                                     />
-                                    <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
+                                    <YAxis 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#64748b', fontSize: 11, fontWeight: 700 }} 
+                                        tickFormatter={(value) => `$${value}`} 
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ 
+                                            backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                                            borderRadius: '24px', 
+                                            border: '1px solid rgba(255, 255, 255, 0.5)', 
+                                            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)',
+                                            backdropFilter: 'blur(10px)',
+                                            padding: '12px 20px'
+                                        }}
+                                        itemStyle={{ color: '#6366f1', fontWeight: 900, fontSize: '14px' }}
+                                        labelStyle={{ color: '#64748b', fontWeight: 700, marginBottom: '4px' }}
+                                        cursor={{ stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '6 6' }}
+                                    />
+                                    <Area 
+                                        type="monotone" 
+                                        dataKey="value" 
+                                        stroke="#6366f1" 
+                                        strokeWidth={4} 
+                                        fillOpacity={1} 
+                                        fill="url(#colorValue)" 
+                                        animationDuration={2000}
+                                    />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -99,31 +128,35 @@ const Dashboard = () => {
 
                 {/* Quick Actions */}
                 <BlurFade delay={0.5} className="lg:col-span-1 h-full">
-                    <Card title="Quick Actions" className="h-full border-none shadow-md bg-white rounded-3xl">
-                        <div className="space-y-4 mt-2">
+                    <Card title="Business Actions" subtitle="One tap management" className="h-full border-none shadow-xl bg-white rounded-[2.5rem]">
+                        <div className="space-y-5 mt-4">
                             <Link to="/seller/products/add">
-                                <ShimmerButton className="w-full justify-center text-center font-bold text-white shadow-lg shadow-green-200">
-                                    <HiOutlineCube className="mr-2 h-5 w-5" />
-                                    Add New Product
+                                <ShimmerButton className="w-full justify-center text-center font-black py-4 rounded-2xl text-white shadow-[0_15px_30px_rgba(99,102,241,0.3)]">
+                                    <HiOutlineCube className="mr-3 h-6 w-6" />
+                                    ADD NEW PRODUCT
                                 </ShimmerButton>
                             </Link>
 
                             <Button
                                 onClick={() => navigate('/seller/orders')}
-                                className="w-full justify-start text-left h-12 rounded-xl border-dashed border-2 hover:border-blue-500 hover:text-blue-600 transition-colors"
+                                className="w-full justify-start text-left h-16 rounded-2xl border-2 border-dashed border-gray-100 hover:border-primary hover:bg-primary/5 hover:text-primary transition-all duration-500 group pl-6"
                                 variant="outline"
                             >
-                                <HiOutlineTruck className="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" />
-                                <span className="font-medium">Process Orders</span>
+                                <div className="p-2 rounded-xl bg-gray-50 group-hover:bg-primary/10 transition-colors mr-4">
+                                    <HiOutlineTruck className="h-5 w-5 text-gray-400 group-hover:text-primary" />
+                                </div>
+                                <span className="font-bold tracking-tight">Process Recent Orders</span>
                             </Button>
 
                             <Button
                                 onClick={() => navigate('/seller/earnings')}
-                                className="w-full justify-start text-left h-12 rounded-xl border-dashed border-2 hover:border-purple-500 hover:text-purple-600 transition-colors"
+                                className="w-full justify-start text-left h-16 rounded-2xl border-2 border-dashed border-gray-100 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all duration-500 group pl-6"
                                 variant="outline"
                             >
-                                <HiOutlineCurrencyDollar className="mr-3 h-5 w-5 text-gray-400 group-hover:text-purple-500" />
-                                <span className="font-medium">Withdraw Earnings</span>
+                                <div className="p-2 rounded-xl bg-gray-50 group-hover:bg-emerald-100 transition-colors mr-4">
+                                    <HiOutlineCurrencyDollar className="h-5 w-5 text-gray-400 group-hover:text-emerald-500" />
+                                </div>
+                                <span className="font-bold tracking-tight">Withdrawal Requests</span>
                             </Button>
                         </div>
                     </Card>
@@ -132,44 +165,49 @@ const Dashboard = () => {
 
             {/* Recent Orders */}
             <BlurFade delay={0.6}>
-                <Card title="Recent Orders" className="border-none shadow-md bg-white rounded-3xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                <Card title="Order Stream" subtitle="Live tracking of your latest transactions" className="border-none shadow-xl bg-white rounded-[2.5rem] overflow-hidden">
+                    <div className="overflow-x-auto p-4">
+                        <table className="w-full text-left border-separate border-spacing-y-3">
                             <thead>
-                                <tr className="border-b border-gray-100 bg-gray-50/50">
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Order ID</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
+                                <tr className="text-gray-400">
+                                    <th className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em]">Identity</th>
+                                    <th className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em]">Buyer Details</th>
+                                    <th className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em]">Timestamp</th>
+                                    <th className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em]">Revenue</th>
+                                    <th className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em]">Status</th>
+                                    <th className="px-6 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody>
                                 {[1, 2, 3, 4, 5].map((i) => (
                                     <tr
                                         key={i}
                                         onClick={() => navigate('/seller/orders')}
-                                        className="hover:bg-gray-50/80 transition-colors group cursor-pointer"
+                                        className="hover:bg-gray-50/80 transition-all duration-500 group cursor-pointer"
                                     >
-                                        <td className="px-6 py-4 font-bold text-gray-900 group-hover:text-blue-600 transition-colors">#ORD-00{i}</td>
-                                        <td className="px-6 py-4 text-gray-600">
-                                            <div className="flex items-center gap-3">
-                                                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-xs font-black text-gray-500 shadow-inner">
+                                        <td className="px-6 py-5 first:rounded-l-3xl last:rounded-r-3xl border-y border-transparent hover:border-primary/10">
+                                            <span className="font-black text-gray-900 group-hover:text-primary transition-colors tracking-tight">#ORD-240{i}</span>
+                                        </td>
+                                        <td className="px-6 py-5 border-y border-transparent">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-xs font-black text-slate-500 shadow-inner group-hover:scale-110 transition-transform duration-500">
                                                     C{i}
                                                 </div>
-                                                <span className="font-semibold text-gray-900">Customer {i}</span>
+                                                <span className="font-bold text-gray-900">Premium Buyer {i}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 text-sm font-medium">Oct 24, 2023</td>
-                                        <td className="px-6 py-4 font-bold text-gray-900">$45.00</td>
-                                        <td className="px-6 py-4">
-                                            <Badge variant={i === 1 ? 'warning' : i === 2 ? 'success' : 'default'} className="rounded-lg px-2.5 py-1 font-bold shadow-sm">
+                                        <td className="px-6 py-5 border-y border-transparent text-gray-500 text-sm font-bold italic">24 Oct, 2023</td>
+                                        <td className="px-6 py-5 border-y border-transparent font-black text-gray-900 text-lg">$145.00</td>
+                                        <td className="px-6 py-5 border-y border-transparent">
+                                            <Badge 
+                                                variant={i === 1 ? 'warning' : i === 2 ? 'success' : 'default'} 
+                                                className="rounded-xl px-4 py-1.5 font-black uppercase text-[9px] tracking-widest shadow-lg"
+                                            >
                                                 {i === 1 ? 'Pending' : i === 2 ? 'Delivered' : 'Processing'}
                                             </Badge>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="text-gray-400 hover:text-gray-800 p-2 rounded-full hover:bg-gray-100 transition-all">
+                                        <td className="px-6 py-5 border-y border-transparent first:rounded-l-3xl last:rounded-r-3xl text-right">
+                                            <button className="text-gray-300 hover:text-primary p-2.5 rounded-xl hover:bg-white shadow-sm transition-all duration-500">
                                                 <HiOutlineDotsVertical className="h-5 w-5" />
                                             </button>
                                         </td>
