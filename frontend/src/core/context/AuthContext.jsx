@@ -2,39 +2,63 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext(undefined);
 
+const ROLE_STORAGE_KEYS = {
+    customer: 'auth_customer',
+    seller: 'auth_seller',
+    admin: 'auth_admin',
+    delivery: 'auth_delivery'
+};
+
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // Current role based on URL
+    const getCurrentRoleFromUrl = () => {
+        const path = window.location.pathname;
+        if (path.startsWith('/seller')) return 'seller';
+        if (path.startsWith('/admin')) return 'admin';
+        if (path.startsWith('/delivery')) return 'delivery';
+        return 'customer';
+    };
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        const storedToken = localStorage.getItem('token');
+    const [authData, setAuthData] = useState({
+        customer: JSON.parse(localStorage.getItem(ROLE_STORAGE_KEYS.customer)) || null,
+        seller: JSON.parse(localStorage.getItem(ROLE_STORAGE_KEYS.seller)) || null,
+        admin: JSON.parse(localStorage.getItem(ROLE_STORAGE_KEYS.admin)) || null,
+        delivery: JSON.parse(localStorage.getItem(ROLE_STORAGE_KEYS.delivery)) || null,
+    });
 
-        if (storedUser && storedToken) {
-            setUser(JSON.parse(storedUser));
-        }
-        setIsLoading(false);
-    }, []);
+    const currentRole = getCurrentRoleFromUrl();
+    const user = authData[currentRole];
+    const isAuthenticated = !!user;
 
     const login = (userData) => {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        if (userData.token) {
-            localStorage.setItem('token', userData.token);
+        const role = userData.role?.toLowerCase() || 'customer';
+        const storageKey = ROLE_STORAGE_KEYS[role];
+
+        if (storageKey) {
+            localStorage.setItem(storageKey, JSON.stringify(userData));
+            setAuthData(prev => ({ ...prev, [role]: userData }));
         }
     };
 
     const logout = () => {
-        setUser(null);
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+        const role = getCurrentRoleFromUrl();
+        const storageKey = ROLE_STORAGE_KEYS[role];
+
+        if (storageKey) {
+            localStorage.removeItem(storageKey);
+            setAuthData(prev => ({ ...prev, [role]: null }));
+        }
     };
 
-    const role = user?.role || null;
-    const isAuthenticated = !!user;
-
     return (
-        <AuthContext.Provider value={{ user, role, isAuthenticated, isLoading, login, logout }}>
+        <AuthContext.Provider value={{
+            user,
+            role: currentRole,
+            isAuthenticated,
+            authData, // Access all logins if needed
+            login,
+            logout
+        }}>
             {children}
         </AuthContext.Provider>
     );

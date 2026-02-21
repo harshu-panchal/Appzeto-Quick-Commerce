@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from '@shared/components/ui/Card';
-import { HiOutlineCurrencyDollar, HiOutlineTruck, HiOutlineClock } from 'react-icons/hi';
+import { HiOutlineCurrencyDollar, HiOutlineTruck, HiOutlineClock } from 'react-icons/hi2';
 
 const DeliveryDashboard = () => {
     return (

@@ -18,6 +18,7 @@ import {
 import { toast } from 'sonner';
 import Lottie from 'lottie-react';
 import sellerAnimation from '../../../assets/INSTANT_6.json';
+import { sellerApi } from '../services/sellerApi';
 
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -41,21 +42,25 @@ const Auth = () => {
         e.preventDefault();
         setIsLoading(true);
 
-        setTimeout(() => {
-            const userData = {
-                id: 'seller-1',
-                name: isLogin ? 'Demo Seller' : formData.name,
-                email: formData.email,
-                role: UserRole.SELLER,
-                token: 'demo-seller-token',
-                shopName: formData.shopName || 'Demo Shop'
-            };
+        try {
+            const response = isLogin
+                ? await sellerApi.login({ email: formData.email, password: formData.password })
+                : await sellerApi.signup(formData);
 
-            login(userData);
-            setIsLoading(false);
+            const { token, seller } = response.data.result;
+
+            login({
+                ...seller,
+                token
+            });
+
             toast.success(isLogin ? 'Welcome back, Partner!' : 'Account created successfully!');
             navigate('/seller');
-        }, 1500);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Authentication failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

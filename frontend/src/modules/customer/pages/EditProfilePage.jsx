@@ -4,26 +4,41 @@ import CustomerLayout from '../components/layout/CustomerLayout';
 import { ArrowLeft, User, Phone, Mail, Camera, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { useAuth } from '@core/context/AuthContext';
+import { customerApi } from '../services/customerApi';
+
 const EditProfilePage = () => {
     const navigate = useNavigate();
+    const { user, login } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
-        name: 'John Doe',
-        phone: '+91 98765 43210',
-        email: 'john.doe@example.com',
-        bio: 'Food lover & tech enthusiast'
+        name: user?.name || '',
+        phone: user?.phone || '',
+        email: user?.email || '',
+        bio: user?.bio || ''
     });
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Simulate API call
-        setTimeout(() => {
+        setIsLoading(true);
+        try {
+            const response = await customerApi.updateProfile(formData);
+            const updatedUser = response.data.result;
+
+            // Update local auth state
+            login({ ...user, ...updatedUser });
+
             toast.success('Profile updated successfully!');
             navigate('/profile');
-        }, 500);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update profile');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -115,10 +130,15 @@ const EditProfilePage = () => {
 
                         <button
                             type="submit"
-                            className="w-full py-4 bg-[#0c831f] text-white font-bold rounded-2xl shadow-lg shadow-green-200 hover:bg-[#0a701a] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            disabled={isLoading}
+                            className="w-full py-4 bg-[#0c831f] text-white font-bold rounded-2xl shadow-lg shadow-green-200 hover:bg-[#0a701a] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                            <Save size={20} />
-                            Save Changes
+                            {isLoading ? (
+                                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <Save size={20} />
+                            )}
+                            {isLoading ? 'Saving...' : 'Save Changes'}
                         </button>
                     </form>
 

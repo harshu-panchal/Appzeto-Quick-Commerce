@@ -5,8 +5,11 @@ import {
     User, MapPin, Package, CreditCard, Settings, ChevronRight,
     LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, Wallet
 } from 'lucide-react';
+import { useAuth } from '@core/context/AuthContext';
 
 const ProfilePage = () => {
+    const { user, logout } = useAuth();
+
     return (
         <CustomerLayout showHeader={false}>
             <div className="min-h-screen bg-slate-50 pb-24 md:pb-8 font-sans">
@@ -31,16 +34,14 @@ const ProfilePage = () => {
                                 </div>
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-slate-900 leading-tight">John Doe</h2>
-                                <p className="text-slate-500 text-sm font-medium">+91 98765 43210</p>
+                                <h2 className="text-xl font-bold text-slate-900 leading-tight">{user?.name || 'Customer'}</h2>
+                                <p className="text-slate-500 text-sm font-medium">+91 {user?.phone}</p>
                             </div>
                         </div>
                         <Link to="/profile/edit" className="p-3 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
                             <Edit2 size={18} />
                         </Link>
                     </div>
-
-
 
                     {/* Menu Sections */}
                     <div className="space-y-4">
@@ -71,7 +72,10 @@ const ProfilePage = () => {
                     </div>
 
                     {/* Logout Button */}
-                    <button className="w-full py-4 rounded-xl border border-red-100 text-red-600 font-bold bg-white hover:bg-red-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]">
+                    <button
+                        onClick={logout}
+                        className="w-full py-4 rounded-xl border border-red-100 text-red-600 font-bold bg-white hover:bg-red-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
+                    >
                         <LogOut size={18} />
                         Log Out
                     </button>

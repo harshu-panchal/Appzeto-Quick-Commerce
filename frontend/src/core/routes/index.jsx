@@ -11,23 +11,24 @@ import NotFound from '@/pages/NotFound';
 import Auth from '@modules/seller/pages/Auth';
 import AdminAuth from '@modules/admin/pages/AdminAuth';
 import DeliveryAuth from '@modules/delivery/pages/DeliveryAuth';
+import CustomerAuth from '@modules/customer/pages/CustomerAuth';
 
 
 // Lazy load modules
-const SellerModule = lazy(() => import('@modules/seller/routes'));
-const AdminModule = lazy(() => import('@modules/admin/routes'));
-const DeliveryModule = lazy(() => import('@modules/delivery/routes'));
-const CustomerModule = lazy(() => import('@modules/customer/routes'));
+const SellerModule = lazy(() => import('@modules/seller/routes/index'));
+const AdminModule = lazy(() => import('@modules/admin/routes/index'));
+const DeliveryModule = lazy(() => import('@modules/delivery/routes/index'));
+const CustomerModule = lazy(() => import('@modules/customer/routes/index'));
 
 export const router = createBrowserRouter([
 
     {
         path: '/login',
-        element: <Login />,
+        element: <CustomerAuth />,
     },
     {
         path: '/signup',
-        element: <Signup />,
+        element: <CustomerAuth />,
     },
     {
         path: '/seller/auth',
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
     },
     {
         path: '/delivery/auth',
+        element: <DeliveryAuth />,
+    },
+    {
+        path: '/delivery/login',
         element: <DeliveryAuth />,
     },
 

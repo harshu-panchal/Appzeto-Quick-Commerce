@@ -15,9 +15,9 @@ import {
     Terminal
 } from 'lucide-react';
 import { toast } from 'sonner';
-
 import Lottie from 'lottie-react';
 import backendAnimation from '../../../assets/Backend Icon.json';
+import { adminApi } from '../services/adminApi';
 
 const AdminAuth = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -41,22 +41,25 @@ const AdminAuth = () => {
         e.preventDefault();
         setIsLoading(true);
 
-        // Simulate API call for Admin Auth
-        setTimeout(() => {
-            const userData = {
-                id: 'admin-1',
-                name: isLogin ? 'Master Admin' : formData.name,
-                email: formData.email,
-                role: UserRole.ADMIN,
-                token: 'demo-admin-token',
-                adminLevel: 'super'
-            };
+        try {
+            const response = isLogin
+                ? await adminApi.login({ email: formData.email, password: formData.password })
+                : await adminApi.signup({ name: formData.name, email: formData.email, password: formData.password });
 
-            login(userData);
-            setIsLoading(false);
+            const { token, admin } = response.data.result;
+
+            login({
+                ...admin,
+                token
+            });
+
             toast.success(isLogin ? 'Welcome back, Administrator.' : 'Administrator Account Created.');
             navigate('/admin');
-        }, 1500);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Authentication failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const toggleAuth = () => {
@@ -228,24 +231,6 @@ const AdminAuth = () => {
                             />
                         </motion.div>
 
-                        {/* Floating Status Badges */}
-                        <motion.div
-                            animate={{ y: [-10, 10, -10] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute top-[20%] right-[10%] bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-white flex items-center gap-2"
-                        >
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                            <span className="text-[10px] font-black text-indigo-900 tracking-widest uppercase">Server Live</span>
-                        </motion.div>
-
-                        <motion.div
-                            animate={{ y: [10, -10, 10] }}
-                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                            className="absolute bottom-[20%] left-[10%] bg-white/80 backdrop-blur-md px-4 py-2 rounded-2xl shadow-xl border border-white flex items-center gap-2"
-                        >
-                            <ShieldCheck className="text-indigo-600" size={14} />
-                            <span className="text-[10px] font-black text-indigo-900 tracking-widest uppercase">Secure SSL</span>
-                        </motion.div>
                     </div>
 
                     {/* Subtle Texture */}

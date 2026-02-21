@@ -16,6 +16,8 @@ const Topbar = () => {
             navigate('/admin/auth');
         } else if (path.startsWith('/seller')) {
             navigate('/seller/auth');
+        } else if (path.startsWith('/delivery')) {
+            navigate('/delivery/auth');
         } else {
             navigate('/login');
         }
@@ -46,6 +48,8 @@ const Topbar = () => {
                             navigate('/admin/profile');
                         } else if (location.pathname.startsWith('/seller')) {
                             navigate('/seller/profile');
+                        } else if (location.pathname.startsWith('/delivery')) {
+                            navigate('/delivery/profile');
                         } else {
                             navigate('/profile');
                         }

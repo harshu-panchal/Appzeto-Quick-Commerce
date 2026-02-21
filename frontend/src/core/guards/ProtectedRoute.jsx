@@ -21,6 +21,9 @@ const ProtectedRoute = ({ children }) => {
         if (location.pathname.startsWith('/seller')) {
             return <Navigate to="/seller/auth" state={{ from: location }} replace />;
         }
+        if (location.pathname.startsWith('/delivery')) {
+            return <Navigate to="/delivery/auth" state={{ from: location }} replace />;
+        }
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
