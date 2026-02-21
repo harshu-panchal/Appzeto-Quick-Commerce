@@ -73,7 +73,7 @@ const MainLocationHeader = ({ categories = [], activeCategory, onCategorySelect 
     const navHeight = useTransform(scrollY, [0, 200], ["88px", "0px"]);
     const navOpacity = useTransform(scrollY, [0, 200], [1, 0]);
     const navMargin = useTransform(scrollY, [0, 200], [6, 0]);
-    const categorySpacing = useTransform(scrollY, [0, 200], [12, 0]);
+    const categorySpacing = useTransform(scrollY, [0, 200], [20, 0]);
 
     // Helper to hide elements completely when collapsed to prevent clicks
     const displayContent = useTransform(scrollY, (value) => value > 160 ? "none" : "block");

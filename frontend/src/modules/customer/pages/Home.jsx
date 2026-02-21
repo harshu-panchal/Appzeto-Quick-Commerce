@@ -309,7 +309,7 @@ const Home = () => {
 
     return (
         <CustomerLayout showHeader={false}>
-            <div className="min-h-screen bg-[#F5F7F8] pt-[240px] md:pt-[250px]">
+            <div className="min-h-screen bg-[#F5F7F8] pt-[248px] md:pt-[258px]">
                 {/* Top Dynamic Gradient Section */}
                 <MainLocationHeader
                     categories={categories}

@@ -5,12 +5,18 @@ import sellerRoute from "./sellerAuth.js";
 import categoryRoute from "./categoryRoutes.js";
 import productRoute from "./productRoutes.js";
 
+import express from "express";
+
 const setupRoutes = (app) => {
-    app.use("/customer", customerRoute);
-    app.use("/delivery", deliveryRoute);
-    app.use("/admin", adminRoute);
-    app.use("/seller", sellerRoute);
-    app.use("/admin/categories", categoryRoute);
-    app.use("/products", productRoute);
+    const router = express.Router();
+
+    router.use("/customer", customerRoute);
+    router.use("/delivery", deliveryRoute);
+    router.use("/admin", adminRoute);
+    router.use("/seller", sellerRoute);
+    router.use("/admin/categories", categoryRoute);
+    router.use("/products", productRoute);
+
+    app.use("/api", router);
 }
 export default setupRoutes;
