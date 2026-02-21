@@ -51,7 +51,8 @@ const Auth = () => {
 
             login({
                 ...seller,
-                token
+                token,
+                role: 'seller'
             });
 
             toast.success(isLogin ? 'Welcome back, Partner!' : 'Account created successfully!');
@@ -67,21 +68,21 @@ const Auth = () => {
         <div className="flex min-h-screen items-center justify-center bg-[#fcfaff] p-6 font-['Outfit'] overflow-hidden relative">
             {/* Elegant Ambient Background */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-5%] w-[60%] h-[60%] bg-violet-100/50 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-indigo-50/50 rounded-full blur-[100px]" />
+                <div className="absolute top-[-10%] left-[-5%] w-[60%] h-[60%] bg-slate-100/50 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-slate-50/50 rounded-full blur-[100px]" />
             </div>
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative z-10 w-full max-w-[1200px] min-h-[750px] bg-white rounded-[50px] shadow-[0_50px_120px_rgba(124,58,237,0.06)] border border-white flex flex-col md:flex-row overflow-hidden"
+                className="relative z-10 w-full max-w-[1200px] min-h-[750px] bg-white rounded-[50px] shadow-[0_50px_120px_rgba(0,0,0,0.04)] border border-white flex flex-col md:flex-row overflow-hidden"
             >
                 {/* Visual Side Panel */}
-                <div className="hidden md:flex w-1/2 bg-linear-to-br from-violet-600 to-indigo-700 relative flex-col items-center justify-center p-16 overflow-hidden">
+                <div className="hidden md:flex w-1/2 bg-linear-to-br from-slate-900 via-slate-950 to-black relative flex-col items-center justify-center p-16 overflow-hidden">
                     {/* Abstract Decorative Circles */}
                     <div className="absolute inset-0 opacity-20">
-                        <div className="absolute top-0 left-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-                        <div className="absolute bottom-0 right-0 w-96 h-96 bg-black/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+                        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+                        <div className="absolute bottom-0 right-0 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
                     </div>
 
                     <motion.div
@@ -91,7 +92,7 @@ const Auth = () => {
                         className="relative z-10 w-full flex flex-col items-center"
                     >
                         {/* Lottie Animation for Seller */}
-                        <div className="w-full max-w-[450px] drop-shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
+                        <div className="w-full max-w-[450px] drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
                             <Lottie
                                 animationData={sellerAnimation}
                                 loop={true}
@@ -101,7 +102,7 @@ const Auth = () => {
 
                         <div className="mt-12 text-center space-y-6">
                             <h2 className="text-4xl font-black text-white tracking-tight leading-tight uppercase underline decoration-white/20 underline-offset-8">
-                                Seller <span className="text-violet-200">Expansion.</span>
+                                Seller <span className="text-slate-400">Expansion.</span>
                             </h2>
                             <p className="text-white/70 text-lg font-medium max-w-sm mx-auto">
                                 Join the network of 5000+ growing businesses across the nation.
@@ -134,11 +135,11 @@ const Auth = () => {
                             className="space-y-12"
                         >
                             <div className="space-y-4">
-                                <span className="inline-block px-4 py-1 bg-violet-50 text-violet-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-violet-100">
+                                <span className="inline-block px-4 py-1 bg-slate-100 text-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200">
                                     {isLogin ? 'Welcome Back' : 'New Partnership'}
                                 </span>
                                 <h1 className="text-5xl font-black text-slate-900 tracking-tighter">
-                                    Seller <span className="text-violet-600">{isLogin ? 'Login' : 'Signup'}</span>
+                                    Seller <span className="text-slate-900">{isLogin ? 'Login' : 'Signup'}</span>
                                 </h1>
                                 <p className="text-slate-400 font-medium text-lg leading-relaxed">
                                     {isLogin
@@ -159,7 +160,7 @@ const Auth = () => {
                                                 name="name"
                                                 required
                                                 placeholder="Seller Name"
-                                                className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-violet-100 transition-all placeholder:text-slate-300"
+                                                className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
                                                 value={formData.name}
                                                 onChange={handleChange}
                                             />
@@ -173,7 +174,7 @@ const Auth = () => {
                                                 name="shopName"
                                                 required
                                                 placeholder="Store Name"
-                                                className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-violet-100 transition-all placeholder:text-slate-300"
+                                                className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
                                                 value={formData.shopName}
                                                 onChange={handleChange}
                                             />
@@ -190,7 +191,7 @@ const Auth = () => {
                                         name="email"
                                         required
                                         placeholder="Business Email"
-                                        className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-violet-100 transition-all placeholder:text-slate-300"
+                                        className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
                                         value={formData.email}
                                         onChange={handleChange}
                                     />
@@ -206,7 +207,7 @@ const Auth = () => {
                                             name="phone"
                                             required
                                             placeholder="Contact Number"
-                                            className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-violet-100 transition-all placeholder:text-slate-300"
+                                            className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
                                             value={formData.phone}
                                             onChange={handleChange}
                                         />
@@ -222,7 +223,7 @@ const Auth = () => {
                                         name="password"
                                         required
                                         placeholder="Secure Pin"
-                                        className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-violet-100 transition-all placeholder:text-slate-300"
+                                        className="w-full pl-14 pr-6 py-5 bg-slate-50 border-2 border-transparent rounded-[24px] text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
                                         value={formData.password}
                                         onChange={handleChange}
                                     />
@@ -231,7 +232,7 @@ const Auth = () => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full bg-violet-600 text-white rounded-[24px] py-6 text-sm font-black tracking-[4px] shadow-[0_25px_50px_-12px_rgba(124,58,237,0.3)] hover:bg-slate-900 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group"
+                                    className="w-full bg-slate-900 text-white rounded-[24px] py-6 text-sm font-black tracking-[4px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.3)] hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group"
                                 >
                                     {isLoading ? 'WORKING...' : (isLogin ? 'ENTER DASHBOARD' : 'CREATE PARTNERSHIP')}
                                     <ArrowRight className="group-hover:translate-x-2 transition-transform" size={20} />
@@ -243,7 +244,7 @@ const Auth = () => {
                                     {isLogin ? "New to the platform?" : "Already part of us?"}{' '}
                                     <button
                                         onClick={() => setIsLogin(!isLogin)}
-                                        className="text-violet-600 hover:text-violet-800 transition-colors px-2"
+                                        className="text-slate-900 hover:text-black transition-colors px-2"
                                     >
                                         {isLogin ? 'Register Store' : 'Sign In'}
                                     </button>

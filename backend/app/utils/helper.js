@@ -3,8 +3,25 @@ export const handleResponse = (res, statusCode, message, data = {}) => {
 
   const sanitize = (item) => {
     if (!item) return item;
-    const obj = item.toObject?.() || item;
-    const { createdAt, updatedAt, __v, ...cleaned } = obj;
+
+    // Handle Mongoose documents
+    let obj = item;
+    if (typeof item.toObject === 'function') {
+      obj = item.toObject();
+    } else if (typeof item === 'object') {
+      // Recursively sanitize if it's a plain object that might contain Mongoose docs
+      obj = { ...item };
+      for (const key in obj) {
+        if (obj[key] && typeof obj[key].toObject === 'function') {
+          obj[key] = obj[key].toObject();
+          // Clean the nested object too
+          const { createdAt, updatedAt, __v, password, ...rest } = obj[key];
+          obj[key] = rest;
+        }
+      }
+    }
+
+    const { createdAt, updatedAt, __v, password, ...cleaned } = obj;
     return cleaned;
   };
 

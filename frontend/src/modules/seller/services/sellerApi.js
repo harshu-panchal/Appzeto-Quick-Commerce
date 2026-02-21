@@ -8,4 +8,6 @@ export const sellerApi = {
     updateProduct: (id, data) => axiosInstance.put(`/seller/products/${id}`, data),
     getOrders: () => axiosInstance.get('/seller/orders'),
     getEarnings: () => axiosInstance.get('/seller/earnings'),
+    getProfile: () => axiosInstance.get('/seller/profile'),
+    updateProfile: (data) => axiosInstance.put('/seller/profile', data),
 };

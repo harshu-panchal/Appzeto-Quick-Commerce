@@ -48,10 +48,15 @@ const AdminAuth = () => {
 
             const { token, admin } = response.data.result;
 
-            login({
+            const authData = {
                 ...admin,
-                token
-            });
+                token,
+                role: 'admin'
+            };
+
+            console.log('Login successful! Auth Data:', authData);
+
+            login(authData);
 
             toast.success(isLogin ? 'Welcome back, Administrator.' : 'Administrator Account Created.');
             navigate('/admin');

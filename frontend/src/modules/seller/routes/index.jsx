@@ -22,7 +22,7 @@ const Earnings = React.lazy(() => import('../pages/Earnings'));
 const Analytics = React.lazy(() => import('../pages/Analytics'));
 const Transactions = React.lazy(() => import('../pages/Transactions'));
 const DeliveryTracking = React.lazy(() => import('../pages/DeliveryTracking'));
-const Profile = React.lazy(() => import('@/pages/Profile'));
+const Profile = React.lazy(() => import('../pages/Profile'));
 
 const navItems = [
     { label: 'Dashboard', path: '/seller', icon: HiOutlineSquares2X2, end: true },

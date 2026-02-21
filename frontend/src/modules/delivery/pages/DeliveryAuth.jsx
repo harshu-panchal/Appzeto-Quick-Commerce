@@ -89,7 +89,8 @@ const DeliveryAuth = () => {
 
             login({
                 ...delivery,
-                token
+                token,
+                role: 'delivery'
             });
 
             toast.success('Successfully Verified');

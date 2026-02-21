@@ -86,7 +86,8 @@ const CustomerAuth = () => {
 
             login({
                 ...customer,
-                token
+                token,
+                role: 'customer'
             });
 
             toast.success('Authentication Successful!');

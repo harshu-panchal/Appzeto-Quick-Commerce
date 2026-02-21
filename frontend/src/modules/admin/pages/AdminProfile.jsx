@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import {
     Save,
@@ -9,25 +9,23 @@ import {
     Phone,
     Camera,
     LogOut,
-    Key
+    Key,
+    X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@shared/components/ui/Toast';
+import { toast } from 'sonner';
 import { useAuth } from '@core/context/AuthContext';
+import { adminApi } from '../services/adminApi';
 
 const AdminProfile = () => {
-    const { user, logout } = useAuth(); // Assuming useAuth provides user info and logout
-    const { showToast } = useToast();
+    const { user, logout } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('profile');
-
-    // Mock state - heavily relying on auth context in real app
     const [profile, setProfile] = useState({
-        name: user?.name || 'Administrator',
-        email: user?.email || 'admin@appzeto.com',
-        phone: user?.phone || '+1 (555) 000-0000',
-        bio: 'Super Administrator with full access to all system modules.',
-        role: 'Super Admin'
+        name: '',
+        email: '',
+        role: 'Admin'
     });
 
     const [security, setSecurity] = useState({
@@ -36,26 +34,72 @@ const AdminProfile = () => {
         confirmPassword: ''
     });
 
-    const handleProfileUpdate = () => {
-        setIsSaving(true);
-        setTimeout(() => {
-            setIsSaving(false);
-            showToast('Profile information updated successfully', 'success');
-        }, 1500);
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            const response = await adminApi.getProfile();
+            const data = response.data.result;
+            setProfile({
+                name: data.name,
+                email: data.email,
+                role: data.role || 'Admin'
+            });
+        } catch (error) {
+            toast.error('Failed to fetch admin profile');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handlePasswordUpdate = () => {
+    const handleProfileUpdate = async (e) => {
+        e.preventDefault();
+        setIsSaving(true);
+        try {
+            await adminApi.updateProfile({
+                name: profile.name,
+                email: profile.email
+            });
+            toast.success('Profile updated successfully');
+            fetchProfile();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update profile');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handlePasswordUpdate = async (e) => {
+        e.preventDefault();
         if (security.newPassword !== security.confirmPassword) {
-            showToast('New passwords do not match', 'error');
+            toast.error('New passwords do not match');
             return;
         }
+
         setIsSaving(true);
-        setTimeout(() => {
-            setIsSaving(false);
+        try {
+            await adminApi.updatePassword({
+                currentPassword: security.currentPassword,
+                newPassword: security.newPassword
+            });
+            toast.success('Password updated successfully');
             setSecurity({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            showToast('Password updated successfully', 'success');
-        }, 1500);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update password');
+        } finally {
+            setIsSaving(false);
+        }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
@@ -90,7 +134,7 @@ const AdminProfile = () => {
                                 <div className="h-32 w-32 rounded-full ring-4 ring-slate-50 bg-slate-100 flex items-center justify-center overflow-hidden">
                                     {/* Placeholder Avatar */}
                                     <span className="text-4xl font-black text-slate-300">
-                                        {profile.name.charAt(0)}
+                                        {profile.name?.charAt(0)}
                                     </span>
                                 </div>
                                 <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -102,9 +146,6 @@ const AdminProfile = () => {
                                 <Shield className="h-3 w-3" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">{profile.role}</span>
                             </div>
-                            <p className="mt-4 text-sm font-medium text-slate-500 leading-relaxed px-4">
-                                {profile.bio}
-                            </p>
                         </div>
                         <div className="p-2 bg-slate-50/50">
                             <button
@@ -146,7 +187,7 @@ const AdminProfile = () => {
                                     Edit Profile
                                 </h3>
                             </div>
-                            <div className="p-8 space-y-6">
+                            <form onSubmit={handleProfileUpdate} className="p-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Name</label>
@@ -155,47 +196,27 @@ const AdminProfile = () => {
                                             value={profile.name}
                                             onChange={(e) => setProfile({ ...profile, name: e.target.value })}
                                             className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all block"
+                                            required
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</label>
                                         <div className="relative group">
-                                            <Phone className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                             <input
-                                                type="text"
-                                                value={profile.phone}
-                                                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                                                type="email"
+                                                value={profile.email}
+                                                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                                                 className="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all block"
+                                                required
                                             />
                                         </div>
                                     </div>
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</label>
-                                    <div className="relative group">
-                                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                        <input
-                                            type="email"
-                                            value={profile.email}
-                                            readOnly // Often emails are immutable without stricter verification
-                                            className="w-full pl-12 pr-5 py-4 bg-slate-50/50 border-none rounded-2xl text-sm font-bold text-slate-500 outline-none cursor-not-allowed block"
-                                        />
-                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300 uppercase">Read Only</span>
-                                    </div>
-                                </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Role Description</label>
-                                    <textarea
-                                        rows={4}
-                                        value={profile.bio}
-                                        onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                                        className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all resize-none block"
-                                    />
-                                </div>
 
                                 <div className="pt-6 border-t border-slate-50 flex justify-end">
                                     <button
-                                        onClick={handleProfileUpdate}
+                                        type="submit"
                                         disabled={isSaving}
                                         className={cn(
                                             "flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
@@ -205,7 +226,7 @@ const AdminProfile = () => {
                                         {isSaving ? 'Saving...' : 'Save Changes'}
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         </Card>
                     )}
 
@@ -217,7 +238,7 @@ const AdminProfile = () => {
                                     Change Password
                                 </h3>
                             </div>
-                            <div className="p-8 space-y-6">
+                            <form onSubmit={handlePasswordUpdate} className="p-8 space-y-6">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Password</label>
                                     <div className="relative group">
@@ -227,6 +248,7 @@ const AdminProfile = () => {
                                             value={security.currentPassword}
                                             onChange={(e) => setSecurity({ ...security, currentPassword: e.target.value })}
                                             className="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all block"
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -240,6 +262,7 @@ const AdminProfile = () => {
                                                 value={security.newPassword}
                                                 onChange={(e) => setSecurity({ ...security, newPassword: e.target.value })}
                                                 className="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all block"
+                                                required
                                             />
                                         </div>
                                     </div>
@@ -252,6 +275,7 @@ const AdminProfile = () => {
                                                 value={security.confirmPassword}
                                                 onChange={(e) => setSecurity({ ...security, confirmPassword: e.target.value })}
                                                 className="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500/10 transition-all block"
+                                                required
                                             />
                                         </div>
                                     </div>
@@ -259,7 +283,7 @@ const AdminProfile = () => {
 
                                 <div className="pt-6 border-t border-slate-50 flex justify-end">
                                     <button
-                                        onClick={handlePasswordUpdate}
+                                        type="submit"
                                         disabled={isSaving}
                                         className={cn(
                                             "flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
@@ -269,7 +293,7 @@ const AdminProfile = () => {
                                         {isSaving ? 'Updating...' : 'Update Password'}
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         </Card>
                     )}
                 </div>

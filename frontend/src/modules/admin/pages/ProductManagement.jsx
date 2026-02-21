@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import { adminApi } from '../services/adminApi';
+import { toast } from 'sonner';
 import {
     HiOutlinePlus,
     HiOutlineCube,
@@ -8,7 +10,6 @@ import {
     HiOutlineFunnel,
     HiOutlineTrash,
     HiOutlinePencilSquare,
-    HiOutlineEye,
     HiOutlinePhoto,
     HiOutlineCurrencyDollar,
     HiOutlineArchiveBox,
@@ -28,72 +29,15 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductManagement = () => {
-    // Mock Data
-    const [products, setProducts] = useState([
-        {
-            id: 'p1',
-            name: 'Fresh Alphonso Mangoes',
-            slug: 'fresh-alphonso-mangoes',
-            sku: 'FRT-MAN-001',
-            price: 799,
-            salePrice: 599,
-            stock: 45,
-            category: 'Fruits & Vegetables',
-            header: 'Grocery',
-            status: 'active',
-            image: 'https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&q=80&w=200',
-            sales: 124,
-            rating: 4.8
-        },
-        {
-            id: 'p2',
-            name: 'Amul Taaza Milk 1L',
-            slug: 'amul-taaza-milk-1l',
-            sku: 'DRY-MLK-002',
-            price: 66,
-            salePrice: 64,
-            stock: 12,
-            category: 'Milk',
-            header: 'Grocery',
-            status: 'active',
-            image: 'https://images.unsplash.com/photo-1563636619-e910ef4a8b9b?auto=format&fit=crop&q=80&w=200',
-            sales: 890,
-            rating: 4.9
-        },
-        {
-            id: 'p3',
-            name: 'Samsung Galaxy S24 Ultra',
-            slug: 'samsung-galaxy-s24-ultra',
-            sku: 'ELE-MOB-001',
-            price: 129000,
-            salePrice: 119000,
-            stock: 5,
-            category: 'Smartphone',
-            header: 'Electronics',
-            status: 'active',
-            image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=200',
-            sales: 45,
-            rating: 4.7
-        },
-        {
-            id: 'p4',
-            name: 'Organic Whole Wheat Bread',
-            slug: 'organic-whole-wheat-bread',
-            sku: 'BRD-WHT-001',
-            price: 45,
-            salePrice: 40,
-            stock: 0,
-            category: 'Bread & Pav',
-            header: 'Grocery',
-            status: 'inactive',
-            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=200',
-            sales: 320,
-            rating: 4.5
-        }
-    ]);
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]); // All categories for dropdowns
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('all'); // Added filterStatus
+
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
@@ -103,61 +47,116 @@ const ProductManagement = () => {
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
-        sku: '',
         description: '',
         price: '',
-        salePrice: '',
+        discountPrice: '',
         stock: '',
-        lowStockAlert: 5,
-        category: '',
-        header: '',
+        unit: 'packet',
+        categoryId: '',
+        subcategoryId: '',
         status: 'active',
-        tags: '',
-        weight: '',
-        brand: '',
-        mainImage: null,
-        galleryImages: [],
-        variants: [
-            { id: 1, name: 'Default', price: '', salePrice: '', stock: '', sku: '' }
-        ]
+        isFeatured: false,
+        images: []
     });
 
-    const categories = useMemo(() => [
-        { id: 'h1', name: 'Grocery', children: ['Fruits & Vegetables', 'Milk', 'Bread & Pav'] },
-        { id: 'h2', name: 'Electronics', children: ['Smartphone', 'Laptops', 'Wearables'] }
-    ], []);
+    const [imageFiles, setImageFiles] = useState([]);
+    const [previews, setPreviews] = useState([]);
 
-    const filteredProducts = useMemo(() => {
-        return products.filter(p => {
-            const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.sku.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory = filterCategory === 'all' || p.category === filterCategory || p.header === filterCategory;
-            return matchesSearch && matchesCategory;
-        });
-    }, [products, searchTerm, filterCategory]);
-
-    const stats = useMemo(() => ({
-        total: products.length,
-        lowStock: products.filter(p => p.stock > 0 && p.stock <= 10).length,
-        outOfStock: products.filter(p => p.stock === 0).length,
-        active: products.filter(p => p.status === 'active').length
-    }), [products]);
-
-    const handleSave = () => {
-        console.log('Saving Product:', formData);
-        setIsProductModalOpen(false);
-        setEditingItem(null);
+    const fetchCategories = async () => {
+        try {
+            const response = await adminApi.getCategories();
+            if (response.data.success) {
+                setCategories(response.data.results || response.data.result || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch categories');
+        }
     };
 
-    const handleDeleteClick = (product) => {
-        setItemToDelete(product);
-        setIsDeleteModalOpen(true);
+    const fetchProducts = async () => {
+        setIsLoading(true);
+        try {
+            const params = {};
+            if (searchTerm) params.search = searchTerm;
+            if (filterCategory !== 'all') params.category = filterCategory;
+            if (filterStatus !== 'all') params.status = filterStatus;
+
+            const response = await adminApi.getProducts(params);
+            if (response.data.success) {
+                setProducts(response.data.results || response.data.result || []);
+            }
+        } catch (error) {
+            toast.error('Failed to fetch products');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const confirmDelete = () => {
-        setProducts(products.filter(p => p.id !== itemToDelete.id));
-        setIsDeleteModalOpen(false);
-        setItemToDelete(null);
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchProducts();
+        }, 500); // Debounce search
+        return () => clearTimeout(timer);
+    }, [searchTerm, filterCategory, filterStatus]);
+
+    const handleSave = async () => {
+        if (!formData.name || !formData.price || !formData.categoryId || !formData.unit) {
+            return toast.error('Please fill required fields');
+        }
+
+        setIsSaving(true);
+        try {
+            const data = new FormData();
+            Object.keys(formData).forEach(key => {
+                if (key !== 'images') {
+                    data.append(key, formData[key]);
+                }
+            });
+
+            imageFiles.forEach(file => {
+                data.append('images', file);
+            });
+
+            if (editingItem) {
+                await adminApi.updateProduct(editingItem._id, data);
+                toast.success('Product updated');
+            } else {
+                await adminApi.createProduct(data);
+                toast.success('Product created');
+            }
+            setIsProductModalOpen(false);
+            fetchProducts();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to save product');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await adminApi.deleteProduct(itemToDelete._id);
+            toast.success('Product deleted');
+            setIsDeleteModalOpen(false);
+            fetchProducts();
+        } catch (error) {
+            toast.error('Failed to delete product');
+        }
+    };
+
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length + imageFiles.length > 5) {
+            return toast.error('Max 5 images allowed');
+        }
+
+        const newPreviews = files.map(file => URL.createObjectURL(file));
+        setPreviews([...previews, ...newPreviews]);
+        setImageFiles([...imageFiles, ...files]);
     };
 
     const openModal = (item = null) => {
@@ -165,44 +164,39 @@ const ProductManagement = () => {
             setFormData({
                 name: item.name || '',
                 slug: item.slug || '',
-                sku: item.sku || '',
                 description: item.description || '',
                 price: item.price || '',
-                salePrice: item.salePrice || '',
+                discountPrice: item.discountPrice || '',
                 stock: item.stock || '',
-                lowStockAlert: item.lowStockAlert || 5,
-                category: item.category || '',
-                header: item.header || '',
+                unit: item.unit || 'packet',
+                categoryId: item.categoryId?._id || item.categoryId || '',
+                subcategoryId: item.subcategoryId?._id || item.subcategoryId || '',
                 status: item.status || 'active',
-                tags: item.tags || '',
-                weight: item.weight || '',
-                brand: item.brand || '',
-                mainImage: item.image || item.mainImage || null,
-                galleryImages: item.galleryImages || [],
-                variants: item.variants || [{
-                    id: Date.now(),
-                    name: 'Default',
-                    price: item.price || '',
-                    salePrice: item.salePrice || '',
-                    stock: item.stock || '',
-                    sku: item.sku || ''
-                }]
+                isFeatured: item.isFeatured || false,
             });
+            setPreviews(item.images || []);
             setEditingItem(item);
         } else {
             setFormData({
-                name: '', slug: '', sku: '', description: '',
-                price: '', salePrice: '', stock: '', lowStockAlert: 5,
-                category: '', header: '', status: 'active',
-                tags: '', weight: '', brand: '',
-                mainImage: null, galleryImages: [],
-                variants: [{ id: Date.now(), name: 'Default', price: '', salePrice: '', stock: '', sku: '' }]
+                name: '', slug: '', description: '', price: '',
+                discountPrice: '', stock: '', unit: 'packet',
+                categoryId: '', subcategoryId: '', status: 'active',
+                isFeatured: false
             });
+            setPreviews([]);
             setEditingItem(null);
         }
+        setImageFiles([]);
         setModalTab('general');
         setIsProductModalOpen(true);
     };
+
+    const stats = useMemo(() => ({
+        total: products.length,
+        lowStock: products.filter(p => p.stock > 0 && p.stock <= 10).length,
+        outOfStock: products.filter(p => p.stock === 0).length,
+        active: products.filter(p => p.status === 'active').length
+    }), [products]);
 
     const StatusBadge = ({ status, stock }) => {
         if (stock === 0) return <Badge variant="error" className="text-[10px] px-1.5 py-0">Out of Stock</Badge>;
@@ -274,14 +268,32 @@ const ProductManagement = () => {
                         >
                             <option value="all">All Categories</option>
                             {categories.map(h => (
-                                <optgroup key={h.id} label={h.name}>
-                                    {h.children.map(c => <option key={c} value={c}>{c}</option>)}
+                                <optgroup key={h._id} label={h.name}>
+                                    <option value={h._id}>All {h.name}</option>
+                                    {(h.children || []).map(c => (
+                                        <option key={c._id} value={c._id}>{c.name}</option>
+                                    ))}
                                 </optgroup>
                             ))}
                         </select>
-                        <button className="flex items-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
+                        <button
+                            onClick={() => {
+                                const nextStatus = filterStatus === 'all' ? 'active' : filterStatus === 'active' ? 'inactive' : 'all';
+                                setFilterStatus(nextStatus);
+                            }}
+                            className={cn(
+                                "flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
+                                filterStatus === 'active' ? "bg-emerald-500 text-white shadow-md shadow-emerald-100" :
+                                    filterStatus === 'inactive' ? "bg-amber-500 text-white shadow-md shadow-amber-100" :
+                                        "bg-white ring-1 ring-slate-200 text-slate-600 hover:bg-slate-50"
+                            )}
+                        >
                             <HiOutlineFunnel className="h-4 w-4" />
-                            <span>Filters</span>
+                            <span>
+                                {filterStatus === 'active' ? 'ONLY LIVE' :
+                                    filterStatus === 'inactive' ? 'ONLY DRAFT' :
+                                        'SHOW ALL'}
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -296,51 +308,60 @@ const ProductManagement = () => {
                                 <th className="admin-table-header px-6">Product</th>
                                 <th className="admin-table-header px-6">Header</th>
                                 <th className="admin-table-header px-6">Category</th>
-                                <th className="admin-table-header px-6">Reg. Price</th>
-                                <th className="admin-table-header px-6">Sale Price</th>
-                                <th className="admin-table-header px-6 text-center">Variant</th>
+                                <th className="admin-table-header px-6 text-center">Price</th>
                                 <th className="admin-table-header px-6 text-center">Stock</th>
+                                <th className="admin-table-header px-6 text-center">Status</th>
                                 <th className="admin-table-header px-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {filteredProducts.map((p) => (
-                                <tr key={p.id} className="hover:bg-slate-50/30 transition-colors group">
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="7" className="px-6 py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <HiOutlineArrowPath className="h-8 w-8 text-primary animate-spin" />
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading Products...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : products.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="px-6 py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No products found</td>
+                                </tr>
+                            ) : products.map((p) => (
+                                <tr key={p._id} className="hover:bg-slate-50/30 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 ring-1 ring-slate-200">
-                                                <img src={p.image} alt={p.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                <img src={p.images?.[0]} alt={p.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                             </div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-900">{p.name}</p>
-                                                <p className="text-[9px] font-semibold text-slate-400">SKU: {p.sku}</p>
+                                                <p className="text-[9px] font-semibold text-slate-400">{p.unit}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full">{p.header || 'Grocery'}</span>
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full">{p.categoryId?.name || 'N/A'}</span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold text-slate-600">{p.category}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-xs font-bold text-slate-400">₹{p.price}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-xs font-bold text-emerald-600">₹{p.salePrice || p.price}</span>
+                                        <span className="text-[10px] font-bold text-slate-600">{p.subcategoryId?.name || 'N/A'}</span>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
-                                            {p.variants?.[0]?.name || 'Standard'}
-                                        </span>
+                                        <div className="flex flex-col items-center">
+                                            <span className={cn("text-xs font-bold", p.discountPrice ? "text-slate-400 line-through scale-90" : "text-slate-900")}>₹{p.price}</span>
+                                            {p.discountPrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{p.discountPrice}</span>}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <span className={cn("text-xs font-bold", p.stock === 0 ? "text-rose-500" : p.stock <= 10 ? "text-amber-500" : "text-emerald-500")}>
                                             {p.stock}
                                         </span>
                                     </td>
+                                    <td className="px-6 py-4 text-center">
+                                        <StatusBadge status={p.status} stock={p.stock} />
+                                    </td>
                                     <td className="px-6 py-4 text-right">
-
                                         <div className="flex items-center justify-end space-x-1.5">
                                             <button
                                                 onClick={() => openModal(p)}
@@ -349,7 +370,7 @@ const ProductManagement = () => {
                                                 <HiOutlinePencilSquare className="h-3.5 w-3.5" />
                                             </button>
                                             <button
-                                                onClick={() => handleDeleteClick(p)}
+                                                onClick={() => (setItemToDelete(p), setIsDeleteModalOpen(true))}
                                                 className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100"
                                             >
                                                 <HiOutlineTrash className="h-3.5 w-3.5" />
@@ -408,10 +429,9 @@ const ProductManagement = () => {
                                     {[
                                         { id: 'general', label: 'General Info', icon: HiOutlineTag },
                                         { id: 'pricing', label: 'Pricing & Stock', icon: HiOutlineCurrencyDollar },
-                                        { id: 'variants', label: 'Item Variants', icon: HiOutlineSwatch },
                                         { id: 'category', label: 'Groups', icon: HiOutlineFolderOpen },
                                         { id: 'media', label: 'Photos', icon: HiOutlinePhoto },
-                                        { id: 'attributes', label: 'SEO & Details', icon: HiOutlineScale }
+                                        { id: 'attributes', label: 'Details', icon: HiOutlineScale }
                                     ].map((tab) => (
                                         <button
                                             key={tab.id}
@@ -439,6 +459,15 @@ const ProductManagement = () => {
                                                 <option value="active">PUBLISHED</option>
                                                 <option value="inactive">DRAFT</option>
                                             </select>
+                                        </div>
+                                        <div className="mt-3 p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
+                                            <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest">Featured</p>
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.isFeatured}
+                                                onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                                                className="h-4 w-4 rounded border-indigo-300 text-primary focus:ring-primary"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -479,26 +508,6 @@ const ProductManagement = () => {
                                                     placeholder="Describe the item here..."
                                                 />
                                             </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Brand Name</label>
-                                                    <input
-                                                        value={formData.brand}
-                                                        onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-semibold outline-none ring-primary/5 focus:ring-2"
-                                                        placeholder="e.g. Amul"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">SKU Identification</label>
-                                                    <input
-                                                        value={formData.sku}
-                                                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-mono font-bold outline-none ring-primary/5 focus:ring-2"
-                                                        placeholder="AUTO-GENERATED"
-                                                    />
-                                                </div>
-                                            </div>
                                         </div>
                                     )}
 
@@ -515,11 +524,11 @@ const ProductManagement = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest ml-1 text-emerald-600">Sale Price (₹)</label>
+                                                    <label className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest ml-1 text-emerald-600">Discount Price (₹)</label>
                                                     <input
                                                         type="number"
-                                                        value={formData.salePrice}
-                                                        onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                                                        value={formData.discountPrice}
+                                                        onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
                                                         className="w-full px-4 py-3 bg-emerald-50/50 shadow-sm ring-1 ring-emerald-100 border-none rounded-xl text-lg font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200"
                                                     />
                                                 </div>
@@ -527,7 +536,7 @@ const ProductManagement = () => {
 
                                             <div className="grid grid-cols-2 gap-6">
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Initial Stock Count</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Stock Count</label>
                                                     <input
                                                         type="number"
                                                         value={formData.stock}
@@ -536,123 +545,15 @@ const ProductManagement = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1 text-rose-500">Low Stock Alert at</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Unit Type</label>
                                                     <input
-                                                        type="number"
-                                                        value={formData.lowStockAlert}
-                                                        onChange={(e) => setFormData({ ...formData, lowStockAlert: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-rose-50/30 border-none rounded-xl text-sm font-bold text-rose-600 outline-none ring-rose-100 focus:ring-2"
+                                                        type="text"
+                                                        value={formData.unit}
+                                                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none ring-primary/5 focus:ring-2"
+                                                        placeholder="e.g. 1kg packet, 500ml bottle"
                                                     />
                                                 </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {modalTab === 'variants' && (
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-slate-900">Product Variants</h4>
-                                                    <p className="text-[10px] text-slate-500 font-medium">Add different sizes, colors or weights for this item.</p>
-                                                </div>
-                                                <button
-                                                    onClick={() => setFormData({
-                                                        ...formData,
-                                                        variants: [...formData.variants, { id: Date.now(), name: '', price: '', salePrice: '', stock: '', sku: '' }]
-                                                    })}
-                                                    className="flex items-center space-x-2 px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-[10px] font-bold hover:bg-primary/20 transition-all"
-                                                >
-                                                    <HiOutlineSquaresPlus className="h-4 w-4" />
-                                                    <span>ADD VARIANT</span>
-                                                </button>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                {(formData.variants || []).map((variant, index) => (
-                                                    <div key={variant.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-12 gap-4 items-end group relative">
-                                                        <div className="col-span-3 space-y-1">
-                                                            <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Variant Name</label>
-                                                            <input
-                                                                value={variant.name}
-                                                                onChange={(e) => {
-                                                                    const newVariants = [...formData.variants];
-                                                                    newVariants[index].name = e.target.value;
-                                                                    setFormData({ ...formData, variants: newVariants });
-                                                                }}
-                                                                placeholder="e.g. 1kg Bag"
-                                                                className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/10"
-                                                            />
-                                                        </div>
-                                                        <div className="col-span-2 space-y-1">
-                                                            <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Price</label>
-                                                            <input
-                                                                type="number"
-                                                                value={variant.price}
-                                                                onChange={(e) => {
-                                                                    const newVariants = [...formData.variants];
-                                                                    newVariants[index].price = e.target.value;
-                                                                    setFormData({ ...formData, variants: newVariants });
-                                                                }}
-                                                                placeholder="500"
-                                                                className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/10"
-                                                            />
-                                                        </div>
-                                                        <div className="col-span-2 space-y-1">
-                                                            <label className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest ml-1">Sale</label>
-                                                            <input
-                                                                type="number"
-                                                                value={variant.salePrice}
-                                                                onChange={(e) => {
-                                                                    const newVariants = [...formData.variants];
-                                                                    newVariants[index].salePrice = e.target.value;
-                                                                    setFormData({ ...formData, variants: newVariants });
-                                                                }}
-                                                                placeholder="450"
-                                                                className="w-full px-3 py-2 bg-emerald-50 ring-1 ring-emerald-100 border-none rounded-xl text-xs font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200"
-                                                            />
-                                                        </div>
-                                                        <div className="col-span-2 space-y-1">
-                                                            <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Stock</label>
-                                                            <input
-                                                                type="number"
-                                                                value={variant.stock}
-                                                                onChange={(e) => {
-                                                                    const newVariants = [...formData.variants];
-                                                                    newVariants[index].stock = e.target.value;
-                                                                    setFormData({ ...formData, variants: newVariants });
-                                                                }}
-                                                                placeholder="10"
-                                                                className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/10"
-                                                            />
-                                                        </div>
-                                                        <div className="col-span-2 space-y-1">
-                                                            <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">SKU</label>
-                                                            <input
-                                                                value={variant.sku}
-                                                                onChange={(e) => {
-                                                                    const newVariants = [...formData.variants];
-                                                                    newVariants[index].sku = e.target.value;
-                                                                    setFormData({ ...formData, variants: newVariants });
-                                                                }}
-                                                                placeholder="SKU-001"
-                                                                className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-xl text-xs font-mono font-bold outline-none focus:ring-2 focus:ring-primary/10"
-                                                            />
-                                                        </div>
-                                                        <div className="col-span-1 flex justify-end">
-                                                            <button
-                                                                onClick={() => {
-                                                                    if (formData.variants.length > 1) {
-                                                                        const newVariants = formData.variants.filter((_, i) => i !== index);
-                                                                        setFormData({ ...formData, variants: newVariants });
-                                                                    }
-                                                                }}
-                                                                className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
-                                                            >
-                                                                <HiOutlineTrash className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ))}
                                             </div>
                                         </div>
                                     )}
@@ -661,26 +562,27 @@ const ProductManagement = () => {
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Main Group</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Main Group (Header)</label>
                                                     <select
-                                                        value={formData.header}
-                                                        onChange={(e) => setFormData({ ...formData, header: e.target.value })}
+                                                        value={formData.categoryId}
+                                                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value, subcategoryId: '' })}
                                                         className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer"
                                                     >
                                                         <option value="">Select Main Group</option>
-                                                        {categories.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
+                                                        {categories.map(h => <option key={h._id} value={h._id}>{h.name}</option>)}
                                                     </select>
                                                 </div>
                                                 <div className="space-y-1.5 flex flex-col">
                                                     <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Specific Category</label>
                                                     <select
-                                                        value={formData.category}
-                                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                        value={formData.subcategoryId}
+                                                        onChange={(e) => setFormData({ ...formData, subcategoryId: e.target.value })}
                                                         className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer"
+                                                        disabled={!formData.categoryId}
                                                     >
                                                         <option value="">Select Category</option>
-                                                        {categories.find(h => h.name === formData.header)?.children?.map(c => (
-                                                            <option key={c} value={c}>{c}</option>
+                                                        {categories.find(h => h._id === formData.categoryId)?.children?.map(c => (
+                                                            <option key={c._id} value={c._id}>{c.name}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -690,69 +592,44 @@ const ProductManagement = () => {
 
                                     {modalTab === 'media' && (
                                         <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-                                            {/* Main Image Section */}
-                                            <div className="space-y-3">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Main Cover Photo</label>
-                                                <div className="flex items-start gap-6">
-                                                    <div className="w-48 aspect-square rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center group hover:border-primary hover:bg-primary/5 transition-all cursor-pointer overflow-hidden relative">
-                                                        {formData.mainImage ? (
-                                                            <img src={formData.mainImage} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <>
-                                                                <HiOutlinePhoto className="h-10 w-10 text-slate-200 group-hover:text-primary transition-colors" />
-                                                                <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest group-hover:text-primary">Upload Cover</p>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 space-y-2 pt-2">
-                                                        <p className="text-xs font-bold text-slate-900">Choose a primary image</p>
-                                                        <p className="text-[10px] text-slate-500 font-medium leading-relaxed">This image will be shown on the search page and the main store listing. Make sure it is clear and bright.</p>
-                                                        <button className="text-[10px] font-black text-primary uppercase tracking-wider hover:underline">Pick from Library</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-
                                             {/* Gallery Section */}
                                             <div className="space-y-3">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Gallery Photos (Max 5)</label>
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Product Photos (Max 5)</label>
                                                 <div className="grid grid-cols-5 gap-3">
-                                                    {[1, 2, 3, 4, 5].map(i => (
-                                                        <div key={i} className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center group hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
-                                                            <HiOutlinePlus className="h-5 w-5 text-slate-200 group-hover:text-primary transition-colors" />
-                                                            <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest group-hover:text-primary">Add</p>
+                                                    {previews.map((src, i) => (
+                                                        <div key={i} className="aspect-square rounded-2xl border border-slate-200 overflow-hidden relative group">
+                                                            <img src={src} className="w-full h-full object-cover" />
+                                                            <button
+                                                                onClick={() => {
+                                                                    setPreviews(previews.filter((_, idx) => idx !== i));
+                                                                    setImageFiles(imageFiles.filter((_, idx) => idx !== i));
+                                                                }}
+                                                                className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <HiOutlineXMark className="h-3 w-3" />
+                                                            </button>
                                                         </div>
                                                     ))}
+                                                    {previews.length < 5 && (
+                                                        <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center group hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                                                            <HiOutlinePlus className="h-5 w-5 text-slate-200 group-hover:text-primary transition-colors" />
+                                                            <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest group-hover:text-primary">Upload</p>
+                                                            <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" />
+                                                        </label>
+                                                    )}
                                                 </div>
                                             </div>
 
                                             <p className="text-[10px] text-slate-400 font-medium italic text-center pt-4 border-t border-slate-50 outline-none">
-                                                Quick Tip: Using WebP format at 800x800px makes your store load 3x faster.
+                                                Quick Tip: Multiple photos help users trust your products more!
                                             </p>
                                         </div>
                                     )}
 
                                     {modalTab === 'attributes' && (
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
-                                            <div className="grid grid-cols-2 gap-6">
-                                                <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Physical Weight (kg)</label>
-                                                    <input
-                                                        type="number"
-                                                        value={formData.weight}
-                                                        onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none ring-primary/5 focus:ring-2"
-                                                        placeholder="0.5"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Search Tags</label>
-                                                    <input
-                                                        value={formData.tags}
-                                                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-semibold outline-none ring-primary/5 focus:ring-2"
-                                                        placeholder="mango, fresh, fruits..."
-                                                    />
-                                                </div>
+                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 italic text-slate-500 text-xs text-center font-medium">
+                                                Additional SEO data and technical specifications will be available in future updates.
                                             </div>
                                         </div>
                                     )}
@@ -762,13 +639,23 @@ const ProductManagement = () => {
                             {/* Modal Footer */}
                             <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
-                                    <HiOutlineArrowPath className="h-4 w-4 text-emerald-500 animate-spin-slow" />
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saving changes...</span>
+                                    {isSaving ? (
+                                        <>
+                                            <HiOutlineArrowPath className="h-4 w-4 text-emerald-500 animate-spin" />
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SAVING DATA...</span>
+                                        </>
+                                    ) : (
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Draft changes auto-saved</span>
+                                    )}
                                 </div>
                                 <div className="flex gap-3">
                                     <button onClick={() => setIsProductModalOpen(false)} className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100">CLOSE</button>
-                                    <button onClick={handleSave} className="bg-slate-900 text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all">
-                                        SAVE ITEM
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaving}
+                                        className="bg-slate-900 text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                                    >
+                                        {isSaving ? 'UPLOADING...' : (editingItem ? 'UPDATE PRODUCT' : 'CREATE PRODUCT')}
                                     </button>
                                 </div>
                             </div>

@@ -6,4 +6,5 @@ export const customerApi = {
     verifyOtp: (data) => axiosInstance.post('/customer/verify-otp', data),
     getProfile: () => axiosInstance.get('/customer/profile'),
     updateProfile: (data) => axiosInstance.put('/customer/profile', data),
+    getCategories: () => axiosInstance.get('/admin/categories?status=active'),
 };

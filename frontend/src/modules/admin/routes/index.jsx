@@ -17,7 +17,8 @@ import {
     RotateCcw,
     Settings,
     Terminal,
-    Sparkles
+    Sparkles,
+    User
 } from 'lucide-react';
 
 const Dashboard = React.lazy(() => import('../pages/Dashboard'));
@@ -117,6 +118,7 @@ const navItems = [
     },
     { label: 'Billing and Charges', path: '/admin/billing', icon: RotateCcw, color: 'red' },
     { label: 'Settings', path: '/admin/settings', icon: Settings, color: 'slate' },
+    { label: 'My Profile', path: '/admin/profile', icon: User, color: 'indigo' },
     { label: 'Env Controls', path: '/admin/env', icon: Terminal, color: 'dark' },
 ];
 
