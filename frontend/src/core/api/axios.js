@@ -13,19 +13,15 @@ axiosInstance.interceptors.request.use(
         let token = null;
         const url = config.url;
 
-        // Determine which token to use based on the API route
+        // 1. Try role-specific token first based on URL
         if (url.startsWith('/seller')) {
-            const sellerData = JSON.parse(localStorage.getItem('auth_seller'));
-            token = sellerData?.token;
+            token = localStorage.getItem('auth_seller');
         } else if (url.startsWith('/admin')) {
-            const adminData = JSON.parse(localStorage.getItem('auth_admin'));
-            token = adminData?.token;
+            token = localStorage.getItem('auth_admin');
         } else if (url.startsWith('/delivery')) {
-            const deliveryData = JSON.parse(localStorage.getItem('auth_delivery'));
-            token = deliveryData?.token;
+            token = localStorage.getItem('auth_delivery');
         } else if (url.startsWith('/customer')) {
-            const customerData = JSON.parse(localStorage.getItem('auth_customer'));
-            token = customerData?.token;
+            token = localStorage.getItem('auth_customer');
         }
 
         if (token) {
@@ -48,12 +44,18 @@ axiosInstance.interceptors.response.use(
 
             // Map URL to storage key for targeted logout
             const url = originalRequest.url;
-            let storageKey = 'auth_customer';
-            if (url.startsWith('/seller')) storageKey = 'auth_seller';
-            if (url.startsWith('/admin')) storageKey = 'auth_admin';
-            if (url.startsWith('/delivery')) storageKey = 'auth_delivery';
+            let storageKeys = []; // Array of keys to clear
 
-            localStorage.removeItem(storageKey);
+            if (url.startsWith('/seller')) storageKeys.push('auth_seller');
+            else if (url.startsWith('/admin')) storageKeys.push('auth_admin');
+            else if (url.startsWith('/delivery')) storageKeys.push('auth_delivery');
+            else if (url.startsWith('/customer')) storageKeys.push('auth_customer');
+            else {
+                // For shared routes, try to clear whatever exists
+                storageKeys.push('auth_customer', 'auth_seller', 'auth_admin', 'auth_delivery');
+            }
+
+            storageKeys.forEach(key => localStorage.removeItem(key));
             window.location.reload(); // Refresh to update auth state
         }
         return Promise.reject(error);
