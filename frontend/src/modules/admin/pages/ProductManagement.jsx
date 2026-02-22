@@ -104,6 +104,10 @@ const ProductManagement = () => {
     }, [searchTerm, filterCategory, filterStatus]);
 
     const handleSave = async () => {
+        if (!editingItem) {
+            return toast.error('Only product editing is allowed for admins');
+        }
+
         if (!formData.name || !formData.price || !formData.categoryId || !formData.unit) {
             return toast.error('Please fill required fields');
         }
@@ -121,13 +125,8 @@ const ProductManagement = () => {
                 data.append('images', file);
             });
 
-            if (editingItem) {
-                await adminApi.updateProduct(editingItem._id, data);
-                toast.success('Product updated');
-            } else {
-                await adminApi.createProduct(data);
-                toast.success('Product created');
-            }
+            await adminApi.updateProduct(editingItem._id, data);
+            toast.success('Product updated');
             setIsProductModalOpen(false);
             fetchProducts();
         } catch (error) {
@@ -216,13 +215,6 @@ const ProductManagement = () => {
                     </h1>
                     <p className="admin-description mt-0.5">Track your items, prices, and how many are left in stock.</p>
                 </div>
-                <button
-                    onClick={() => openModal()}
-                    className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:bg-slate-800 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center space-x-2"
-                >
-                    <HiOutlinePlus className="h-4 w-4" />
-                    <span>ADD NEW PRODUCT</span>
-                </button>
             </div>
 
             {/* Quick Stats */}
@@ -409,7 +401,7 @@ const ProductManagement = () => {
                                     </div>
                                     <div>
                                         <h3 className="admin-h3">
-                                            {editingItem ? 'Edit Product' : 'Add New Product'}
+                                            Edit Product
                                         </h3>
                                         <div className="flex items-center space-x-2 mt-0.5">
                                             <Badge variant="primary" className="text-[7px] font-bold uppercase tracking-widest px-1">SYSTEM</Badge>
@@ -655,7 +647,7 @@ const ProductManagement = () => {
                                         disabled={isSaving}
                                         className="bg-slate-900 text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
                                     >
-                                        {isSaving ? 'UPLOADING...' : (editingItem ? 'UPDATE PRODUCT' : 'CREATE PRODUCT')}
+                                        {isSaving ? 'UPLOADING...' : 'UPDATE PRODUCT'}
                                     </button>
                                 </div>
                             </div>
