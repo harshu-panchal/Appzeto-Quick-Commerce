@@ -7,6 +7,21 @@ const LocationDrawer = ({ isOpen, onClose }) => {
     const { currentLocation, savedAddresses, updateLocation, addAddress } = useLocation();
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Lock body scroll when drawer is open
+    React.useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = 'var(--removed-body-scroll-bar-size, 0px)'; // Prevent layout shift if possible
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+    }, [isOpen]);
+
     const handleSelectCurrentLocation = () => {
         // Mocking fetching current location
         const newLoc = {
@@ -62,20 +77,18 @@ const LocationDrawer = ({ isOpen, onClose }) => {
                 <>
                     {/* Backdrop */}
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[210]"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[600]"
                     />
 
-                    {/* Drawer */}
                     <motion.div
                         initial={{ y: '100%' }}
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed bottom-0 left-0 right-0 bg-[#F3F4F6] rounded-t-[32px] z-[220] max-h-[90vh] overflow-y-auto outline-none shadow-2xl pb-8"
+                        data-lenis-prevent
+                        style={{ overscrollBehavior: 'contain' }}
+                        className="fixed bottom-0 left-0 right-0 bg-[#F3F4F6] rounded-t-[32px] z-[610] max-h-[90vh] overflow-y-auto outline-none shadow-2xl pb-8"
                     >
                         {/* Header */}
                         <div className="sticky top-0 bg-[#F3F4F6] px-6 pt-6 pb-4 flex flex-col gap-4 z-20">

@@ -2,23 +2,23 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
-    HiOutlinePlus,
-    HiOutlineChevronRight,
-    HiOutlineChevronDown,
-    HiOutlineTrash,
-    HiOutlinePencilSquare,
-    HiOutlineFolderOpen,
-    HiOutlineFolder,
-    HiOutlineTag,
-    HiOutlineMagnifyingGlass,
-    HiOutlineFunnel,
-    HiOutlineXMark,
-    HiOutlinePhoto,
-    HiOutlineExclamationTriangle,
-    HiOutlineEye,
-    HiOutlineEyeSlash,
-    HiOutlineCloudArrowUp
-} from 'react-icons/hi2';
+    Plus,
+    ChevronRight,
+    ChevronDown,
+    Trash2,
+    Edit,
+    FolderOpen,
+    Folder,
+    Tag,
+    Search,
+    Filter,
+    X,
+    Image,
+    AlertTriangle,
+    Eye,
+    EyeOff,
+    Upload
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { adminApi } from '../services/adminApi';
@@ -278,8 +278,8 @@ const CategoryManagement = () => {
                                         expanded.includes(id) ? "bg-primary/10 text-primary" : "text-gray-300 group-hover:text-gray-400"
                                     )}>
                                         {expanded.includes(id) ?
-                                            <HiOutlineChevronDown className="h-3.5 w-3.5" /> :
-                                            <HiOutlineChevronRight className="h-3.5 w-3.5" />
+                                            <ChevronDown className="h-3.5 w-3.5" /> :
+                                            <ChevronRight className="h-3.5 w-3.5" />
                                         }
                                     </div>
                                 ) : (
@@ -296,9 +296,9 @@ const CategoryManagement = () => {
                                         level === 0 ? "bg-indigo-50 text-indigo-600 ring-2 ring-indigo-50" :
                                             level === 1 ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
                                     )}>
-                                        {level === 0 ? <HiOutlineFolderOpen className="h-4 w-4" /> :
-                                            level === 1 ? <HiOutlineFolder className="h-4 w-4" /> :
-                                                <HiOutlineTag className="h-3.5 w-3.5" />}
+                                        {level === 0 ? <FolderOpen className="h-4 w-4" /> :
+                                            level === 1 ? <Folder className="h-4 w-4" /> :
+                                                <Tag className="h-3.5 w-3.5" />}
                                     </div>
                                 )}
 
@@ -331,13 +331,13 @@ const CategoryManagement = () => {
                                 onClick={(e) => { e.stopPropagation(); openModal(item.type, item.parentId, item); }}
                                 className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100 bg-white/50"
                             >
-                                <HiOutlinePencilSquare className="h-3.5 w-3.5" />
+                                <Edit className="h-3.5 w-3.5" />
                             </button>
                             <button
                                 onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); setIsDeleteModalOpen(true); }}
                                 className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100 bg-white/50"
                             >
-                                <HiOutlineTrash className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3.5 w-3.5" />
                             </button>
                         </div>
 
@@ -376,13 +376,13 @@ const CategoryManagement = () => {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <button className="p-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
-                        <HiOutlinePhoto className="h-5 w-5" />
+                        <Image className="h-5 w-5" />
                     </button>
                     <button
                         onClick={() => openModal('header')}
                         className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:bg-slate-800 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center space-x-2"
                     >
-                        <HiOutlinePlus className="h-4 w-4" />
+                        <Plus className="h-4 w-4" />
                         <span>CREATE NEW HEADER</span>
                     </button>
                 </div>
@@ -415,7 +415,7 @@ const CategoryManagement = () => {
                     <Card className="lg:col-span-3 border-none shadow-sm ring-1 ring-slate-100 p-3 bg-white/60 backdrop-blur-xl">
                         <div className="flex flex-col md:flex-row gap-3 items-center">
                             <div className="relative flex-1 group w-full">
-                                <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
                                 <input
                                     type="text"
                                     value={searchTerm}
@@ -425,7 +425,7 @@ const CategoryManagement = () => {
                                 />
                                 {searchTerm && (
                                     <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 p-0.5 hover:bg-slate-200 rounded-full transition-colors">
-                                        <HiOutlineXMark className="h-3 w-3 text-slate-500" />
+                                        <X className="h-3 w-3 text-slate-500" />
                                     </button>
                                 )}
                             </div>
@@ -442,7 +442,7 @@ const CategoryManagement = () => {
                                                 "bg-white ring-1 ring-slate-200 text-slate-600 hover:bg-slate-50"
                                     )}
                                 >
-                                    <HiOutlineFunnel className="h-4 w-4" />
+                                    <Filter className="h-4 w-4" />
                                     <span>
                                         {filterStatus === 'active' ? 'ONLY LIVE' :
                                             filterStatus === 'inactive' ? 'ONLY DRAFT' :
@@ -472,9 +472,9 @@ const CategoryManagement = () => {
                             <p className="text-[10px] font-semibold text-indigo-400 mt-1">Working Fine</p>
                         </div>
                         {activeView === 'tree' ? (
-                            <HiOutlineFolderOpen className="absolute -right-2 -bottom-2 h-16 w-16 text-indigo-500/5 rotate-12" />
+                            <FolderOpen className="absolute -right-2 -bottom-2 h-16 w-16 text-indigo-500/5 rotate-12" />
                         ) : (
-                            <HiOutlineTag className="absolute -right-2 -bottom-2 h-16 w-16 text-indigo-500/5 rotate-12" />
+                            <Tag className="absolute -right-2 -bottom-2 h-16 w-16 text-indigo-500/5 rotate-12" />
                         )}
                     </Card>
                 </div>
@@ -491,7 +491,7 @@ const CategoryManagement = () => {
                                 </div>
                             ) : filteredCategories.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-24 text-slate-300">
-                                    <HiOutlineFolder className="h-16 w-16 mb-3 opacity-20" />
+                                    <Folder className="h-16 w-16 mb-3 opacity-20" />
                                     <p className="text-base font-bold italic">No records found</p>
                                     <button onClick={() => { setSearchTerm(''); setFilterStatus('all'); }} className="mt-3 text-sm text-primary font-semibold hover:underline">Clear all filters</button>
                                 </div>
@@ -514,7 +514,7 @@ const CategoryManagement = () => {
                                     onClick={() => openModal('subcategory')}
                                     className="text-[10px] font-black text-indigo-600 hover:text-indigo-700 uppercase tracking-widest flex items-center gap-2"
                                 >
-                                    <HiOutlinePlus className="h-3 w-3" />
+                                    <Plus className="h-3 w-3" />
                                     Quick Register
                                 </button>
                             </div>
@@ -541,7 +541,7 @@ const CategoryManagement = () => {
                                                                 </div>
                                                             ) : (
                                                                 <div className="h-8 w-8 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600">
-                                                                    <HiOutlineTag className="h-4 w-4" />
+                                                                    <Tag className="h-4 w-4" />
                                                                 </div>
                                                             )}
                                                             <div className="flex flex-col">
@@ -566,13 +566,13 @@ const CategoryManagement = () => {
                                                                 onClick={() => openModal('subcategory', sub.parentId, sub)}
                                                                 className="p-1.5 hover:bg-white text-slate-400 hover:text-indigo-600 rounded-lg transition-all shadow-sm ring-1 ring-slate-100 bg-white/50"
                                                             >
-                                                                <HiOutlinePencilSquare className="h-3.5 w-3.5" />
+                                                                <Edit className="h-3.5 w-3.5" />
                                                             </button>
                                                             <button
                                                                 onClick={() => { setDeleteTarget(sub); setIsDeleteModalOpen(true); }}
                                                                 className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-all shadow-sm ring-1 ring-slate-100 bg-white/50"
                                                             >
-                                                                <HiOutlineTrash className="h-3.5 w-3.5" />
+                                                                <Trash2 className="h-3.5 w-3.5" />
                                                             </button>
                                                         </div>
                                                     </td>
@@ -642,7 +642,7 @@ const CategoryManagement = () => {
                                             <img src={previewUrl} alt="Preview" className="w-full h-full object-cover rounded-xl" />
                                         ) : (
                                             <>
-                                                <HiOutlineCloudArrowUp className="h-10 w-10 text-slate-300 group-hover:text-primary group-hover:scale-110 transition-all" />
+                                                <Upload className="h-10 w-10 text-slate-300 group-hover:text-primary group-hover:scale-110 transition-all" />
                                                 <p className="text-[10px] font-black text-slate-400 mt-2 uppercase tracking-widest">Upload Image</p>
                                             </>
                                         )}
@@ -665,7 +665,7 @@ const CategoryManagement = () => {
 
                             <div className="flex-1 p-6 lg:p-8 relative">
                                 <button onClick={() => setIsAddModalOpen(false)} className="absolute right-6 top-6 p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
-                                    <HiOutlineXMark className="h-5 w-5" />
+                                    <X className="h-5 w-5" />
                                 </button>
 
                                 <div className="space-y-6">
@@ -722,7 +722,7 @@ const CategoryManagement = () => {
                                                         ))
                                                     }
                                                 </select>
-                                                <HiOutlineChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                                             </div>
                                         </div>
                                     )}
@@ -748,7 +748,7 @@ const CategoryManagement = () => {
                                                 className={cn("px-4 py-1.5 rounded-lg text-[10px] font-black transition-all flex items-center space-x-1.5 tracking-widest",
                                                     formData.status === 'active' ? "bg-white text-emerald-600 shadow-sm" : "text-slate-400")}
                                             >
-                                                <HiOutlineEye className="h-3.5 w-3.5" />
+                                                <Eye className="h-3.5 w-3.5" />
                                                 <span>LIVE</span>
                                             </button>
                                             <button
@@ -756,7 +756,7 @@ const CategoryManagement = () => {
                                                 className={cn("px-4 py-1.5 rounded-lg text-[10px] font-black transition-all flex items-center space-x-1.5 tracking-widest",
                                                     formData.status === 'inactive' ? "bg-white text-slate-700 shadow-sm" : "text-slate-400")}
                                             >
-                                                <HiOutlineEyeSlash className="h-3.5 w-3.5" />
+                                                <EyeOff className="h-3.5 w-3.5" />
                                                 <span>DRAFT</span>
                                             </button>
                                         </div>
@@ -784,7 +784,7 @@ const CategoryManagement = () => {
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md relative z-10 bg-white rounded-3xl p-8 text-center shadow-2xl">
-                            <div className="h-20 w-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6"><HiOutlineExclamationTriangle className="h-10 w-10" /></div>
+                            <div className="h-20 w-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6"><AlertTriangle className="h-10 w-10" /></div>
                             <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Irreversible Action</h3>
                             <p className="text-slate-500 text-xs font-bold mt-2 leading-relaxed uppercase tracking-tight">You are deleting <span className="text-rose-600">"{deleteTarget?.name}"</span>. This will destroy all linked categories and products within this group.</p>
                             <div className="flex gap-3 mt-8">

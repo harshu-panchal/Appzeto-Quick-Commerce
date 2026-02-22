@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
-import { BlurFade } from '@/components/ui/blur-fade';
 
 const categoryGroups = [
     {
@@ -49,7 +48,7 @@ const CategoriesPage = () => {
                             {/* Categories Grid */}
                             <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-8">
                                 {group.categories.map((category, idx) => (
-                                    <BlurFade key={category.id} delay={0.1 + (idx * 0.05)} inView={true} className="flex flex-col group cursor-pointer">
+                                    <div key={category.id} className="flex flex-col group cursor-pointer">
                                         <Link
                                             to={`/category/${category.id}`}
                                             className="contents"
@@ -65,7 +64,7 @@ const CategoriesPage = () => {
                                                 {category.name}
                                             </span>
                                         </Link>
-                                    </BlurFade>
+                                    </div>
                                 ))}
                             </div>
                         </div>

@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import { Search, Mic, MapPin, ChevronDown, Star, Home as HomeIcon, Heart, Snowflake, Laptop, Sparkles, Clock, Apple, Baby, Dog, Coffee, Gift, Shirt } from 'lucide-react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { BlurFade } from '@/components/ui/blur-fade';
-import { WordPullUp } from '@/components/ui/word-pull-up';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import ProductCard from '../components/shared/ProductCard';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
 
@@ -309,7 +307,7 @@ const Home = () => {
 
     return (
         <CustomerLayout showHeader={false}>
-            <div className="min-h-screen bg-[#F5F7F8] pt-[248px] md:pt-[258px]">
+            <div className="min-h-screen bg-[#F5F7F8] pt-[240px] md:pt-[250px]">
                 {/* Top Dynamic Gradient Section */}
                 <MainLocationHeader
                     categories={categories}
@@ -320,28 +318,15 @@ const Home = () => {
                 {/* Promotional Banner Section - Now with higher z-index and scroll-fade */}
                 <motion.div
                     style={{ opacity, y, scale, pointerEvents }}
-                    className="px-5 -mt-[21px] relative z-[110]"
+                    className="px-5 -mt-[21px] relative z-[301]"
                 >
                     <motion.div
-                        initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                        animate={{
-                            opacity: 1,
-                            y: 0,
-                            scale: 1,
-                            boxShadow: ["0px 10px 30px rgba(37, 211, 102, 0.2)", "0px 25px 60px rgba(37, 211, 102, 0.5)", "0px 10px 30px rgba(37, 211, 102, 0.2)"]
-                        }}
                         whileHover={{
                             scale: 1.02,
                             rotate: [0, -1, 1, 0],
                             transition: { duration: 0.3 }
                         }}
                         whileTap={{ scale: 0.98 }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 260,
-                            damping: 20,
-                            boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                        }}
                         // Dynamic Background based on theme
                         style={{ background: activeCategory.theme.gradient }}
                         className="rounded-2xl p-6 shadow-2xl relative overflow-hidden border-4 border-white group cursor-pointer transition-colors duration-500"
@@ -356,25 +341,6 @@ const Home = () => {
                         <div className="relative z-10 flex flex-col items-center text-center">
                             <motion.div
                                 className="flex gap-4 mb-2 items-center"
-                                initial={{ scale: 0.5, opacity: 0 }}
-                                animate={{
-                                    scale: [1, 1.2, 1],
-                                    opacity: 1,
-                                    y: [0, -10, 0],
-                                    rotate: [0, 3, -3, 0]
-                                }}
-                                transition={{
-                                    scale: {
-                                        duration: 0.8,
-                                        repeat: Infinity,
-                                        repeatDelay: 4.2,
-                                        type: "spring",
-                                        stiffness: 400,
-                                        damping: 10
-                                    },
-                                    y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-                                    rotate: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                                }}
                             >
                                 <motion.div
                                     className="text-yellow-400"
@@ -387,10 +353,9 @@ const Home = () => {
                                     <Sparkles size={32} fill="currentColor" className="drop-shadow-lg" />
                                 </motion.div>
 
-                                <WordPullUp
-                                    className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1 flex"
-                                    words={activeCategory.banner.title}
-                                />
+                                <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1 flex">
+                                    {activeCategory.banner.title}
+                                </h2>
 
                                 <motion.div
                                     className="text-yellow-400"
@@ -405,34 +370,12 @@ const Home = () => {
                             </motion.div>
 
                             <motion.div
-                                initial={{ scale: 0, rotate: -20 }}
-                                animate={{
-                                    scale: [1, 1.2, 1],
-                                    rotate: [-3, 0, -3]
-                                }}
-                                transition={{
-                                    scale: {
-                                        duration: 0.8,
-                                        repeat: Infinity,
-                                        repeatDelay: 4.2,
-                                        type: "spring",
-                                        stiffness: 500,
-                                        damping: 15,
-                                        delay: 0.2
-                                    },
-                                    rotate: {
-                                        duration: 0.8,
-                                        repeat: Infinity,
-                                        repeatDelay: 4.2,
-                                        delay: 0.2
-                                    }
-                                }}
                                 whileHover={{
                                     scale: 1.1,
                                     rotate: 2,
                                     boxShadow: "0px 15px 30px rgba(0,0,0,0.4)"
                                 }}
-                                className="z-20 cursor-popout"
+                                className="z-[50] cursor-popout"
                             >
                                 <h3 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)] bg-[#1A1A1A] px-6 py-2 -mt-2 transform relative overflow-hidden flex items-center gap-2 rounded-lg border-t-2 border-white/20">
                                     <motion.span
@@ -494,39 +437,38 @@ const Home = () => {
 
                     <div className="grid grid-cols-3 gap-x-3 gap-y-3">
                         {bestsellerCategories.map((cat, idx) => (
-                            <BlurFade key={cat.id} delay={0.25 + (idx * 0.05)} inView={true}>
-                                <motion.div
-                                    whileHover={{ y: -4 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate(`/category/${cat.name}`)}
-                                    className="flex flex-col group cursor-pointer"
-                                >
-                                    <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">
-                                        {/* Image Grid Area */}
-                                        <div className="p-2 gap-1.5 grid grid-cols-2 flex-1">
-                                            {cat.images.map((img, idx) => (
-                                                <div key={idx} className="bg-[#F8F9FA] rounded-lg overflow-hidden flex items-center justify-center p-1.5 border border-gray-50">
-                                                    <img src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Glassy Overlay for Badge (Shifted downwards) */}
-                                        <div className="absolute bottom-[42px] left-0 right-0 flex justify-center pointer-events-none">
-                                            <div className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/60 shadow-sm transform scale-90 translate-y-2">
-                                                <span className="text-[8px] font-black text-[#1A1A1A] uppercase tracking-wider">4+ ITEMS</span>
+                            <motion.div
+                                key={cat.id}
+                                whileHover={{ y: -4 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => navigate(`/category/${cat.name}`)}
+                                className="flex flex-col group cursor-pointer"
+                            >
+                                <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">
+                                    {/* Image Grid Area */}
+                                    <div className="p-2 gap-1.5 grid grid-cols-2 flex-1">
+                                        {cat.images.map((img, idx) => (
+                                            <div key={idx} className="bg-[#F8F9FA] rounded-lg overflow-hidden flex items-center justify-center p-1.5 border border-gray-50">
+                                                <img src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
                                             </div>
-                                        </div>
+                                        ))}
+                                    </div>
 
-                                        {/* Integrated Label Area */}
-                                        <div className="bg-[#F8F9FA]/50 border-t border-gray-50 px-2 py-3 mt-auto">
-                                            <span className="text-[10px] font-black text-center block leading-tight text-[#1A1A1A] group-hover:text-[#0c831f] transition-colors line-clamp-2">
-                                                {cat.name}
-                                            </span>
+                                    {/* Glassy Overlay for Badge (Shifted downwards) */}
+                                    <div className="absolute bottom-[42px] left-0 right-0 flex justify-center pointer-events-none">
+                                        <div className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/60 shadow-sm transform scale-90 translate-y-2">
+                                            <span className="text-[8px] font-black text-[#1A1A1A] uppercase tracking-wider">4+ ITEMS</span>
                                         </div>
                                     </div>
-                                </motion.div>
-                            </BlurFade>
+
+                                    {/* Integrated Label Area */}
+                                    <div className="bg-[#F8F9FA]/50 border-t border-gray-50 px-2 py-3 mt-auto">
+                                        <span className="text-[10px] font-black text-center block leading-tight text-[#1A1A1A] group-hover:text-[#0c831f] transition-colors line-clamp-2">
+                                            {cat.name}
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.div>
                         ))}
                     </div>
                 </div>
@@ -561,11 +503,9 @@ const Home = () => {
                                 { id: 3, name: "Handcrafted Chocolate", price: 280, originalPrice: 350, weight: "100g", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
                                 { id: 4, name: "Fresh Blueberries", price: 190, originalPrice: 200, weight: "125g", image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 5 },
                             ].map((product, idx) => (
-                                <BlurFade key={product.id} delay={0.6 + (idx * 0.05)} inView={true}>
-                                    <div className="w-[135px] flex-shrink-0 snap-start">
-                                        <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" compact={true} />
-                                    </div>
-                                </BlurFade>
+                                <div key={product.id} className="w-[135px] flex-shrink-0 snap-start">
+                                    <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" compact={true} />
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -585,11 +525,9 @@ const Home = () => {
                             { id: 103, name: "Double Toned Milk", price: 55, originalPrice: 60, weight: "1L", image: "https://images.unsplash.com/photo-1563636619-e910019335cd?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "8 mins", ratings: 4 },
                             { id: 104, name: "Whole Wheat Bread", price: 40, originalPrice: 50, weight: "400g", image: "https://images.unsplash.com/photo-1589367920969-ab8e050bab3e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
                         ].map((product, idx) => (
-                            <BlurFade key={product.id} delay={0.4 + (idx * 0.05)} inView={true}>
-                                <div className="h-full">
-                                    <ProductCard product={product} compact={true} />
-                                </div>
-                            </BlurFade>
+                            <div key={product.id} className="h-full">
+                                <ProductCard product={product} compact={true} />
+                            </div>
                         ))}
                     </div>
                 </div>

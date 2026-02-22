@@ -149,11 +149,11 @@ const CategoryProductsPage = () => {
                     <main className="flex-1 p-3 pb-24 bg-white">
                         <div className="grid grid-cols-2 gap-x-2 gap-y-4">
                             {filteredProducts.map((product) => (
-                                <ProductCard key={product.id} product={product} />
+                                <ProductCard key={product.id} product={product} compact={true} />
                             ))}
                             {/* Visual Fill */}
                             {filteredProducts.map((product) => (
-                                <ProductCard key={product.id + 10} product={{ ...product, id: product.id + 10 }} />
+                                <ProductCard key={product.id + 10} product={{ ...product, id: product.id + 10 }} compact={true} />
                             ))}
                         </div>
                     </main>

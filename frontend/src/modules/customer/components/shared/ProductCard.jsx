@@ -187,9 +187,6 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                         <motion.div
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.9 }}
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         >
                             <Button
                                 variant="outline"

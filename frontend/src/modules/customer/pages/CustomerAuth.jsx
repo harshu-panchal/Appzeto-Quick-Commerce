@@ -119,15 +119,11 @@ const CustomerAuth = () => {
 
             {/* Mobile Optimized Auth Card */}
             <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
                 className="relative z-10 w-[92%] max-w-[420px]"
             >
                 {/* Logo / Brand Header */}
                 <div className="text-center mb-6">
                     <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
                         className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl mb-4"
                     >
                         <ShoppingBag className="text-white" size={32} />
@@ -145,9 +141,6 @@ const CustomerAuth = () => {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={showOtp ? 'otp' : 'form'}
-                            initial={{ x: 20, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -20, opacity: 0 }}
                             className="space-y-6"
                         >
                             <div className="text-center space-y-1">

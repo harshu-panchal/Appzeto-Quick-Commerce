@@ -231,9 +231,6 @@ const CheckoutPage = () => {
                     />
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ type: "spring", stiffness: 260, damping: 20 }}
                         className="relative z-10 flex flex-col items-center text-center max-w-sm mx-auto"
                     >
                         {/* Empty Cart Illustration Composition */}
@@ -340,8 +337,6 @@ const CheckoutPage = () => {
 
                     {/* Delivery Time Banner */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                     >
                         <div className="flex items-center gap-3">
@@ -357,8 +352,6 @@ const CheckoutPage = () => {
 
                     {/* Delivery Address Section - New UI */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                     >
                         <div className="flex justify-between items-center mb-3">
@@ -416,9 +409,6 @@ const CheckoutPage = () => {
                             {isLocationConfirmed ? (
                                 <motion.button
                                     key="update-btn"
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
                                     className="w-full py-3 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center gap-2 text-[#0c831f] font-bold text-sm hover:bg-green-100 transition-colors"
                                 >
                                     <MapPin size={18} />
@@ -427,9 +417,6 @@ const CheckoutPage = () => {
                             ) : (
                                 <motion.div
                                     key="precise-banner"
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
                                     className="bg-green-50 border border-green-100 rounded-xl p-3 flex items-center justify-center gap-2 overflow-hidden"
                                 >
                                     <Check size={16} className="text-[#0c831f] stroke-[3]" />
@@ -441,9 +428,6 @@ const CheckoutPage = () => {
 
                     {/* Cart Items */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-4"
                     >
                         {displayCartItems.map((item) => (
@@ -486,9 +470,6 @@ const CheckoutPage = () => {
                     {/* Your Wishlist */}
                     {wishlist.length > 0 && (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
                             className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                         >
                             <h3 className="font-black text-slate-800 text-lg mb-4">Your wishlist</h3>
@@ -504,9 +485,6 @@ const CheckoutPage = () => {
 
                     {/* You might also like */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                     >
                         <h3 className="font-black text-slate-800 text-lg mb-4">You might also like</h3>
@@ -521,9 +499,6 @@ const CheckoutPage = () => {
 
                     {/* Available Coupons */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                     >
                         <div className="flex items-center justify-between mb-4">
@@ -564,9 +539,6 @@ const CheckoutPage = () => {
 
                     {/* Tip for Partner */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
                         className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl p-4 border border-pink-100"
                     >
                         <div className="flex items-center gap-2 mb-3">
@@ -592,9 +564,6 @@ const CheckoutPage = () => {
 
                     {/* Payment Method */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7 }}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                     >
                         <h3 className="font-black text-slate-800 mb-4">Payment Method</h3>
@@ -634,9 +603,6 @@ const CheckoutPage = () => {
 
                     {/* Bill Details */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8 }}
                         className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
                     >
                         <h3 className="font-black text-slate-800 mb-4">Bill Details</h3>
@@ -812,7 +778,7 @@ const CheckoutPage = () => {
                     scrollbar-width: none;
                 }
             `}} />
-        </CustomerLayout >
+        </CustomerLayout>
     );
 };
 

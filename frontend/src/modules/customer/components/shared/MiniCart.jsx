@@ -25,9 +25,6 @@ const MiniCart = () => {
                 >
 
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
                         className="w-full max-w-[210px] pointer-events-auto"
                     >
                         <Link

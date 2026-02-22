@@ -6,7 +6,7 @@
   --primary: oklch(0.55 0.23 260);
   /* Vibrant Indigo/Blue */
   --primary-dark: #0369a1;
-  --radius: 0.75rem;
+  --radius: 0.5rem;
   --background: oklch(0.99 0.005 260);
   --foreground: oklch(0.15 0.02 260);
   --card: oklch(1 0 0);

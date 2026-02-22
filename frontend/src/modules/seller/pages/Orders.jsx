@@ -192,14 +192,14 @@ const Orders = () => {
                         <Button
                             onClick={exportOrders}
                             variant="outline"
-                            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border-slate-200"
+                            className="flex items-center space-x-2 px-5 py-2.5 rounded-lg text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border-slate-200"
                         >
                             <HiOutlinePrinter className="h-4 w-4" />
                             <span>EXPORT ALL</span>
                         </Button>
                         <ShimmerButton
                             onClick={() => setIsQuickViewModalOpen(true)}
-                            className="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-xl flex items-center space-x-2"
+                            className="px-6 py-2.5 rounded-lg text-xs font-bold text-white shadow-xl flex items-center space-x-2"
                         >
                             <HiOutlineEye className="h-4 w-4 mr-2" />
                             <span>QUICK VIEW</span>
@@ -217,7 +217,7 @@ const Orders = () => {
                             gradientColor={stat.bg.includes('indigo') ? "#eef2ff" : stat.bg.includes('amber') ? "#fffbeb" : stat.bg.includes('emerald') ? "#ecfdf5" : "#fff1f2"}
                         >
                             <div className="flex items-center gap-3 p-4 relative z-10">
-                                <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 duration-300 shadow-sm", stat.bg, stat.color)}>
+                                <div className={cn("h-12 w-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 duration-300 shadow-sm", stat.bg, stat.color)}>
                                     <stat.icon className="h-6 w-6" />
                                 </div>
                                 <div>
@@ -232,7 +232,7 @@ const Orders = () => {
 
             {/* Main Content Area */}
             <BlurFade delay={0.3}>
-                <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl bg-white">
+                <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-lg bg-white">
                     {/* Tabs */}
                     <div className="border-b border-slate-100 bg-slate-50/30 overflow-x-auto scrollbar-hide">
                         <div className="flex px-6 items-center">
@@ -268,11 +268,11 @@ const Orders = () => {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Search by Order ID or Customer Name..."
-                                className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-xl text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
+                                className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-lg text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
                             />
                         </div>
                         <div className="flex gap-2 shrink-0 w-full lg:w-auto">
-                            <button className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm w-full lg:w-auto">
+                            <button className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm w-full lg:w-auto">
                                 <HiOutlineFunnel className="h-4 w-4" />
                                 <span>DATE FILTER</span>
                             </button>

@@ -91,8 +91,6 @@ const SlideToPay = ({
             {/* Success State Text */}
             {isCompleted && (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
                     className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
                 >
                     <span className="text-white font-black text-lg tracking-wide uppercase flex items-center gap-2">
@@ -116,8 +114,6 @@ const SlideToPay = ({
             >
                 {isLoading || isCompleted ? (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
                         className="h-6 w-6 border-2 border-[#0c831f] border-t-transparent rounded-full animate-spin"
                     />
                 ) : (

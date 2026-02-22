@@ -207,68 +207,47 @@ const StockManagement = () => {
                                                     className="group hover:bg-slate-50/80 transition-all cursor-default"
                                                 >
                                                     <td className="px-6 py-5">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
-                                                                <HiOutlineCube className="h-6 w-6" />
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">{item.name}</p>
-                                                                <p className="text-[10px] font-bold text-slate-400 mt-0.5 bg-slate-100 w-fit px-1.5 py-0.5 rounded-md tracking-wider">SKU: {item.sku}</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-5">
-                                                        <div className="space-y-2">
-                                                            <div className="flex justify-between items-center w-36">
-                                                                <span className="text-[10px] font-bold text-slate-400">Current Qty</span>
-                                                                <span className="text-xs font-black text-slate-900">{item.stock} Units</span>
-                                                            </div>
-                                                            <div className="w-36 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                                <div
-                                                                    className={cn(
-                                                                        "h-full transition-all duration-700",
-                                                                        item.stock === 0 ? "w-0" :
-                                                                            item.stock <= item.threshold ? "bg-amber-500" : "bg-emerald-500"
-                                                                    )}
-                                                                    style={{ width: `${Math.min(100, (item.stock / 150) * 100)}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-5">
-                                                        <Badge
-                                                            variant={item.status === 'In Stock' ? 'success' : item.status === 'Low Stock' ? 'warning' : 'error'}
-                                                            className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-xl"
-                                                        >
-                                                            {item.status}
-                                                        </Badge>
-                                                        <p className="text-[9px] font-bold text-slate-400 mt-1.5 ml-0.5 italic">Min Threshold: {item.threshold}</p>
-                                                    </td>
-                                                    <td className="px-6 py-5">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <button
-                                                                onClick={() => handleQuickAdjust(item.id, -1)}
-                                                                className="h-8 w-8 rounded-lg bg-white border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all flex items-center justify-center shadow-sm"
-                                                            >
-                                                                <HiOutlineMinus className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleQuickAdjust(item.id, 1)}
-                                                                className="h-8 w-8 rounded-lg bg-white border border-slate-200 text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 transition-all flex items-center justify-center shadow-sm"
-                                                            >
-                                                                <HiOutlinePlus className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-5 text-right">
-                                                        <Button
-                                                            onClick={() => openAdjustModal(item)}
-                                                            variant="ghost"
-                                                            className="h-9 w-9 p-0 rounded-xl hover:bg-primary/5 hover:text-primary transition-all shadow-none"
-                                                        >
-                                                            <HiOutlineClipboardDocumentList className="h-5 w-5" />
-                                                        </Button>
-                                                    </td>
+                                        <div className="flex items-center gap-4 group">
+                                            <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
+                                                <HiOutlineCube className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{item.name}</h4>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SKU: {item.sku}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex flex-col">
+                                                <span className={cn(
+                                                    "text-sm font-black",
+                                                    item.stock <= item.threshold ? "text-rose-600" : "text-slate-900"
+                                                )}>
+                                                    {item.stock} units
+                                                </span>
+                                                {item.stock <= item.threshold && (
+                                                    <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-fit mt-0.5">Low Stock</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <Badge variant={item.status === 'In Stock' ? 'success' : 'destructive'} className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                                            {item.status}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-6 py-5">
+                                        <p className="text-sm font-black text-slate-900">₹{item.price}</p>
+                                    </td>
+                                    <td className="px-6 py-5 text-right">
+                                        <button
+                                            onClick={() => openAdjustModal(item)}
+                                            className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors"
+                                        >
+                                            Adjust Stock
+                                        </button>
+                                    </td>
                                                 </motion.tr>
                                             ))}
                                         </AnimatePresence>
