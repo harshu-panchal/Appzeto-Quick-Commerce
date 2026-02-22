@@ -4,33 +4,50 @@ import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { slugify } from "../utils/slugify.js";
 
 /* ===============================
-   GET PRODUCTS (With Filters)
+   GET ALL PRODUCTS (Public/Admin)
 ================================ */
 export const getProducts = async (req, res) => {
     try {
-        const { search, category, status, featured } = req.query;
+        const { search, category, subcategory, header, status, sellerId, featured } = req.query;
 
         const query = {};
         if (search) {
             query.name = { $regex: search, $options: "i" };
         }
-        if (category) {
-            query.categoryId = category;
-        }
-
-        if (status) {
-            query.status = status;
-        }
-        if (featured !== undefined) {
-            query.isFeatured = featured === 'true';
-        }
+        if (header) query.headerId = header;
+        if (category) query.categoryId = category;
+        if (subcategory) query.subcategoryId = subcategory;
+        if (status) query.status = status;
+        if (sellerId) query.sellerId = sellerId;
+        if (featured !== undefined) query.isFeatured = featured === 'true';
 
         const products = await Product.find(query)
+            .populate('headerId', 'name')
             .populate('categoryId', 'name')
             .populate('subcategoryId', 'name')
+            .populate('sellerId', 'shopName')
             .sort({ createdAt: -1 });
 
         return handleResponse(res, 200, "Products fetched successfully", products);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   GET SELLER PRODUCTS
+================================ */
+export const getSellerProducts = async (req, res) => {
+    try {
+        const sellerId = req.user.id;
+        const products = await Product.find({ sellerId })
+            .populate('headerId', 'name')
+            .populate('categoryId', 'name')
+            .populate('subcategoryId', 'name')
+            .populate('sellerId', 'shopName')
+            .sort({ createdAt: -1 });
+
+        return handleResponse(res, 200, "Seller products fetched", products);
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -42,27 +59,51 @@ export const getProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
     try {
         const productData = { ...req.body };
+        productData.sellerId = req.user.id;
 
-        // Generate slug if not provided or clean it
+        // Auto-generate slug
         if (!productData.slug || productData.slug.trim() === "") {
             productData.slug = slugify(productData.name);
         } else {
             productData.slug = slugify(productData.slug);
         }
 
-        // Handle multiple images
-        if (req.files && req.files.length > 0) {
-            const uploadPromises = req.files.map(file =>
-                uploadToCloudinary(file.buffer, 'products')
-            );
-            productData.images = await Promise.all(uploadPromises);
+        // Handle Images
+        if (req.files) {
+            // Main Image
+            if (req.files.mainImage && req.files.mainImage[0]) {
+                productData.mainImage = await uploadToCloudinary(req.files.mainImage[0].buffer, 'products');
+            }
+
+            // Gallery Images
+            if (req.files.galleryImages && req.files.galleryImages.length > 0) {
+                const uploadPromises = req.files.galleryImages.map(file =>
+                    uploadToCloudinary(file.buffer, 'products')
+                );
+                productData.galleryImages = await Promise.all(uploadPromises);
+            }
+        }
+
+        // Handle tags if string
+        if (typeof productData.tags === 'string') {
+            productData.tags = productData.tags.split(',').map(tag => tag.trim());
+        }
+
+        // Handle variants if string (multipart/form-data sends as string)
+        if (typeof productData.variants === 'string') {
+            try {
+                productData.variants = JSON.parse(productData.variants);
+            } catch (e) {
+                productData.variants = [];
+            }
         }
 
         const product = await Product.create(productData);
         return handleResponse(res, 201, "Product created successfully", product);
     } catch (error) {
+        console.error("Create Product Error:", error);
         if (error.code === 11000) {
-            return handleResponse(res, 400, "Product slug already exists");
+            return handleResponse(res, 400, "Slug or SKU already exists");
         }
         return handleResponse(res, 500, error.message);
     }
@@ -74,27 +115,67 @@ export const createProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
+        const sellerId = req.user.id;
+        const role = req.user.role;
         const productData = { ...req.body };
 
-        if (productData.name && (!productData.slug || productData.slug.trim() === "")) {
-            productData.slug = slugify(productData.name);
-        } else if (productData.slug) {
-            productData.slug = slugify(productData.slug);
-        }
+        // Admin bypasses sellerId check
+        const query = role === 'admin' ? { _id: id } : { _id: id, sellerId };
+        const product = await Product.findOne(query);
 
-        const product = await Product.findById(id);
         if (!product) {
-            return handleResponse(res, 404, "Product not found");
+            return handleResponse(res, 404, "Product not found or unauthorized");
         }
 
-        // Handle new images if uploaded
-        if (req.files && req.files.length > 0) {
-            const uploadPromises = req.files.map(file =>
-                uploadToCloudinary(file.buffer, 'products')
-            );
-            const newImages = await Promise.all(uploadPromises);
-            // Optional: Keep old images or replace them. Here we replace.
-            productData.images = newImages;
+        if (productData.name) {
+            if (!productData.slug || productData.slug.trim() === "") {
+                productData.slug = slugify(productData.name);
+            } else {
+                productData.slug = slugify(productData.slug);
+            }
+        }
+
+        // Handle Images
+        if (req.files) {
+            // Seller-style images
+            if (req.files.mainImage && req.files.mainImage[0]) {
+                productData.mainImage = await uploadToCloudinary(req.files.mainImage[0].buffer, 'products');
+            }
+
+            if (req.files.galleryImages && req.files.galleryImages.length > 0) {
+                const uploadPromises = req.files.galleryImages.map(file =>
+                    uploadToCloudinary(file.buffer, 'products')
+                );
+                productData.galleryImages = await Promise.all(uploadPromises);
+            }
+
+            // Admin-style images (array of 'images')
+            if (req.files.images && req.files.images.length > 0) {
+                const uploadPromises = req.files.images.map(file =>
+                    uploadToCloudinary(file.buffer, 'products')
+                );
+                const uploadedImages = await Promise.all(uploadPromises);
+
+                // For admin, we use the first as mainImage and rest as gallery
+                if (uploadedImages.length > 0) {
+                    productData.mainImage = uploadedImages[0];
+                    productData.galleryImages = uploadedImages.slice(1);
+                    // Also support a generic 'images' field if schema has it (some versions did)
+                    productData.images = uploadedImages;
+                }
+            }
+        }
+
+        if (typeof productData.tags === 'string') {
+            productData.tags = productData.tags.split(',').map(tag => tag.trim());
+        }
+
+        if (typeof productData.variants === 'string') {
+            try {
+                productData.variants = JSON.parse(productData.variants);
+            } catch (e) {
+                // keep existing if invalid?
+            }
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(
@@ -105,8 +186,15 @@ export const updateProduct = async (req, res) => {
 
         return handleResponse(res, 200, "Product updated successfully", updatedProduct);
     } catch (error) {
+        console.error("Update Product Error:", error);
+        if (error.name === 'ValidationError') {
+            return handleResponse(res, 400, Object.values(error.errors).map(e => e.message).join(', '));
+        }
+        if (error.name === 'CastError') {
+            return handleResponse(res, 400, `Invalid ${error.path}: ${error.value}`);
+        }
         if (error.code === 11000) {
-            return handleResponse(res, 400, "Product slug already exists");
+            return handleResponse(res, 400, "Slug or SKU already exists");
         }
         return handleResponse(res, 500, error.message);
     }
@@ -118,10 +206,14 @@ export const updateProduct = async (req, res) => {
 export const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const product = await Product.findByIdAndDelete(id);
+        const sellerId = req.user.id;
+        const role = req.user.role;
+
+        const query = role === 'admin' ? { _id: id } : { _id: id, sellerId };
+        const product = await Product.findOneAndDelete(query);
 
         if (!product) {
-            return handleResponse(res, 404, "Product not found");
+            return handleResponse(res, 404, "Product not found or unauthorized");
         }
 
         return handleResponse(res, 200, "Product deleted successfully");
@@ -137,8 +229,10 @@ export const getProductById = async (req, res) => {
     try {
         const { id } = req.params;
         const product = await Product.findById(id)
+            .populate('headerId', 'name')
             .populate('categoryId', 'name')
-            .populate('subcategoryId', 'name');
+            .populate('subcategoryId', 'name')
+            .populate('sellerId', 'shopName');
 
         if (!product) {
             return handleResponse(res, 404, "Product not found");

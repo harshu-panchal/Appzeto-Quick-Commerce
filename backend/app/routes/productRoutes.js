@@ -1,6 +1,7 @@
 import express from "express";
 import {
     getProducts,
+    getSellerProducts,
     createProduct,
     updateProduct,
     deleteProduct,
@@ -11,33 +12,40 @@ import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-// Public/App route to get all products
+// Public routes
 router.get("/", getProducts);
-
-// Get single product
 router.get("/:id", getProductById);
 
-// Admin protected routes
+// Seller protected routes
+router.get("/seller/me", verifyToken, allowRoles("seller"), getSellerProducts);
+
 router.post(
     "/",
     verifyToken,
-    allowRoles("admin"),
-    upload.array('images', 5), // Allow up to 5 images
+    allowRoles("seller"),
+    upload.fields([
+        { name: 'mainImage', maxCount: 1 },
+        { name: 'galleryImages', maxCount: 5 }
+    ]),
     createProduct
 );
 
 router.put(
     "/:id",
     verifyToken,
-    allowRoles("admin"),
-    upload.array('images', 5),
+    allowRoles("seller", "admin"),
+    upload.fields([
+        { name: 'mainImage', maxCount: 1 },
+        { name: 'galleryImages', maxCount: 5 },
+        { name: 'images', maxCount: 5 } // For admin compatibility
+    ]),
     updateProduct
 );
 
 router.delete(
     "/:id",
     verifyToken,
-    allowRoles("admin"),
+    allowRoles("seller", "admin"),
     deleteProduct
 );
 

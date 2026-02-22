@@ -14,6 +14,11 @@ const productSchema = new mongoose.Schema(
             trim: true,
             lowercase: true,
         },
+        sku: {
+            type: String,
+            unique: true,
+            trim: true,
+        },
         description: {
             type: String,
             trim: true,
@@ -23,19 +28,42 @@ const productSchema = new mongoose.Schema(
             required: true,
             min: 0,
         },
-        discountPrice: {
+        salePrice: {
             type: Number,
             default: 0,
             min: 0,
-        },
-        unit: {
-            type: String, // e.g., kg, gm, packet, piece
-            required: true,
         },
         stock: {
             type: Number,
             required: true,
             default: 0,
+        },
+        lowStockAlert: {
+            type: Number,
+            default: 5,
+        },
+        brand: {
+            type: String,
+            trim: true,
+        },
+        weight: {
+            type: String,
+            trim: true,
+        },
+        tags: [{
+            type: String,
+            trim: true,
+        }],
+        mainImage: {
+            type: String, // Cloudinary URL
+        },
+        galleryImages: [{
+            type: String, // Array of Cloudinary URLs
+        }],
+        headerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Category",
+            required: true,
         },
         categoryId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -47,14 +75,25 @@ const productSchema = new mongoose.Schema(
             ref: "Category",
             required: true,
         },
-        images: [{
-            type: String, // Array of Cloudinary URLs
-        }],
+        sellerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Seller",
+            required: true,
+        },
         status: {
             type: String,
             enum: ["active", "inactive"],
             default: "active",
         },
+        variants: [
+            {
+                name: String,
+                price: Number,
+                salePrice: Number,
+                stock: Number,
+                sku: String,
+            }
+        ],
         isFeatured: {
             type: Boolean,
             default: false,

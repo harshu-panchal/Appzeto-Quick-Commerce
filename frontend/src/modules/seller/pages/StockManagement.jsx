@@ -23,6 +23,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { BlurFade } from '@/components/ui/blur-fade';
 import { MagicCard } from '@/components/ui/magic-card';
+import { sellerApi } from '../services/sellerApi';
+import { toast } from 'sonner';
 
 const MOCK_INVENTORY = [
     { id: '1', name: 'Fresh Alfonso Mangoes', sku: 'MGO-001', stock: 124, threshold: 50, price: 450, category: 'Fruits', status: 'In Stock', lastRestock: '2023-10-15' },
@@ -43,12 +45,37 @@ const StockManagement = () => {
     const [activeView, setActiveView] = useState('inventory'); // 'inventory' or 'history'
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
-    const [inventory, setInventory] = useState(MOCK_INVENTORY);
+    const [inventory, setInventory] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [adjustType, setAdjustType] = useState('Restock');
     const [adjustValue, setAdjustValue] = useState('');
     const [adjustNote, setAdjustNote] = useState('');
+
+    const fetchInventory = async () => {
+        setIsLoading(true);
+        try {
+            const res = await sellerApi.getProducts();
+            if (res.data.success) {
+                const products = res.data.results || res.data.result || [];
+                setInventory(products.map(p => ({
+                    ...p,
+                    id: p._id,
+                    threshold: p.lowStockAlert || 5, // Match our model
+                    status: p.stock === 0 ? 'Out of Stock' : (p.stock <= (p.lowStockAlert || 5) ? 'Low Stock' : 'In Stock')
+                })));
+            }
+        } catch (error) {
+            toast.error("Failed to load inventory");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchInventory();
+    }, []);
 
     const stats = useMemo(() => [
         { label: 'Total Inventory', value: inventory.reduce((acc, item) => acc + item.stock, 0), icon: HiOutlineCube, color: 'text-indigo-600', bg: 'bg-indigo-50', status: 'All' },
@@ -66,17 +93,21 @@ const StockManagement = () => {
         });
     }, [inventory, searchTerm, filterStatus]);
 
-    const handleQuickAdjust = (id, delta) => {
-        setInventory(prev => prev.map(item => {
-            if (item.id === id) {
-                const newStock = Math.max(0, item.stock + delta);
-                let newStatus = 'In Stock';
-                if (newStock === 0) newStatus = 'Out of Stock';
-                else if (newStock <= item.threshold) newStatus = 'Low Stock';
-                return { ...item, stock: newStock, status: newStatus };
+    const handleQuickAdjust = async (id, delta) => {
+        const item = inventory.find(i => i.id === id);
+        if (!item) return;
+
+        const newStock = Math.max(0, item.stock + delta);
+
+        try {
+            const res = await sellerApi.updateProduct(id, { stock: newStock });
+            if (res.data.success) {
+                toast.success("Stock updated");
+                fetchInventory();
             }
-            return item;
-        }));
+        } catch (error) {
+            toast.error("Failed to update stock");
+        }
     };
 
     const openAdjustModal = (item) => {
@@ -207,47 +238,51 @@ const StockManagement = () => {
                                                     className="group hover:bg-slate-50/80 transition-all cursor-default"
                                                 >
                                                     <td className="px-6 py-5">
-                                        <div className="flex items-center gap-4 group">
-                                            <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
-                                                <HiOutlineCube className="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{item.name}</h4>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Product Code: {item.sku}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex flex-col">
-                                                <span className={cn(
-                                                    "text-sm font-black",
-                                                    item.stock <= item.threshold ? "text-rose-600" : "text-slate-900"
-                                                )}>
-                                                    {item.stock} units
-                                                </span>
-                                                {item.stock <= item.threshold && (
-                                                    <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-fit mt-0.5">Low Stock</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <Badge variant={item.status === 'In Stock' ? 'success' : 'destructive'} className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg">
-                                            {item.status}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <p className="text-sm font-black text-slate-900">₹{item.price}</p>
-                                    </td>
-                                    <td className="px-6 py-5 text-right">
-                                        <button
-                                            onClick={() => openAdjustModal(item)}
-                                            className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors"
-                                        >
-                                            Adjust Stock
-                                        </button>
-                                    </td>
+                                                        <div className="flex items-center gap-4 group">
+                                                            <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform overflow-hidden">
+                                                                {item.mainImage ? (
+                                                                    <img src={item.mainImage} alt={item.name} className="h-full w-full object-cover" />
+                                                                ) : (
+                                                                    <HiOutlineCube className="h-6 w-6" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{item.name}</h4>
+                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Product Code: {item.sku || 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex flex-col">
+                                                                <span className={cn(
+                                                                    "text-sm font-black",
+                                                                    item.stock <= item.threshold ? "text-rose-600" : "text-slate-900"
+                                                                )}>
+                                                                    {item.stock} units
+                                                                </span>
+                                                                {item.stock <= item.threshold && (
+                                                                    <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-fit mt-0.5">Low Stock</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        <Badge variant={item.status === 'In Stock' ? 'success' : 'destructive'} className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg">
+                                                            {item.status}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        <p className="text-sm font-black text-slate-900">₹{item.price}</p>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-right">
+                                                        <button
+                                                            onClick={() => openAdjustModal(item)}
+                                                            className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors"
+                                                        >
+                                                            Adjust Stock
+                                                        </button>
+                                                    </td>
                                                 </motion.tr>
                                             ))}
                                         </AnimatePresence>
