@@ -280,9 +280,9 @@ const HeaderCategories = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
-                        {cat.image?.url ? (
+                        {cat.image?.url || cat.image ? (
                           <img
-                            src={cat.image.url}
+                            src={cat.image?.url || cat.image}
                             alt={cat.name}
                             className="w-full h-full object-cover"
                           />

@@ -1,6 +1,7 @@
 import Product from "../models/product.js";
 import handleResponse from "../utils/helper.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { slugify } from "../utils/slugify.js";
 
 /* ===============================
    GET PRODUCTS (With Filters)
@@ -16,6 +17,7 @@ export const getProducts = async (req, res) => {
         if (category) {
             query.categoryId = category;
         }
+
         if (status) {
             query.status = status;
         }
@@ -40,6 +42,13 @@ export const getProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
     try {
         const productData = { ...req.body };
+
+        // Generate slug if not provided or clean it
+        if (!productData.slug || productData.slug.trim() === "") {
+            productData.slug = slugify(productData.name);
+        } else {
+            productData.slug = slugify(productData.slug);
+        }
 
         // Handle multiple images
         if (req.files && req.files.length > 0) {
@@ -66,6 +75,12 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const productData = { ...req.body };
+
+        if (productData.name && (!productData.slug || productData.slug.trim() === "")) {
+            productData.slug = slugify(productData.name);
+        } else if (productData.slug) {
+            productData.slug = slugify(productData.slug);
+        }
 
         const product = await Product.findById(id);
         if (!product) {

@@ -13,6 +13,7 @@ export const adminApi = {
 
     // Category Management
     getCategories: () => axiosInstance.get('/admin/categories'),
+    getCategoryTree: () => axiosInstance.get('/admin/categories?tree=true'),
     createCategory: (formData) => axiosInstance.post('/admin/categories', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
