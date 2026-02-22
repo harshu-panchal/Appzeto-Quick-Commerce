@@ -45,7 +45,7 @@ const productSchema = new mongoose.Schema(
         subcategoryId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Category",
-            default: null,
+            required: true,
         },
         images: [{
             type: String, // Array of Cloudinary URLs

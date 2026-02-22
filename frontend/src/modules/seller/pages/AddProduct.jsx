@@ -17,6 +17,8 @@ import {
 } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -33,6 +35,7 @@ const AddProduct = () => {
     stock: "",
     lowStockAlert: 5,
     category: "",
+    subcategory: "",
     header: "",
     status: "active",
     tags: "",
@@ -57,22 +60,76 @@ const AddProduct = () => {
       {
         id: "h1",
         name: "Grocery",
-        children: ["Fruits & Vegetables", "Milk", "Bread & Pav"],
+        children: [
+          {
+            id: "c1",
+            name: "Fruits & Vegetables",
+            subcategories: ["Fresh Fruits", "Fresh Vegetables", "Organic"],
+          },
+          {
+            id: "c2",
+            name: "Milk",
+            subcategories: ["Full Cream", "Toned", "Skimmed"],
+          },
+          {
+            id: "c3",
+            name: "Bread & Pav",
+            subcategories: ["White Bread", "Brown Bread", "Pav"],
+          },
+        ],
       },
       {
         id: "h2",
         name: "Electronics",
-        children: ["Smartphone", "Laptops", "Wearables"],
+        children: [
+          {
+            id: "c4",
+            name: "Smartphone",
+            subcategories: ["Android", "iOS", "Feature Phones"],
+          },
+          {
+            id: "c5",
+            name: "Laptops",
+            subcategories: ["Gaming", "Business", "Ultrabooks"],
+          },
+          {
+            id: "c6",
+            name: "Wearables",
+            subcategories: ["Smart Watches", "Fitness Bands", "Earbuds"],
+          },
+        ],
       },
     ],
     [],
   );
 
   const handleSave = () => {
+    // Validate required fields
+    if (!formData.name) {
+      toast.error("Please fill in the Product Title");
+      return;
+    }
+
+    // Validate all three category levels are selected
+    if (!formData.header || !formData.category || !formData.subcategory) {
+      toast.error("Please select all three category levels: Main Group, Specific Category, and Sub-Category");
+      return;
+    }
+
+    // Validate at least one variant exists with price and stock
+    const hasValidVariant = formData.variants.some(
+      (v) => v.name && v.price && v.stock
+    );
+    if (!hasValidVariant) {
+      toast.error("Please add at least one variant with name, price, and stock");
+      return;
+    }
+
     setIsSaving(true);
     // Simulate API call
     setTimeout(() => {
       setIsSaving(false);
+      toast.success("Product saved successfully!");
       console.log("Saving Product:", formData);
       navigate("/seller/products");
     }, 1500);
@@ -132,11 +189,6 @@ const AddProduct = () => {
         <div className="md:w-64 bg-slate-50/50 border-r border-slate-100 p-4 space-y-1 overflow-y-auto">
           {[
             { id: "general", label: "General Info", icon: HiOutlineTag },
-            {
-              id: "pricing",
-              label: "Pricing & Stock",
-              icon: HiOutlineCurrencyDollar,
-            },
             { id: "variants", label: "Item Variants", icon: HiOutlineSwatch },
             { id: "category", label: "Groups", icon: HiOutlineFolderOpen },
             { id: "media", label: "Photos", icon: HiOutlinePhoto },
@@ -178,38 +230,18 @@ const AddProduct = () => {
         <div className="flex-1 p-8 overflow-y-auto">
           {modalTab === "general" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Product Title
-                  </label>
-                  <input
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-semibold outline-none ring-primary/5 focus:ring-2 transition-all"
-                    placeholder="e.g. Premium Basmati Rice"
-                  />
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Web Address
-                  </label>
-                  <div className="flex items-center bg-slate-50 rounded-md px-4 py-2.5">
-                    <span className="text-[10px] text-slate-400 font-bold mr-1">
-                      /product/
-                    </span>
-                    <input
-                      value={formData.slug}
-                      onChange={(e) =>
-                        setFormData({ ...formData, slug: e.target.value })
-                      }
-                      className="flex-1 bg-transparent border-none text-sm text-slate-500 font-semibold outline-none"
-                      placeholder="premium-basmati-rice"
-                    />
-                  </div>
-                </div>
+              <div className="space-y-1.5 flex flex-col">
+                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  Product Title
+                </label>
+                <input
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-semibold outline-none ring-primary/5 focus:ring-2 transition-all"
+                  placeholder="e.g. Premium Basmati Rice"
+                />
               </div>
               <div className="space-y-1.5 flex flex-col">
                 <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
@@ -249,71 +281,6 @@ const AddProduct = () => {
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-mono font-bold outline-none ring-primary/5 focus:ring-2 transition-all"
                     placeholder="AUTO-GENERATED"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {modalTab === "pricing" && (
-            <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-              <div className="p-6 bg-slate-50 rounded-lg border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-white shadow-sm ring-1 ring-slate-200 border-none rounded-xl text-lg font-bold outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                  />
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest ml-1">
-                    Discounted Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.salePrice}
-                    onChange={(e) =>
-                      setFormData({ ...formData, salePrice: e.target.value })
-                    }
-                    className="w-full px-4 py-3 bg-emerald-50/50 shadow-sm ring-1 ring-emerald-100 border-none rounded-xl text-lg font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    How many in stock
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) =>
-                      setFormData({ ...formData, stock: e.target.value })
-                    }
-                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none ring-primary/5 focus:ring-2 transition-all"
-                  />
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-rose-500 uppercase tracking-widest ml-1">
-                    Alert me when stock is below
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.lowStockAlert}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        lowStockAlert: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2.5 bg-rose-50/30 border-none rounded-xl text-sm font-bold text-rose-600 outline-none ring-rose-100 focus:ring-2 transition-all"
                   />
                 </div>
               </div>
@@ -462,12 +429,12 @@ const AddProduct = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Main Group
+                    Main Group <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={formData.header}
                     onChange={(e) =>
-                      setFormData({ ...formData, header: e.target.value })
+                      setFormData({ ...formData, header: e.target.value, category: "", subcategory: "" })
                     }
                     className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all">
                     <option value="">Select Main Group</option>
@@ -480,20 +447,45 @@ const AddProduct = () => {
                 </div>
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Specific Category
+                    Specific Category <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
+                      setFormData({ ...formData, category: e.target.value, subcategory: "" })
                     }
-                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all">
+                    disabled={!formData.header}
+                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="">Select Category</option>
                     {categories
                       .find((h) => h.name === formData.header)
                       ?.children?.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                    Sub-Category <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={formData.subcategory}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subcategory: e.target.value })
+                    }
+                    disabled={!formData.category}
+                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <option value="">Select Sub-Category</option>
+                    {categories
+                      .find((h) => h.name === formData.header)
+                      ?.children?.find((c) => c.name === formData.category)
+                      ?.subcategories?.map((sc, index) => (
+                        <option key={index} value={sc}>
+                          {sc}
                         </option>
                       ))}
                   </select>
