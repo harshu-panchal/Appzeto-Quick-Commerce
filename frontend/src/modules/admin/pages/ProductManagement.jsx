@@ -205,15 +205,15 @@ const ProductManagement = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-2">
+                    <h1 className="ds-h1 flex items-center gap-2">
                         Product List
                         <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Live</Badge>
                     </h1>
-                    <p className="admin-description mt-0.5">Track your items, prices, and how many are left in stock.</p>
+                    <p className="ds-description mt-0.5">Track your items, prices, and how many are left in stock.</p>
                 </div>
             </div>
 
@@ -231,8 +231,8 @@ const ProductManagement = () => {
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="admin-label">{stat.label}</p>
-                                <h4 className="admin-stat-value">{stat.val}</h4>
+                                <p className="ds-label">{stat.label}</p>
+                                <h4 className="ds-stat-medium">{stat.val}</h4>
                             </div>
                         </div>
                     </Card>
@@ -292,18 +292,18 @@ const ProductManagement = () => {
             </Card>
 
             {/* Product Table */}
-            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl">
+            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="admin-table-header px-6">Product</th>
-                                <th className="admin-table-header px-6">Header</th>
-                                <th className="admin-table-header px-6">Category</th>
-                                <th className="admin-table-header px-6 text-center">Price</th>
-                                <th className="admin-table-header px-6 text-center">Stock</th>
-                                <th className="admin-table-header px-6 text-center">Status</th>
-                                <th className="admin-table-header px-6 text-right">Actions</th>
+                                <th className="ds-table-header-cell px-6">Product</th>
+                                <th className="ds-table-header-cell px-6">Header</th>
+                                <th className="ds-table-header-cell px-6">Category</th>
+                                <th className="ds-table-header-cell px-6 text-center">Price</th>
+                                <th className="ds-table-header-cell px-6 text-center">Stock</th>
+                                <th className="ds-table-header-cell px-6 text-center">Status</th>
+                                <th className="ds-table-header-cell px-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -391,7 +391,7 @@ const ProductManagement = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="w-full max-w-5xl relative z-10 bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+                            className="w-full max-w-5xl relative z-10 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
                         >
                             {/* Modal Header */}
                             <div className="flex items-center justify-between p-6 border-b border-slate-100">
@@ -465,9 +465,9 @@ const ProductManagement = () => {
                                 </div>
 
                                 {/* Modal Content Area */}
-                                <div className="flex-1 p-8 overflow-y-auto">
+                                <div className="flex-1 p-4 overflow-y-auto">
                                     {modalTab === 'general' && (
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+                                        <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-1.5 flex flex-col">
                                                     <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Product Title</label>
@@ -504,15 +504,15 @@ const ProductManagement = () => {
                                     )}
 
                                     {modalTab === 'pricing' && (
-                                        <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 grid grid-cols-2 gap-8">
+                                        <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
+                                            <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-2 gap-4">
                                                 <div className="space-y-1.5 flex flex-col">
                                                     <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
                                                     <input
                                                         type="number"
                                                         value={formData.price}
                                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                                        className="w-full px-4 py-3 bg-white shadow-sm ring-1 ring-slate-200 border-none rounded-xl text-lg font-bold outline-none focus:ring-2 focus:ring-primary/10"
+                                                        className="w-full px-4 py-3 bg-white shadow-sm ring-1 ring-slate-200 border-none rounded-xl ds-h3 font-bold outline-none focus:ring-2 focus:ring-primary/10"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5 flex flex-col">
@@ -521,7 +521,7 @@ const ProductManagement = () => {
                                                         type="number"
                                                         value={formData.discountPrice}
                                                         onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
-                                                        className="w-full px-4 py-3 bg-emerald-50/50 shadow-sm ring-1 ring-emerald-100 border-none rounded-xl text-lg font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200"
+                                                        className="w-full px-4 py-3 bg-emerald-50/50 shadow-sm ring-1 ring-emerald-100 border-none rounded-xl ds-h3 font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200"
                                                     />
                                                 </div>
                                             </div>
@@ -551,7 +551,7 @@ const ProductManagement = () => {
                                     )}
 
                                     {modalTab === 'category' && (
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+                                        <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-1.5 flex flex-col">
                                                     <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Main Group (Header)</label>
@@ -583,7 +583,7 @@ const ProductManagement = () => {
                                     )}
 
                                     {modalTab === 'media' && (
-                                        <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
+                                        <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
                                             {/* Gallery Section */}
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Product Photos (Max 5)</label>
@@ -619,8 +619,8 @@ const ProductManagement = () => {
                                     )}
 
                                     {modalTab === 'attributes' && (
-                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
-                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 italic text-slate-500 text-xs text-center font-medium">
+                                        <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
+                                            <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 italic text-slate-500 text-xs text-center font-medium">
                                                 Additional SEO data and technical specifications coming in future updates.
                                             </div>
                                         </div>
@@ -645,7 +645,7 @@ const ProductManagement = () => {
                                     <button
                                         onClick={handleSave}
                                         disabled={isSaving}
-                                        className="bg-slate-900 text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                                        className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
                                     >
                                         {isSaving ? 'UPLOADING...' : 'UPDATE PRODUCT'}
                                     </button>

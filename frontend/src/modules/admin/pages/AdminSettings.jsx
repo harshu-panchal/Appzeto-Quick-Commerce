@@ -86,17 +86,17 @@ const AdminSettings = () => {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Platform Settings
                         <div className="p-2 bg-slate-100 rounded-xl">
                             <Settings className="h-5 w-5 text-slate-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">Manage global configurations, branding, and legal information.</p>
+                    <p className="ds-description mt-1">Manage global configurations, branding, and legal information.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -117,7 +117,7 @@ const AdminSettings = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* Sidebar Navigation */}
                 <div className="lg:col-span-3 space-y-2">
                     {tabs.map(tab => (
@@ -142,13 +142,13 @@ const AdminSettings = () => {
 
                     {/* General Settings */}
                     {activeTab === 'general' && (
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     General Information
                                 </h3>
                             </div>
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">App Name</label>
                                     <input
@@ -197,14 +197,14 @@ const AdminSettings = () => {
 
                     {/* Branding Settings */}
                     {activeTab === 'branding' && (
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     Visual Identity
                                 </h3>
                             </div>
                             <div className="p-8 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">App Logo</label>
                                         <div className="h-40 w-full rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-emerald-500/50 hover:bg-emerald-50/10 transition-all group">
@@ -247,14 +247,14 @@ const AdminSettings = () => {
 
                     {/* Legal Settings */}
                     {activeTab === 'legal' && (
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     Legal Entity & Contact
                                 </h3>
                             </div>
-                            <div className="p-8 grid grid-cols-1 gap-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="p-8 grid grid-cols-1 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company Legal Name</label>
                                         <input
@@ -295,7 +295,7 @@ const AdminSettings = () => {
 
                     {/* Social & Apps */}
                     {activeTab === 'social' && (
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     Social Media & App Links
@@ -384,7 +384,7 @@ const AdminSettings = () => {
 
                     {/* SEO Settings */}
                     {activeTab === 'seo' && (
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     SEO & Meta Information

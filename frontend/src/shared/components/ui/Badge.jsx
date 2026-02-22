@@ -16,7 +16,7 @@ const Badge = ({ children, variant = 'gray', className, ...props }) => {
         <ShadcnBadge
             variant="outline"
             className={cn(
-                'font-medium transition-colors',
+                'text-[10px] font-medium transition-colors px-2 py-0.5',
                 variantStyles[variant] || variantStyles.gray,
                 className
             )}

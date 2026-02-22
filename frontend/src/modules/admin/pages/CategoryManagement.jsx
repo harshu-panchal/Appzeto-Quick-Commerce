@@ -364,15 +364,15 @@ const CategoryManagement = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-2">
+                    <h1 className="ds-h1 flex items-center gap-2">
                         Manage Categories
                         <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Admin</Badge>
                     </h1>
-                    <p className="admin-description mt-0.5">Organize your store by grouping items together into folders.</p>
+                    <p className="ds-description mt-0.5">Organize your store by grouping items together into folders.</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <button className="p-2.5 bg-white ring-1 ring-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
@@ -463,10 +463,10 @@ const CategoryManagement = () => {
 
                     <Card className="lg:col-span-1 border-none shadow-sm ring-1 ring-indigo-50 bg-gradient-to-tr from-indigo-50 to-white p-4 flex flex-col justify-between overflow-hidden relative">
                         <div className="z-10">
-                            <p className="admin-label text-indigo-400 mb-1">
+                            <p className="ds-label text-indigo-400 mb-1">
                                 {activeView === 'tree' ? 'Total Groups' : 'Subcategories'}
                             </p>
-                            <h4 className="admin-stat-value text-indigo-900 line-height-none">
+                            <h4 className="ds-stat-medium text-indigo-900 line-height-none">
                                 {isLoading ? '...' : (activeView === 'tree' ? filteredCategories.length : filteredSubcategories.length)}
                             </h4>
                             <p className="text-[10px] font-semibold text-indigo-400 mt-1">Working Fine</p>
@@ -484,7 +484,7 @@ const CategoryManagement = () => {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                 <div className="xl:col-span-8">
                     {activeView === 'tree' ? (
-                        <div className="bg-white/40 backdrop-blur-md rounded-3xl p-6 ring-1 ring-slate-100 min-h-[500px] shadow-xl shadow-slate-200/40 relative">
+                        <div className="bg-white/40 backdrop-blur-md rounded-xl p-6 ring-1 ring-slate-100 min-h-[500px] shadow-xl shadow-slate-200/40 relative">
                             {isLoading ? (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -502,7 +502,7 @@ const CategoryManagement = () => {
                             )}
                         </div>
                     ) : (
-                        <div className="bg-white/40 backdrop-blur-md rounded-3xl p-0 ring-1 ring-slate-100 min-h-[500px] shadow-xl shadow-slate-200/40 overflow-hidden relative">
+                        <div className="bg-white/40 backdrop-blur-md rounded-xl p-0 ring-1 ring-slate-100 min-h-[500px] shadow-xl shadow-slate-200/40 overflow-hidden relative">
                             {isLoading && (
                                 <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-sm flex items-center justify-center">
                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -587,7 +587,7 @@ const CategoryManagement = () => {
                 </div>
 
                 <div className="xl:col-span-4 space-y-6">
-                    <Card className="bg-slate-900 border-none shadow-xl p-6 rounded-3xl text-white relative overflow-hidden">
+                    <Card className="bg-slate-900 border-none shadow-xl p-6 rounded-xl text-white relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="text-lg font-bold mb-0.5 uppercase tracking-tight">Organization Guide</h3>
                             <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-6">Organize Categories</p>
@@ -630,7 +630,7 @@ const CategoryManagement = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="w-full max-w-3xl relative z-10 bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row"
+                            className="w-full max-w-3xl relative z-10 bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col lg:flex-row"
                         >
                             <div className="lg:w-1/3 bg-slate-50 p-6 border-r border-slate-100 flex flex-col justify-between">
                                 <div className="space-y-6">
@@ -783,7 +783,7 @@ const CategoryManagement = () => {
                 {isDeleteModalOpen && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md relative z-10 bg-white rounded-3xl p-8 text-center shadow-2xl">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="w-full max-w-md relative z-10 bg-white rounded-xl p-4 text-center shadow-2xl">
                             <div className="h-20 w-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6"><AlertTriangle className="h-10 w-10" /></div>
                             <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Irreversible Action</h3>
                             <p className="text-slate-500 text-xs font-bold mt-2 leading-relaxed uppercase tracking-tight">You are deleting <span className="text-rose-600">"{deleteTarget?.name}"</span>. This will destroy all linked categories and products within this group.</p>

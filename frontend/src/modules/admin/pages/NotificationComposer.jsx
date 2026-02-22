@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import PageHeader from '@shared/components/ui/PageHeader';
 import { useToast } from '@shared/components/ui/Toast';
 import {
     HiOutlinePaperAirplane,
@@ -13,7 +14,9 @@ import {
     HiOutlineDevicePhoneMobile,
     HiOutlineSparkles,
     HiOutlineBolt,
-    HiOutlineExclamationCircle
+    HiOutlineExclamationCircle,
+    HiOutlineCheckCircle,
+    HiOutlineChartBar
 } from 'react-icons/hi2';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -23,14 +26,16 @@ const NotificationComposer = () => {
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
     const [selectedSegment, setSelectedSegment] = useState('all');
+    const [deepLink, setDeepLink] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
     const [location, setLocation] = useState('all');
     const [lastOrder, setLastOrder] = useState('any');
 
     const segments = [
-        { id: 'all', label: 'All Users', count: '12,504' },
-        { id: 'lapsed', label: 'Lapsed Customers', count: '3,210', hint: 'No order in 30 days' },
-        { id: 'power', label: 'Power Users', count: '850', hint: '10+ orders monthly' },
-        { id: 'new', label: 'Recent Signups', count: '1,420', hint: 'Last 7 days' },
+        { id: 'all', label: 'All Users', count: '12,504', description: 'Universal Reach', icon: HiOutlineUsers, color: 'blue' },
+        { id: 'lapsed', label: 'Lapsed Customers', count: '3,210', description: 'No order in 30 days', icon: HiOutlineClock, color: 'amber' },
+        { id: 'power', label: 'Power Users', count: '850', description: '10+ orders monthly', icon: HiOutlineSparkles, color: 'purple' },
+        { id: 'new', label: 'Recent Signups', count: '1,420', description: 'Last 7 days', icon: HiOutlineCheckCircle, color: 'emerald' },
     ];
 
     const handleSend = () => {
@@ -47,151 +52,217 @@ const NotificationComposer = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+        <div className="ds-section-spacing">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
-                <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
-                        Growth Signal
-                        <div className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[8px] font-black uppercase tracking-widest">Push Engine</div>
-                    </h1>
-                    <p className="admin-description mt-1">Create and send targeted notifications to keep customers engaged.</p>
-                </div>
-                <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-5 py-3 rounded-2xl">
-                    Remaining Quota: <span className="text-slate-900 ml-1">45,000 / 50k</span>
-                </div>
-            </div>
+            <PageHeader
+                title="Growth Signal"
+                description="Create and send targeted notifications to keep customers engaged."
+                badge={
+                    <Badge variant="warning" className="ds-badge ds-badge-warning">
+                        Push Engine
+                    </Badge>
+                }
+                actions={
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl">
+                            <HiOutlineChartBar className="ds-icon-sm text-slate-400" />
+                            <div className="text-left">
+                                <p className="ds-caption text-slate-400">Quota</p>
+                                <p className="ds-body font-bold text-slate-900">45,000 / 50K</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Composer Section */}
-                <div className="lg:col-span-7 space-y-6">
-                    <Card className="p-8 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[40px]">
-                        <div className="space-y-8">
-                            <div className="flex items-center gap-3 border-b border-slate-50 pb-6">
-                                <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                                    <HiOutlinePaperAirplane className="h-5 w-5 -rotate-45" />
+                <div className="lg:col-span-2 space-y-6">
+                    <Card className="ds-card-standard">
+                        <div className="space-y-6">
+                            {/* Card Header */}
+                            <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                                <div className="ds-stat-card-icon bg-primary/10">
+                                    <HiOutlinePaperAirplane className="ds-icon-lg text-primary -rotate-45" />
                                 </div>
-                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Campaign Composer</h3>
+                                <div>
+                                    <h3 className="ds-h3">Campaign Composer</h3>
+                                    <p className="ds-caption text-slate-400">Design your notification</p>
+                                </div>
                             </div>
 
-                            <div className="space-y-6">
+                            {/* Form Fields */}
+                            <div className="space-y-5">
+                                {/* Title */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Notification Title</label>
+                                    <label className="ds-label">Notification Title</label>
                                     <input
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
                                         placeholder="E.g. Hot Deals are back! 🔥"
-                                        className="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold border-none outline-none ring-1 ring-transparent focus:ring-primary/20 transition-all placeholder:text-slate-300"
+                                        className="ds-input w-full"
+                                        maxLength={50}
                                     />
+                                    <p className="ds-caption text-slate-400 text-right">{title.length}/50</p>
                                 </div>
 
+                                {/* Message */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Broadcast Message</label>
+                                    <label className="ds-label">Broadcast Message</label>
                                     <textarea
                                         rows={4}
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
                                         placeholder="Enter your push notification body text..."
-                                        className="w-full p-4 bg-slate-50 rounded-2xl text-sm font-bold border-none outline-none ring-1 ring-transparent focus:ring-primary/20 transition-all placeholder:text-slate-300 resize-none"
+                                        className="ds-textarea w-full resize-none"
+                                        maxLength={200}
                                     />
+                                    <p className="ds-caption text-slate-400 text-right">{message.length}/200</p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-6 pt-4">
+                                {/* Deep Link & Image */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dynamic Link (Deep Link)</label>
+                                        <label className="ds-label">Deep Link (Optional)</label>
                                         <div className="relative">
-                                            <HiOutlineLink className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                            <input className="w-full pl-12 pr-4 py-3.5 bg-slate-50 rounded-2xl text-xs font-bold border-none outline-none" placeholder="/deals/category" />
+                                            <HiOutlineLink className="absolute left-3 top-1/2 -translate-y-1/2 ds-icon-sm text-slate-400" />
+                                            <input
+                                                value={deepLink}
+                                                onChange={(e) => setDeepLink(e.target.value)}
+                                                className="ds-input w-full pl-9"
+                                                placeholder="/deals/category"
+                                            />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Image Asset (Optional)</label>
+                                        <label className="ds-label">Image URL (Optional)</label>
                                         <div className="relative">
-                                            <HiOutlinePhoto className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                            <input className="w-full pl-12 pr-4 py-3.5 bg-slate-50 rounded-2xl text-xs font-bold border-none outline-none" placeholder="Paste URL..." />
+                                            <HiOutlinePhoto className="absolute left-3 top-1/2 -translate-y-1/2 ds-icon-sm text-slate-400" />
+                                            <input
+                                                value={imageUrl}
+                                                onChange={(e) => setImageUrl(e.target.value)}
+                                                className="ds-input w-full pl-9"
+                                                placeholder="https://..."
+                                            />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            {/* Send Button */}
                             <button
                                 onClick={handleSend}
-                                className="w-full py-5 bg-slate-900 text-white rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                                disabled={!title || !message}
+                                className="ds-btn ds-btn-lg w-full bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                                <HiOutlineBolt className="h-5 w-5 text-amber-400 fill-amber-400" />
+                                <HiOutlineBolt className="ds-icon-md text-amber-400" />
                                 BLAST SIGNAL
                             </button>
                         </div>
                     </Card>
 
+                    {/* Tips Card */}
+                    <Card className="ds-card-compact bg-blue-50 border-blue-100">
+                        <div className="flex gap-3">
+                            <HiOutlineExclamationCircle className="ds-icon-lg text-blue-600 flex-shrink-0" />
+                            <div>
+                                <h4 className="ds-h4 text-blue-900 mb-1">Best Practices</h4>
+                                <ul className="ds-body text-blue-700 space-y-1">
+                                    <li>• Keep titles under 40 characters for better visibility</li>
+                                    <li>• Use emojis sparingly to grab attention</li>
+                                    <li>• Test with different audience segments</li>
+                                    <li>• Schedule during peak engagement hours</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
 
-                {/* Audience & Preview Column */}
-                <div className="lg:col-span-5 space-y-8">
+                {/* Sidebar - Preview & Audience */}
+                <div className="lg:col-span-1 space-y-6">
                     {/* Real-time Preview */}
-                    <div className="space-y-4">
-                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] px-2">Protocol Preview</h3>
-                        <div className="bg-slate-900 p-8 rounded-[3rem] shadow-2xl relative overflow-hidden ring-8 ring-slate-100">
-                            <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-primary/10 to-transparent" />
-
-                            <div className="relative space-y-6">
-                                <div className="flex justify-between items-center text-white/40 text-[10px] font-black uppercase tracking-widest">
-                                    <span>Signal Preview</span>
-                                    <span>Locked</span>
+                    <div className="space-y-3">
+                        <h3 className="ds-h4 px-1">Protocol Preview</h3>
+                        <Card className="ds-card-standard bg-gradient-to-br from-slate-900 to-slate-800 border-none">
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="ds-caption text-slate-400">Live Preview</span>
+                                    <Badge variant="success" className="ds-badge ds-badge-success text-[8px]">
+                                        LOCKED
+                                    </Badge>
                                 </div>
 
                                 {/* iOS Style Notification */}
-                                <div className="bg-white/10 backdrop-blur-2xl p-5 rounded-[2rem] border border-white/5 shadow-2xl space-y-2 animate-in slide-in-from-top-4 duration-500">
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-white/10 backdrop-blur-xl p-4 rounded-xl border border-white/10 space-y-3"
+                                >
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <div className="h-5 w-5 bg-primary rounded-lg flex items-center justify-center">
                                                 <HiOutlineDevicePhoneMobile className="h-3 w-3 text-white" />
                                             </div>
-                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">APPZETO</span>
+                                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">APPZETO</span>
                                         </div>
-                                        <span className="text-[9px] font-bold text-white/40 uppercase">Just Now</span>
+                                        <span className="text-[10px] font-semibold text-white/90">Just Now</span>
                                     </div>
-                                    <h4 className="text-xs font-black text-white truncate">{title || 'Awaiting Signal Title...'}</h4>
-                                    <p className="text-[11px] font-medium text-white/60 leading-relaxed">
-                                        {message || 'Type your message to see it reflect here in real-time...'}
-                                    </p>
-                                </div>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-white mb-1.5 truncate">
+                                            {title || 'Hot Deals are back! 🔥'}
+                                        </h4>
+                                        <p className="text-xs font-medium text-white/95 line-clamp-3 leading-relaxed">
+                                            {message || 'Type your message to see it reflect here in real-time...'}
+                                        </p>
+                                    </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        </Card>
                     </div>
 
-                    {/* Segments Selection */}
-                    <div className="space-y-4">
-                        <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] px-2">Audience Segmentation</h3>
-                        <div className="space-y-3">
+                    {/* Audience Segmentation */}
+                    <div className="space-y-3">
+                        <h3 className="ds-h4 px-1">Audience Segmentation</h3>
+                        <div className="space-y-2">
                             {segments.map((seg) => (
                                 <button
                                     key={seg.id}
                                     onClick={() => setSelectedSegment(seg.id)}
                                     className={cn(
-                                        "w-full p-6 rounded-[2rem] text-left transition-all relative overflow-hidden group",
+                                        "w-full p-4 rounded-xl text-left transition-all",
                                         selectedSegment === seg.id
-                                            ? "bg-slate-900 text-white shadow-2xl -translate-y-1"
-                                            : "bg-white text-slate-700 ring-1 ring-slate-100 hover:ring-primary/20"
+                                            ? "bg-slate-900 text-white shadow-lg ring-2 ring-slate-900"
+                                            : "bg-white text-slate-700 ring-1 ring-slate-200 hover:ring-slate-300"
                                     )}
                                 >
-                                    <div className="flex justify-between items-start relative z-10">
-                                        <div>
-                                            <h4 className="text-sm font-black mb-1">{seg.label}</h4>
-                                            <p className={cn("text-[10px] font-bold uppercase tracking-tight", selectedSegment === seg.id ? "text-white/40" : "text-slate-400")}>
-                                                {seg.hint || 'Universal Reach'}
+                                    <div className="flex items-start gap-3">
+                                        <div className={cn(
+                                            "p-2 rounded-lg flex-shrink-0",
+                                            selectedSegment === seg.id ? "bg-white/10" : `bg-${seg.color}-50`
+                                        )}>
+                                            <seg.icon className={cn(
+                                                "ds-icon-md",
+                                                selectedSegment === seg.id ? "text-white" : `text-${seg.color}-600`
+                                            )} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h4 className="ds-body font-bold truncate">{seg.label}</h4>
+                                                <span className={cn(
+                                                    "ds-body font-bold",
+                                                    selectedSegment === seg.id ? "text-primary" : "text-slate-900"
+                                                )}>
+                                                    {seg.count}
+                                                </span>
+                                            </div>
+                                            <p className={cn(
+                                                "ds-caption",
+                                                selectedSegment === seg.id ? "text-white/60" : "text-slate-400"
+                                            )}>
+                                                {seg.description}
                                             </p>
                                         </div>
-                                        <div className="text-right">
-                                            <span className={cn("text-lg font-black block leading-none", selectedSegment === seg.id ? "text-primary-light" : "text-slate-900")}>
-                                                {seg.count}
-                                            </span>
-                                            <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Active Devices</span>
-                                        </div>
                                     </div>
-                                    {selectedSegment === seg.id && (
-                                        <div className="absolute top-0 right-0 h-full w-24 bg-gradient-to-l from-primary/20 to-transparent" />
-                                    )}
                                 </button>
                             ))}
                         </div>

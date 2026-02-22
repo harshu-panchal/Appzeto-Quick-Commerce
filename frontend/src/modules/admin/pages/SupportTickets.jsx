@@ -108,7 +108,7 @@ const SupportTickets = () => {
         <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Sidebar: Ticket List */}
             <div className="lg:w-[400px] flex flex-col gap-4 h-full">
-                <Card className="flex-1 flex flex-col border-none shadow-xl ring-1 ring-slate-100 rounded-[32px] overflow-hidden bg-white">
+                <Card className="flex-1 flex flex-col border-none shadow-xl ring-1 ring-slate-100 rounded-xl overflow-hidden bg-white">
                     <div className="p-6 border-b border-slate-50 space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-black text-slate-900 tracking-tight">Support Desk</h2>
@@ -167,7 +167,7 @@ const SupportTickets = () => {
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col h-full min-h-0">
                 {selectedTicket ? (
-                    <Card className="flex-1 flex flex-col border-none shadow-xl ring-1 ring-slate-100 rounded-[32px] overflow-hidden bg-white">
+                    <Card className="flex-1 flex flex-col border-none shadow-xl ring-1 ring-slate-100 rounded-xl overflow-hidden bg-white">
                         {/* Chat Header */}
                         <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
                             <div className="flex items-center gap-4">
@@ -199,11 +199,11 @@ const SupportTickets = () => {
                         </div>
 
                         {/* Messages Thread */}
-                        <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/20">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-slate-50/20">
                             {selectedTicket.messages.map((m) => (
                                 <div key={m.id} className={cn("flex flex-col", m.isAdmin ? "items-end" : "items-start")}>
                                     <div className={cn(
-                                        "max-w-[80%] p-4 rounded-3xl text-sm font-medium leading-relaxed shadow-sm",
+                                        "max-w-[80%] p-4 rounded-xl text-sm font-medium leading-relaxed shadow-sm",
                                         m.isAdmin ? "bg-slate-900 text-white rounded-tr-sm" : "bg-white text-slate-700 ring-1 ring-slate-100 rounded-tl-sm"
                                     )}>
                                         {m.text}
@@ -239,8 +239,8 @@ const SupportTickets = () => {
                         </div>
                     </Card>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-slate-50/50 rounded-[40px] border-2 border-dashed border-slate-200">
-                        <div className="h-24 w-24 bg-white rounded-[32px] shadow-sm flex items-center justify-center mb-6 ring-1 ring-slate-100">
+                    <div className="flex-1 flex flex-col items-center justify-center p-5 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200">
+                        <div className="h-24 w-24 bg-white rounded-xl shadow-sm flex items-center justify-center mb-6 ring-1 ring-slate-100">
                             <HiOutlineChatBubbleLeftRight className="h-10 w-10 text-slate-200" />
                         </div>
                         <h4 className="text-xl font-black text-slate-900 uppercase">Universal Support Hub</h4>

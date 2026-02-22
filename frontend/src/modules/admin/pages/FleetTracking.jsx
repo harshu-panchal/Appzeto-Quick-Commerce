@@ -38,7 +38,7 @@ const MOCK_FLEET = [
             name: 'Amit Patel',
             phone: '+91 87654 32109',
             image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
-            id: 'DP-8120',
+            id: 'Dp-4120',
             rating: 4.7,
             joined: 'Mar 2023',
             vehicle: 'Bicycle'
@@ -173,7 +173,7 @@ const FleetTrackingTable = () => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+                            className="relative w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden"
                         >
                             <div className="relative h-32 bg-slate-900">
                                 <div className="absolute top-4 right-4 z-10">
@@ -185,13 +185,13 @@ const FleetTrackingTable = () => {
                                     </button>
                                 </div>
                                 <div className="absolute -bottom-12 left-8">
-                                    <div className="h-24 w-24 rounded-3xl border-4 border-white overflow-hidden shadow-lg">
+                                    <div className="h-24 w-24 rounded-xl border-4 border-white overflow-hidden shadow-lg">
                                         <img src={selectedBoy.image} alt={selectedBoy.name} className="h-full w-full object-cover" />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="pt-16 pb-8 px-8 space-y-6">
+                            <div className="pt-16 pb-8 px-4 space-y-6">
                                 <div>
                                     <h2 className="text-2xl font-black text-slate-900">{selectedBoy.name}</h2>
                                     <div className="flex items-center gap-2 text-primary font-bold text-sm mt-1">

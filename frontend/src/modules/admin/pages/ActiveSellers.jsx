@@ -176,15 +176,15 @@ const ActiveSellers = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-2">
+                    <h1 className="ds-h1 flex items-center gap-2">
                         Active Sellers
                         <Badge variant="success" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Verified</Badge>
                     </h1>
-                    <p className="admin-description mt-0.5">View and manage all active sellers.</p>
+                    <p className="ds-description mt-0.5">View and manage all active sellers.</p>
                 </div>
                 <button
                     onClick={() => setIsOnboardingOpen(true)}
@@ -209,8 +209,8 @@ const ActiveSellers = () => {
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="admin-label">{stat.label}</p>
-                                <h4 className="admin-stat-value">{stat.val}</h4>
+                                <p className="ds-label">{stat.label}</p>
+                                <h4 className="ds-stat-medium">{stat.val}</h4>
                             </div>
                         </div>
                     </Card>
@@ -302,16 +302,16 @@ const ActiveSellers = () => {
             </Card>
 
             {/* Sellers Grid/Table */}
-            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl">
+            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="admin-table-header px-6">Store Entity</th>
-                                <th className="admin-table-header px-6">Performance</th>
-                                <th className="admin-table-header px-6 text-center">Business Intel</th>
-                                <th className="admin-table-header px-6">Status</th>
-                                <th className="admin-table-header px-6 text-right">Actions</th>
+                                <th className="ds-table-header-cell px-6">Store Entity</th>
+                                <th className="ds-table-header-cell px-6">Performance</th>
+                                <th className="ds-table-header-cell px-6 text-center">Business Intel</th>
+                                <th className="ds-table-header-cell px-6">Status</th>
+                                <th className="ds-table-header-cell px-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -385,7 +385,7 @@ const ActiveSellers = () => {
             <AnimatePresence>
                 {isSellerModalOpen && viewingSeller && (
                     <div className="fixed inset-0 z-[100] overflow-y-auto">
-                        <div className="min-h-full flex items-center justify-center p-4 lg:p-12">
+                        <div className="min-h-full flex items-center justify-center p-4 lg:p-5">
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -397,7 +397,7 @@ const ActiveSellers = () => {
                                 initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                                className="w-full max-w-2xl relative z-10 bg-white rounded-[32px] overflow-hidden shadow-2xl my-auto"
+                                className="w-full max-w-2xl relative z-10 bg-white rounded-xl overflow-hidden shadow-2xl my-auto"
                             >
                                 <div className="relative h-32 bg-slate-900">
                                     <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent" />
@@ -409,9 +409,9 @@ const ActiveSellers = () => {
                                     </button>
                                 </div>
 
-                                <div className="px-8 pb-8">
+                                <div className="px-4 pb-8">
                                     <div className="relative -mt-12 flex items-end justify-between mb-8">
-                                        <div className="h-24 w-24 rounded-3xl border-4 border-white overflow-hidden bg-white shadow-xl">
+                                        <div className="h-24 w-24 rounded-xl border-4 border-white overflow-hidden bg-white shadow-xl">
                                             <img src={viewingSeller.image} className="h-full w-full object-cover" />
                                         </div>
                                         <div className="flex gap-3">
@@ -442,11 +442,11 @@ const ActiveSellers = () => {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-6">
                                             <div>
-                                                <h2 className="admin-h1">{viewingSeller.shopName}</h2>
-                                                <p className="admin-description mt-0.5">{viewingSeller.category} Super-Partner</p>
+                                                <h2 className="ds-h1">{viewingSeller.shopName}</h2>
+                                                <p className="ds-description mt-0.5">{viewingSeller.category} Super-Partner</p>
                                             </div>
 
                                             <div className="space-y-4">
@@ -469,7 +469,7 @@ const ActiveSellers = () => {
                                             </div>
                                         </div>
 
-                                        <div className="bg-slate-50 rounded-3xl p-6 space-y-6">
+                                        <div className="bg-slate-50 rounded-xl p-6 space-y-6">
                                             <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Business Snapshot</h4>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="p-4 bg-white rounded-2xl border border-slate-100">
@@ -500,7 +500,7 @@ const ActiveSellers = () => {
                                                 {viewingSeller.serviceRadius}km Range Active
                                             </div>
                                         </div>
-                                        <div className="h-64 w-full rounded-3xl overflow-hidden grayscale-[0.5] contrast-[1.2] ring-1 ring-slate-100 relative group bg-slate-100">
+                                        <div className="h-64 w-full rounded-xl overflow-hidden grayscale-[0.5] contrast-[1.2] ring-1 ring-slate-100 relative group bg-slate-100">
                                             {"YOUR_API_KEY" !== "YOUR_API_KEY" ? (
                                                 <iframe
                                                     title="Seller Location"
@@ -556,7 +556,7 @@ const ActiveSellers = () => {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="w-full max-w-lg relative z-[120] bg-white rounded-[32px] p-8 shadow-2xl"
+                            className="w-full max-w-lg relative z-[120] bg-white rounded-xl p-4 shadow-2xl"
                         >
                             <div className="flex justify-between items-center mb-6">
                                 <div>

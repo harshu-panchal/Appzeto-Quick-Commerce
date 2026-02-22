@@ -84,17 +84,17 @@ const DeliveryFunds = () => {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="ds-section-spacing animate-in fade-in duration-700">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Funds Settlement
                         <div className="p-1.5 bg-emerald-100 rounded-lg shadow-inner">
                             <ShieldCheck className="h-5 w-5 text-emerald-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">Audit and execute secure fund transfers to your fleet partners.</p>
+                    <p className="ds-description mt-1">Audit and execute secure fund transfers to your fleet partners.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95 group">
@@ -119,8 +119,8 @@ const DeliveryFunds = () => {
                                 <stat.icon className="h-6 w-6" strokeWidth={2.5} />
                             </div>
                             <div>
-                                <p className="admin-label mb-1.5">{stat.label}</p>
-                                <h3 className="admin-stat-value">{stat.value}</h3>
+                                <p className="ds-label mb-1.5">{stat.label}</p>
+                                <h3 className="ds-stat-medium">{stat.value}</h3>
                             </div>
                         </div>
                         <div className="absolute right-0 top-0 opacity-[0.03] translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
@@ -168,22 +168,22 @@ const DeliveryFunds = () => {
             </Card>
 
             {/* Funds Ledger Table */}
-            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-[40px]">
+            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/80 border-b border-slate-100">
-                                <th className="admin-table-header pl-12">Transaction Node</th>
-                                <th className="admin-table-header">Rider Entity</th>
-                                <th className="admin-table-header text-center">Amount</th>
-                                <th className="admin-table-header">Gateway Status</th>
-                                <th className="admin-table-header text-right pr-12">Ledger Details</th>
+                                <th className="ds-table-header-cell pl-12">Transaction Node</th>
+                                <th className="ds-table-header-cell">Rider Entity</th>
+                                <th className="ds-table-header-cell text-center">Amount</th>
+                                <th className="ds-table-header-cell">Gateway Status</th>
+                                <th className="ds-table-header-cell text-right pr-12">Ledger Details</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {filteredTransfers.map((tx) => (
                                 <tr key={tx.id} className="group hover:bg-slate-50/50 transition-all duration-300">
-                                    <td className="px-10 py-7 pl-12">
+                                    <td className="px-5 py-7 pl-12">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 rounded-xl bg-slate-900/5 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
                                                 <ArrowUpRight className="h-5 w-5" />
@@ -194,19 +194,19 @@ const DeliveryFunds = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-7">
+                                    <td className="px-4 py-7">
                                         <div>
                                             <p className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{tx.riderName}</p>
                                             <span className="text-[10px] font-bold text-slate-400">{tx.riderId}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-7 text-center">
+                                    <td className="px-4 py-7 text-center">
                                         <div className="flex flex-col items-center">
                                             <p className="text-sm font-black text-slate-900">₹{tx.amount.toLocaleString()}</p>
                                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{tx.paymentMethod}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-7">
+                                    <td className="px-4 py-7">
                                         <div className="flex items-center gap-2">
                                             {tx.status === 'completed' ? (
                                                 <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
@@ -220,7 +220,7 @@ const DeliveryFunds = () => {
                                             </Badge>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-7 text-right pr-12">
+                                    <td className="px-4 py-7 text-right pr-12">
                                         <button
                                             onClick={() => setViewingTxn(tx)}
                                             className="p-3 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 hover:ring-slate-900 transition-all shadow-sm active:scale-95"
@@ -250,11 +250,11 @@ const DeliveryFunds = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                            className="w-full max-w-lg relative z-10 bg-white rounded-[40px] shadow-3xl overflow-hidden"
+                            className="w-full max-w-lg relative z-10 bg-white rounded-2xl shadow-3xl overflow-hidden"
                         >
-                            <div className="p-10">
+                            <div className="p-5">
                                 <div className="flex justify-between items-center mb-10">
-                                    <h3 className="admin-h2 uppercase tracking-widest">Ledger Entry</h3>
+                                    <h3 className="ds-h2 uppercase tracking-widest">Ledger Entry</h3>
                                     <button onClick={() => setViewingTxn(null)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400">
                                         <XCircle className="h-6 w-6" />
                                     </button>
@@ -262,7 +262,7 @@ const DeliveryFunds = () => {
 
                                 <div className="text-center mb-10">
                                     <div className={cn(
-                                        "h-20 w-20 rounded-[32px] flex items-center justify-center mx-auto mb-6 shadow-lg",
+                                        "h-20 w-20 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-lg",
                                         viewingTxn.status === 'completed' ? "bg-emerald-50 text-emerald-600" :
                                             viewingTxn.status === 'pending' ? "bg-amber-50 text-amber-600" : "bg-rose-50 text-rose-600"
                                     )}>
@@ -278,7 +278,7 @@ const DeliveryFunds = () => {
                                 </div>
 
                                 <div className="space-y-6 pt-6 border-t border-dashed border-slate-200">
-                                    <div className="grid grid-cols-2 gap-8">
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
                                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fleet Partner</p>
                                             <p className="text-sm font-bold text-slate-900">{viewingTxn.riderName}</p>
@@ -290,7 +290,7 @@ const DeliveryFunds = () => {
                                         </div>
                                     </div>
 
-                                    <div className="p-6 bg-slate-50 rounded-3xl space-y-4">
+                                    <div className="p-6 bg-slate-50 rounded-xl space-y-4">
                                         <div className="flex justify-between items-center">
                                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Method</p>
                                             <div className="flex items-center gap-2">

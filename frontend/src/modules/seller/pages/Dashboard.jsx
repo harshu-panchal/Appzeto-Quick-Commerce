@@ -1,15 +1,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "@shared/components/ui/Card";
-import Badge from "@shared/components/ui/Badge";
-import Button from "@shared/components/ui/Button";
+import PageHeader from "@shared/components/ui/PageHeader";
+import StatCard from "@shared/components/ui/StatCard";
 import {
-  HiOutlineCurrencyDollar,
-  HiOutlineCube,
-  HiOutlineTruck,
-  HiOutlineTrendingUp,
-  HiOutlineDotsVertical,
-} from "react-icons/hi";
+  DollarSign,
+  Truck,
+  Package,
+} from "lucide-react";
 import {
   AreaChart,
   Area,
@@ -22,8 +20,6 @@ import {
 import { cn } from "@/lib/utils";
 import { MagicCard } from "@/components/ui/magic-card";
 import { BlurFade } from "@/components/ui/blur-fade";
-import ShimmerButton from "@/components/ui/shimmer-button";
-import { Link } from "react-router-dom";
 
 const data = [
   { name: "Mon", value: 4000 },
@@ -48,7 +44,7 @@ const Dashboard = () => {
     {
       label: "Total Revenue",
       value: "$12,450.00",
-      icon: HiOutlineCurrencyDollar,
+      icon: DollarSign,
       color: "text-emerald-600",
       bg: "bg-emerald-50",
       trend: "+12.5%",
@@ -57,7 +53,7 @@ const Dashboard = () => {
     {
       label: "Total Orders",
       value: "156",
-      icon: HiOutlineTruck,
+      icon: Truck,
       color: "text-blue-600",
       bg: "bg-blue-50",
       trend: "+8.2%",
@@ -66,7 +62,7 @@ const Dashboard = () => {
     {
       label: "Active Products",
       value: "24",
-      icon: HiOutlineCube,
+      icon: Package,
       color: "text-purple-600",
       bg: "bg-purple-50",
       trend: "+2 new",
@@ -75,10 +71,10 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-10 p-2">
+    <div className="ds-section-spacing p-2">
       <BlurFade delay={0.1}>
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="ds-grid-cards-3">
           {stats.map((stat, idx) => (
             <BlurFade key={stat.label} delay={0.1 + idx * 0.1}>
               <div
@@ -93,36 +89,19 @@ const Dashboard = () => {
                         ? "#dbeafe"
                         : "#ede9fe"
                   }>
-                  <div className="flex items-start justify-between p-8 relative z-10 transition-transform duration-500 group-hover:scale-[1.02]">
-                    <div>
-                      <p className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">
-                        {stat.label}
-                      </p>
-                      <p className="text-4xl font-black text-gray-900 tracking-tighter group-hover:text-primary transition-colors">
-                        {stat.value}
-                      </p>
-                      <div className="flex items-center mt-5 text-sm font-black bg-white/50 backdrop-blur-sm border border-gray-100 shadow-sm w-fit px-3 py-1.5 rounded-md group-hover:border-primary/20 group-hover:bg-primary/5 transition-all duration-500">
-                        <HiOutlineTrendingUp
-                          className={cn("mr-1.5 h-4 w-4", stat.color)}
-                        />
-                        <span className={stat.color}>{stat.trend}</span>
-                        <span className="text-gray-400 ml-2 font-bold italic">
-                          than last week
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      className={cn(
-                        "p-5 rounded-md shadow-xl transform group-hover:rotate-12 transition-all duration-500",
-                        stat.bg,
-                        stat.color,
-                      )}>
-                      <stat.icon className="h-9 w-9" />
-                    </div>
-                  </div>
+                  <StatCard
+                    label={stat.label}
+                    value={stat.value}
+                    icon={stat.icon}
+                    trend={stat.trend}
+                    description="than last week"
+                    color={stat.color}
+                    bg={stat.bg}
+                    className="border-none shadow-none"
+                  />
                   <div
                     className={cn(
-                      "absolute bottom-0 left-0 right-0 h-1.5 opacity-30",
+                      "absolute bottom-0 left-0 right-0 h-1 opacity-30",
                       stat.bg,
                     )}></div>
                 </MagicCard>
@@ -132,14 +111,14 @@ const Dashboard = () => {
         </div>
       </BlurFade>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="ds-grid-cards">
         {/* Revenue Chart */}
         <BlurFade delay={0.4} className="lg:col-span-2 h-full uppercase">
           <Card
             title="Revenue Intelligence"
             subtitle="Daily revenue performance analysis"
-            className="h-full border-none shadow-xl bg-white rounded-lg overflow-hidden">
-            <div className="h-[380px] w-full mt-6 -ml-4">
+            className="h-full">
+            <div className="ds-chart-container -ml-4">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data}>
                   <defs>

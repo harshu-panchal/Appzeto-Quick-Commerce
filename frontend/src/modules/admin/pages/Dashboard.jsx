@@ -1,5 +1,7 @@
 import React from 'react';
 import Card from '@shared/components/ui/Card';
+import PageHeader from '@shared/components/ui/PageHeader';
+import StatCard from '@shared/components/ui/StatCard';
 import Badge from '@shared/components/ui/Badge';
 import {
     Users,
@@ -9,12 +11,6 @@ import {
     Activity,
     Database,
     RotateCw,
-    TrendingUp,
-    ShoppingBag,
-    DollarSign,
-    ArrowUpRight,
-    Search,
-    Filter
 } from 'lucide-react';
 import {
     AreaChart,
@@ -54,10 +50,8 @@ const AdminDashboard = () => {
             value: '1,280',
             icon: Users,
             color: 'text-blue-600',
-            bg: 'bg-blue-500/10',
-            border: 'border-blue-100',
+            bg: 'bg-blue-50',
             trend: '+12.5%',
-            trendColor: 'text-green-600',
             description: 'Active this month'
         },
         {
@@ -65,10 +59,8 @@ const AdminDashboard = () => {
             value: '84',
             icon: Store,
             color: 'text-purple-600',
-            bg: 'bg-purple-500/10',
-            border: 'border-purple-100',
+            bg: 'bg-purple-50',
             trend: '+5.2%',
-            trendColor: 'text-green-600',
             description: 'Verified stores'
         },
         {
@@ -76,10 +68,8 @@ const AdminDashboard = () => {
             value: '2,456',
             icon: Truck,
             color: 'text-orange-600',
-            bg: 'bg-orange-500/10',
-            border: 'border-orange-100',
+            bg: 'bg-orange-50',
             trend: '+18.4%',
-            trendColor: 'text-green-600',
             description: 'Last 30 days'
         },
         {
@@ -87,10 +77,8 @@ const AdminDashboard = () => {
             value: '$42,450',
             icon: BarChart3,
             color: 'text-emerald-600',
-            bg: 'bg-emerald-500/10',
-            border: 'border-emerald-100',
+            bg: 'bg-emerald-50',
             trend: '+8.2%',
-            trendColor: 'text-green-600',
             description: 'Net earnings'
         },
     ];
@@ -102,57 +90,48 @@ const AdminDashboard = () => {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="admin-h1">Dashboard</h1>
-                    <p className="admin-description">Overview of your platform's performance.</p>
-                </div>
-                <div className="flex items-center space-x-3">
-                    <Badge variant="outline" className="px-3 py-1 bg-white border-gray-200 text-gray-600">
-                        Last Update: Today, 12:45 PM
-                    </Badge>
-                    <button className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-lg shadow-primary/20 hover:scale-105 transition-transform active:scale-95">
-                        Download Report
-                    </button>
-                </div>
-            </div>
+        <div className="ds-section-spacing">
+            <PageHeader
+                title="Dashboard"
+                description="Overview of your platform's performance."
+                actions={
+                    <>
+                        <Badge variant="outline" className="ds-badge ds-badge-gray">
+                            Last Update: Today, 12:45 PM
+                        </Badge>
+                        <button className="ds-btn ds-btn-md bg-primary text-white shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+                            Download Report
+                        </button>
+                    </>
+                }
+            />
 
             {/* Main Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="ds-grid-stats">
                 {stats.map((stat) => (
-                    <Card key={stat.label} className={cn("relative transition-all hover:shadow-xl border-none ring-1 ring-gray-100 group", stat.bg + "/30")}>
-                        <div className="flex flex-col space-y-4">
-                            <div className="flex justify-between items-center">
-                                <div className={cn("p-2.5 rounded-xl transition-all group-hover:scale-110 shadow-lg", stat.bg)}>
-                                    <stat.icon className={cn("h-6 w-6", stat.color)} strokeWidth={2.5} />
-                                </div>
-                                <div className={cn("flex items-center text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm", stat.trendColor, "bg-white/80 backdrop-blur-sm")}>
-                                    <TrendingUp className="h-3 w-3 mr-1" />
-                                    {stat.trend}
-                                </div>
-                            </div>
-                            <div>
-                                <p className="admin-label mb-2">{stat.label}</p>
-                                <div className="flex items-baseline space-x-2">
-                                    <p className="admin-stat-value">{stat.value}</p>
-                                </div>
-                                <p className="admin-description text-[10px] mt-1">{stat.description}</p>
-                            </div>
-                        </div>
-                    </Card>
+                    <StatCard
+                        key={stat.label}
+                        label={stat.label}
+                        value={stat.value}
+                        icon={stat.icon}
+                        trend={stat.trend}
+                        description={stat.description}
+                        color={stat.color}
+                        bg={stat.bg}
+                        className={cn("ring-1 ring-gray-100", stat.bg + "/30")}
+                    />
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="ds-grid-cards-3">
                 {/* Revenue Analytics */}
                 <div className="lg:col-span-2">
                     <Card
                         title="Earnings"
                         subtitle="Monthly revenue trends"
-                        className="h-full border-none shadow-sm ring-1 ring-gray-100"
+                        className="h-full"
                     >
-                        <div className="h-[350px] mt-4">
+                        <div className="ds-chart-container">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={chartData}>
                                     <defs>
@@ -166,27 +145,28 @@ const AdminDashboard = () => {
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 12 }}
-                                        dy={10}
+                                        tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                        dy={8}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                        tick={{ fill: '#94a3b8', fontSize: 11 }}
                                     />
                                     <Tooltip
                                         contentStyle={{
-                                            borderRadius: '16px',
+                                            borderRadius: '12px',
                                             border: 'none',
                                             boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                                            padding: '12px'
+                                            padding: '8px',
+                                            fontSize: '11px'
                                         }}
                                     />
                                     <Area
                                         type="monotone"
                                         dataKey="revenue"
                                         stroke="#4f46e5"
-                                        strokeWidth={4}
+                                        strokeWidth={3}
                                         fillOpacity={1}
                                         fill="url(#colorRevenue)"
                                     />

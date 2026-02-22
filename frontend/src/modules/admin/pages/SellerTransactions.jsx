@@ -149,17 +149,17 @@ const SellerTransactions = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Shop Transactions
                         <div className="p-1.5 bg-orange-100 rounded-lg">
                             <Receipt className="h-5 w-5 text-orange-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">Track sales, our share, and payments to shops.</p>
+                    <p className="ds-description mt-1">Track sales, our share, and payments to shops.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -190,8 +190,8 @@ const SellerTransactions = () => {
                             <div className={cn("p-2 rounded-xl w-fit mb-4 transition-transform group-hover:scale-110", stat.bg)}>
                                 <stat.icon className={cn("h-5 w-5", stat.color)} />
                             </div>
-                            <p className="admin-label mb-1">{stat.label}</p>
-                            <h3 className="admin-stat-value">{stat.value}</h3>
+                            <p className="ds-label mb-1">{stat.label}</p>
+                            <h3 className="ds-stat-medium">{stat.value}</h3>
                         </div>
                         <div className="absolute -bottom-4 -right-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity">
                             <stat.icon className="h-24 w-24" />
@@ -201,7 +201,7 @@ const SellerTransactions = () => {
             </div>
 
             {/* Filter & Search Bar */}
-            <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-[28px]">
+            <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-xl">
                 <div className="flex flex-col lg:flex-row gap-4">
                     <div className="flex-1 relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
@@ -260,18 +260,18 @@ const SellerTransactions = () => {
             </Card>
 
             {/* Master Table Area */}
-            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-[32px]">
+            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/80 border-b border-slate-100">
-                                <th className="admin-table-header pl-8 py-5">TXN Details</th>
-                                <th className="admin-table-header">Shop</th>
-                                <th className="admin-table-header">Info</th>
-                                <th className="admin-table-header text-center">Amount</th>
-                                <th className="admin-table-header text-center">Summary</th>
-                                <th className="admin-table-header text-center">Status</th>
-                                <th className="admin-table-header text-right pr-8">Action</th>
+                                <th className="ds-table-header-cell pl-8 py-5">TXN Details</th>
+                                <th className="ds-table-header-cell">Shop</th>
+                                <th className="ds-table-header-cell">Info</th>
+                                <th className="ds-table-header-cell text-center">Amount</th>
+                                <th className="ds-table-header-cell text-center">Summary</th>
+                                <th className="ds-table-header-cell text-center">Status</th>
+                                <th className="ds-table-header-cell text-right pr-8">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -360,8 +360,8 @@ const SellerTransactions = () => {
                 size="md"
             >
                 {selectedTxn && (
-                    <div className="space-y-8">
-                        <div className="flex flex-col items-center text-center p-6 bg-slate-50 rounded-[32px] border border-slate-100">
+                    <div className="ds-section-spacing">
+                        <div className="flex flex-col items-center text-center p-6 bg-slate-50 rounded-xl border border-slate-100">
                             <div className={cn(
                                 "h-16 w-16 rounded-2xl flex items-center justify-center shadow-lg mb-4 text-white",
                                 selectedTxn.type === 'sale' ? "bg-orange-500" : selectedTxn.type === 'payout' ? "bg-emerald-500" : "bg-rose-500"
@@ -377,28 +377,28 @@ const SellerTransactions = () => {
                         <div className="space-y-6">
                             <div className="grid grid-cols-2 gap-x-12 gap-y-6 px-4">
                                 <div>
-                                    <p className="admin-label">Chronology</p>
+                                    <p className="ds-label">Chronology</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Calendar className="h-4 w-4 text-slate-400" />
                                         <p className="text-sm font-bold text-slate-700">{selectedTxn.date}</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="admin-label">Merchant Name</p>
+                                    <p className="ds-label">Merchant Name</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <Building2 className="h-4 w-4 text-slate-400" />
                                         <p className="text-sm font-bold text-slate-700">{selectedTxn.seller}</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="admin-label">Payment Pathway</p>
+                                    <p className="ds-label">Payment Pathway</p>
                                     <div className="flex items-center gap-2 mt-1">
                                         <CreditCard className="h-4 w-4 text-slate-400" />
                                         <p className="text-sm font-bold text-slate-700">{selectedTxn.paymentMethod}</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="admin-label">Gateway Status</p>
+                                    <p className="ds-label">Gateway Status</p>
                                     <div className="mt-1">
                                         <Badge variant={selectedTxn.status === 'settled' ? 'success' : 'warning'}>{selectedTxn.status.toUpperCase()}</Badge>
                                     </div>
@@ -408,7 +408,7 @@ const SellerTransactions = () => {
                             {selectedTxn.type === 'sale' && (
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest px-4">Financial Drill-Down</h4>
-                                    <div className="bg-slate-900 rounded-[28px] p-6 text-white space-y-4">
+                                    <div className="bg-slate-900 rounded-xl p-6 text-white space-y-4">
                                         <div className="flex justify-between items-center text-sm font-medium">
                                             <span className="opacity-60">Base Subtotal</span>
                                             <span>₹{selectedTxn.amount}</span>

@@ -108,15 +108,15 @@ const ContentManager = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Experience Studio
                         <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                     </h1>
-                    <p className="admin-description">Visual orchestrator for your customer-facing mobile application.</p>
+                    <p className="ds-description">Visual orchestrator for your customer-facing mobile application.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 rounded-2xl text-[10px] font-black border border-slate-200 hover:bg-slate-50 transition-all">
@@ -134,7 +134,7 @@ const ContentManager = () => {
             </div>
 
             {/* Studio Navigation */}
-            <div className="flex p-1.5 bg-slate-100 rounded-3xl w-fit">
+            <div className="flex p-1.5 bg-slate-100 rounded-xl w-fit">
                 {[
                     { id: 'hero', label: 'Hero Banners', icon: HiOutlinePhoto },
                     { id: 'deals', label: 'Flash Deals', icon: HiOutlineSparkles },
@@ -155,7 +155,7 @@ const ContentManager = () => {
             </div>
 
             {/* Canvas Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* Visual Editor */}
                 <div className="lg:col-span-8 space-y-6">
                     {activeTab === 'hero' && (
@@ -167,7 +167,7 @@ const ContentManager = () => {
 
                             <div className="space-y-4">
                                 {heroBanners.map((banner, index) => (
-                                    <Card key={banner.id} className="p-4 border-none shadow-lg ring-1 ring-slate-100 bg-white rounded-3xl group">
+                                    <Card key={banner.id} className="p-4 border-none shadow-lg ring-1 ring-slate-100 bg-white rounded-xl group">
                                         <div className="flex items-center gap-6">
                                             <div className="h-24 w-40 rounded-2xl overflow-hidden bg-slate-100 shrink-0 relative">
                                                 <img src={banner.image} alt="" className="h-full w-full object-cover" />
@@ -207,7 +207,7 @@ const ContentManager = () => {
                     {activeTab === 'deals' && (
                         <div className="grid grid-cols-2 gap-6">
                             {deals.map(deal => (
-                                <Card key={deal.id} className="aspect-[4/5] p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[40px] relative overflow-hidden group">
+                                <Card key={deal.id} className="aspect-[4/5] p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-2xl relative overflow-hidden group">
                                     <img src={deal.image} className="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:scale-110 transition-transform duration-1000" />
                                     <div className="relative h-full flex flex-col justify-end">
                                         <Badge variant="danger" className="w-fit mb-4">FLASH DEAL</Badge>
@@ -236,9 +236,9 @@ const ContentManager = () => {
                     {activeTab === 'popups' && (
                         <div className="grid grid-cols-1 gap-6">
                             {popups.map(popup => (
-                                <Card key={popup.id} className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[40px] group overflow-hidden relative">
-                                    <div className="flex flex-col lg:flex-row items-center gap-8 relative z-10">
-                                        <div className="h-40 w-40 rounded-[32px] overflow-hidden bg-slate-100 shrink-0">
+                                <Card key={popup.id} className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-2xl group overflow-hidden relative">
+                                    <div className="flex flex-col lg:flex-row items-center gap-4 relative z-10">
+                                        <div className="h-40 w-40 rounded-xl overflow-hidden bg-slate-100 shrink-0">
                                             <img src={popup.image} className="h-full w-full object-cover" />
                                         </div>
                                         <div className="flex-1 space-y-4">
@@ -268,7 +268,7 @@ const ContentManager = () => {
                                 </Card>
                             ))}
                             {popups.length === 0 && (
-                                <div className="text-center py-20 bg-slate-50/50 rounded-[40px] border-2 border-dashed border-slate-100">
+                                <div className="text-center py-20 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-100">
                                     <HiOutlineMegaphone className="h-12 w-12 text-slate-200 mx-auto mb-4" />
                                     <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No active popups</p>
                                 </div>
@@ -278,7 +278,7 @@ const ContentManager = () => {
                 </div>
 
                 {/* Mobile Device Mockup */}
-                <div className="lg:col-span-4 sticky top-8">
+                <div className="lg:col-span-4 sticky top-4">
                     <div className="relative mx-auto border-[8px] border-slate-900 rounded-[3rem] h-[650px] w-[320px] shadow-2xl overflow-hidden bg-white ring-8 ring-slate-100">
                         {/* Notch */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-2xl z-20" />
@@ -295,7 +295,7 @@ const ContentManager = () => {
 
                             {/* Live Hero Banner Preview */}
                             <div className="px-4 mb-6">
-                                <div className="h-40 rounded-3xl overflow-hidden shadow-lg relative">
+                                <div className="h-40 rounded-xl overflow-hidden shadow-lg relative">
                                     <img src={heroBanners[0]?.image} alt="" className="h-full w-full object-cover" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
                                         <h4 className="text-white font-black text-sm">{heroBanners[0]?.title}</h4>
@@ -320,7 +320,7 @@ const ContentManager = () => {
 
                             {/* Deal Mock */}
                             <div className="px-4">
-                                <div className="bg-rose-50 rounded-3xl p-4 border border-rose-100">
+                                <div className="bg-rose-50 rounded-xl p-4 border border-rose-100">
                                     <div className="flex items-center justify-between mb-3">
                                         <h5 className="text-[10px] font-black text-rose-600 uppercase">Flash Sales</h5>
                                         <div className="flex gap-1">

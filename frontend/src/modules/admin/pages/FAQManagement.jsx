@@ -211,17 +211,17 @@ const FAQManagement = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         FAQ Management
                         <div className="p-2 bg-pink-100 rounded-xl">
                             <HelpCircle className="h-5 w-5 text-pink-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">Manage categories and help customers with common questions.</p>
+                    <p className="ds-description mt-1">Manage categories and help customers with common questions.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -263,10 +263,10 @@ const FAQManagement = () => {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 {/* Left Sidebar: Categories */}
                 <div className="lg:col-span-1 space-y-4">
-                    <Card className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] text-left">
+                    <Card className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl text-left">
                         <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6">FAQ Categories</h4>
                         <div className="space-y-2">
                             <button
@@ -305,7 +305,7 @@ const FAQManagement = () => {
                 {/* Main Content: FAQ List */}
                 <div className="lg:col-span-3 space-y-6">
                     {/* Filter & Search Bar */}
-                    <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-[28px] flex flex-col md:flex-row gap-4 items-center">
+                    <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-xl flex flex-col md:flex-row gap-4 items-center">
                         <div className="flex-1 relative group w-full text-left">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-pink-500 transition-colors" />
                             <input
@@ -343,7 +343,7 @@ const FAQManagement = () => {
                                     transition={{ duration: 0.3 }}
                                 >
                                     <Card className={cn(
-                                        "border-none shadow-lg ring-1 transition-all overflow-hidden rounded-[32px] text-left",
+                                        "border-none shadow-lg ring-1 transition-all overflow-hidden rounded-xl text-left",
                                         expandedId === faq.id ? "ring-pink-200 bg-white" : "ring-slate-100 bg-white hover:ring-slate-200"
                                     )}>
                                         <div className="p-6">
@@ -409,7 +409,7 @@ const FAQManagement = () => {
                                                         className="overflow-hidden"
                                                     >
                                                         <div className="mt-6 pt-6 border-t border-slate-50 ml-14">
-                                                            <div className="bg-slate-50 p-6 rounded-3xl relative">
+                                                            <div className="bg-slate-50 p-6 rounded-xl relative">
                                                                 <p className="text-sm font-bold text-slate-600 leading-relaxed italic">
                                                                     "{faq.answer}"
                                                                 </p>

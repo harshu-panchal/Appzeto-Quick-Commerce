@@ -120,7 +120,7 @@ const CustomerDetail = () => {
     ).slice(0, visibleOrders);
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Action Bar */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div className="flex items-center gap-4">
@@ -132,10 +132,10 @@ const CustomerDetail = () => {
                     </button>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="admin-h1">Customer Profile</h1>
+                            <h1 className="ds-h1">Customer Profile</h1>
                             <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest">{customer.id}</Badge>
                         </div>
-                        <p className="admin-description mt-1">Full profile and shopping history for this customer.</p>
+                        <p className="ds-description mt-1">Full profile and shopping history for this customer.</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -159,12 +159,12 @@ const CustomerDetail = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Main Profile Info */}
-                <Card className="lg:col-span-2 bg-white rounded-[32px] p-8 border-none shadow-xl ring-1 ring-slate-100 overflow-hidden relative">
-                    <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
+                <Card className="lg:col-span-2 bg-white rounded-xl p-4 border-none shadow-xl ring-1 ring-slate-100 overflow-hidden relative">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-4 relative z-10">
                         <div className="relative shrink-0">
-                            <img src={customer.avatar} alt="" className="h-32 w-32 rounded-[32px] ring-4 ring-slate-50 shadow-lg bg-slate-100" />
+                            <img src={customer.avatar} alt="" className="h-32 w-32 rounded-xl ring-4 ring-slate-50 shadow-lg bg-slate-100" />
                             <div className={cn(
                                 "absolute -bottom-1 -right-1 h-5 w-5 rounded-full ring-4 ring-white shadow-sm",
                                 customer.status === 'active' ? "bg-emerald-500" : "bg-rose-500"
@@ -204,7 +204,7 @@ const CustomerDetail = () => {
 
                 {/* Quick Stats */}
                 <div className="space-y-4">
-                    <Card className="p-6 bg-sky-600 text-white rounded-[32px] border-none shadow-lg shadow-sky-200 relative overflow-hidden group">
+                    <Card className="p-6 bg-sky-600 text-white rounded-xl border-none shadow-lg shadow-sky-200 relative overflow-hidden group">
                         <div className="relative z-10">
                             <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Lifetime Value</p>
                             <h4 className="text-3xl font-black">₹{customer.ltv.toLocaleString()}</h4>
@@ -218,7 +218,7 @@ const CustomerDetail = () => {
                         <ShoppingBag className="absolute -bottom-4 -right-4 h-24 w-24 opacity-10 group-hover:scale-110 transition-transform" />
                     </Card>
 
-                    <Card className="p-6 bg-white rounded-[32px] border-none shadow-md ring-1 ring-slate-100">
+                    <Card className="p-6 bg-white rounded-xl border-none shadow-md ring-1 ring-slate-100">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Recent Activity</p>
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-amber-50 rounded-xl text-amber-500">
@@ -233,11 +233,11 @@ const CustomerDetail = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Delivery & Order History */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Delivery addresses */}
-                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] p-8">
+                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl p-4">
                         <div className="flex items-center justify-between mb-8">
                             <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                 <MapIcon className="h-4 w-4 text-sky-500" />
@@ -263,8 +263,8 @@ const CustomerDetail = () => {
                     </Card>
 
                     {/* Order history */}
-                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
-                        <div className="p-8 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
+                        <div className="p-4 pb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                                 <History className="h-4 w-4 text-sky-500" />
                                 Recent Orders
@@ -297,7 +297,7 @@ const CustomerDetail = () => {
                                             onClick={() => navigate(`/admin/orders/view/${order.id.replace('#', '')}`)}
                                             className="group hover:bg-slate-50/50 transition-all cursor-pointer"
                                         >
-                                            <td className="px-8 py-5">
+                                            <td className="px-4 py-5">
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2 bg-slate-50 rounded-xl group-hover:bg-white group-hover:shadow-sm transition-all text-slate-400 group-hover:text-sky-500">
                                                         <Package className="h-4 w-4" />
@@ -323,7 +323,7 @@ const CustomerDetail = () => {
                                     ))}
                                     {filteredOrders.length === 0 && (
                                         <tr>
-                                            <td colSpan="4" className="px-8 py-10 text-center text-xs font-bold text-slate-400">
+                                            <td colSpan="4" className="px-4 py-5 text-center text-xs font-bold text-slate-400">
                                                 No orders found matching your search.
                                             </td>
                                         </tr>
@@ -347,7 +347,7 @@ const CustomerDetail = () => {
 
                 {/* Sidebar Notes */}
                 <div className="space-y-6">
-                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] p-8">
+                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl p-4">
                         <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2">
                             <MessageSquare className="h-4 w-4 text-sky-500" />
                             Internal Notes
@@ -365,7 +365,7 @@ const CustomerDetail = () => {
                         </button>
                     </Card>
 
-                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-slate-900 rounded-[32px] p-8 text-white">
+                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-slate-900 rounded-xl p-4 text-white">
                         <h4 className="text-xs font-black opacity-40 uppercase tracking-widest mb-6">Account Control</h4>
                         <div className="space-y-4">
                             <button
@@ -454,7 +454,7 @@ const CustomerDetail = () => {
 
             <Modal isOpen={isRestrictModalOpen} onClose={() => setIsRestrictModalOpen(false)} title="Confirm Action">
                 <div className="space-y-6">
-                    <div className="p-6 bg-rose-50 rounded-[32px] border border-rose-100 flex flex-col items-center text-center gap-4">
+                    <div className="p-6 bg-rose-50 rounded-xl border border-rose-100 flex flex-col items-center text-center gap-4">
                         <div className="p-3 bg-rose-500 text-white rounded-full">
                             <Ban className="h-6 w-6" />
                         </div>

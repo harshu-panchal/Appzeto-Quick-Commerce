@@ -95,15 +95,15 @@ const PendingDeliveryBoys = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="ds-section-spacing animate-in fade-in duration-700">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Rider Applications
                         <Badge variant="primary" className="text-[10px] px-2 py-0.5 uppercase">Pending Review</Badge>
                     </h1>
-                    <p className="admin-description mt-1">Review documents for new delivery partners.</p>
+                    <p className="ds-description mt-1">Review documents for new delivery partners.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="p-3 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-400 hover:text-primary transition-all shadow-sm active:rotate-180 duration-500">
@@ -111,8 +111,8 @@ const PendingDeliveryBoys = () => {
                     </button>
                     <div className="h-10 w-[1px] bg-slate-200 mx-2" />
                     <div className="flex flex-col items-end">
-                        <p className="admin-label">Total Pending</p>
-                        <h4 className="admin-h2">{pendingRiders.length}</h4>
+                        <p className="ds-label">Total Pending</p>
+                        <h4 className="ds-h2">{pendingRiders.length}</h4>
                     </div>
                 </div>
             </div>
@@ -155,15 +155,15 @@ const PendingDeliveryBoys = () => {
             </Card>
 
             {/* Applications Table View */}
-            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-[32px]">
+            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="admin-table-header px-8">Applicant Details</th>
-                                <th className="admin-table-header px-8">Operational Intel</th>
-                                <th className="admin-table-header px-8">Submission Status</th>
-                                <th className="admin-table-header px-8 text-right">Action</th>
+                                <th className="ds-table-header-cell px-4">Applicant Details</th>
+                                <th className="ds-table-header-cell px-4">Operational Intel</th>
+                                <th className="ds-table-header-cell px-4">Submission Status</th>
+                                <th className="ds-table-header-cell px-4 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -247,13 +247,13 @@ const PendingDeliveryBoys = () => {
                             className="w-full max-w-5xl relative z-10 bg-white rounded-[48px] shadow-3xl overflow-hidden flex flex-col lg:flex-row"
                         >
                             {/* Left: Applicant Profile Info */}
-                            <div className="lg:w-80 bg-slate-50 p-10 border-r border-slate-100">
+                            <div className="lg:w-80 bg-slate-50 p-5 border-r border-slate-100">
                                 <div className="text-center mb-10">
-                                    <div className="h-24 w-24 rounded-[32px] bg-white shadow-xl flex items-center justify-center text-slate-300 mx-auto mb-6">
+                                    <div className="h-24 w-24 rounded-xl bg-white shadow-xl flex items-center justify-center text-slate-300 mx-auto mb-6">
                                         <IdCard className="h-12 w-12" />
                                     </div>
-                                    <h3 className="admin-h2">{viewingRider.name}</h3>
-                                    <p className="admin-label text-primary mt-1">Applicant Node</p>
+                                    <h3 className="ds-h2">{viewingRider.name}</h3>
+                                    <p className="ds-label text-primary mt-1">Applicant Node</p>
                                 </div>
 
                                 <div className="space-y-6">
@@ -282,21 +282,21 @@ const PendingDeliveryBoys = () => {
                             </div>
 
                             {/* Right: Document & Action Section */}
-                            <div className="flex-1 p-10 lg:p-14 bg-white">
+                            <div className="flex-1 p-5 lg:p-14 bg-white">
                                 <div className="flex justify-between items-start mb-10">
                                     <div>
-                                        <h2 className="admin-h1">Vetting Protocol</h2>
-                                        <p className="admin-description mt-1">Check submitted legal documents for platform entry.</p>
+                                        <h2 className="ds-h1">Vetting Protocol</h2>
+                                        <p className="ds-description mt-1">Check submitted legal documents for platform entry.</p>
                                     </div>
                                     <button onClick={() => setViewingRider(null)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all">
                                         <X className="h-6 w-6 text-slate-400" />
                                     </button>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
                                     <div className="space-y-4">
                                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Contact Records</h4>
-                                        <div className="p-6 bg-slate-50 rounded-[32px] space-y-4">
+                                        <div className="p-6 bg-slate-50 rounded-xl space-y-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
                                                     <Phone className="h-5 w-5" />
@@ -314,7 +314,7 @@ const PendingDeliveryBoys = () => {
 
                                     <div className="space-y-4">
                                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Vehicle Identification</h4>
-                                        <div className="p-6 bg-slate-50 rounded-[32px] border-2 border-emerald-500/10">
+                                        <div className="p-6 bg-slate-50 rounded-xl border-2 border-emerald-500/10">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-600">
                                                     <Truck className="h-6 w-6" />
@@ -347,7 +347,7 @@ const PendingDeliveryBoys = () => {
                                     <button
                                         disabled={isProcessing}
                                         onClick={() => handleApprove(viewingRider.id)}
-                                        className="flex-1 py-5 bg-slate-900 text-white rounded-3xl font-black text-xs uppercase tracking-widest shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="flex-1 py-5 bg-slate-900 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
                                         {isProcessing ? (
                                             <>
@@ -363,7 +363,7 @@ const PendingDeliveryBoys = () => {
                                     </button>
                                     <button
                                         onClick={() => handleReject(viewingRider.id)}
-                                        className="py-5 px-10 bg-rose-50 text-rose-600 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
+                                        className="py-5 px-5 bg-rose-50 text-rose-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-rose-100 transition-all active:scale-95"
                                     >
                                         REJECT APPLICATION
                                     </button>

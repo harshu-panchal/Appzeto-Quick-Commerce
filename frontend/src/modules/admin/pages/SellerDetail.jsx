@@ -73,7 +73,7 @@ const SellerDetail = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header / Action Bar */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
@@ -85,10 +85,10 @@ const SellerDetail = () => {
                     </button>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="admin-h1">{seller.shopName}</h1>
+                            <h1 className="ds-h1">{seller.shopName}</h1>
                             <Badge variant="success" className="text-[10px] font-black uppercase tracking-widest">{seller.status}</Badge>
                         </div>
-                        <p className="admin-description mt-1 text-slate-500 font-medium">Owned by {seller.ownerName} • {seller.category}</p>
+                        <p className="ds-description mt-1 text-slate-500 font-medium">Owned by {seller.ownerName} • {seller.category}</p>
                     </div>
                 </div>
 
@@ -133,7 +133,7 @@ const SellerDetail = () => {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Main Content Area */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Tabs Navigation */}
@@ -162,10 +162,10 @@ const SellerDetail = () => {
                     </div>
 
                     {/* Tab Content */}
-                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden min-h-[500px]">
+                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden min-h-[500px]">
                         {activeTab === 'orders' && (
                             <div className="animate-in fade-in slide-in-from-right-2 duration-300">
-                                <div className="p-8 pb-4 flex items-center justify-between border-b border-slate-50">
+                                <div className="p-4 pb-4 flex items-center justify-between border-b border-slate-50">
                                     <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Recent Orders</h4>
                                     <div className="flex items-center gap-4">
                                         <div className="relative group">
@@ -185,10 +185,10 @@ const SellerDetail = () => {
                                     <table className="w-full text-left">
                                         <thead>
                                             <tr className="bg-slate-50/50 border-b border-slate-50">
-                                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order ID</th>
-                                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
-                                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-                                                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Amount</th>
+                                                <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order ID</th>
+                                                <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
+                                                <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+                                                <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Amount</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50">
@@ -200,14 +200,14 @@ const SellerDetail = () => {
                                                 { id: '#ORD-9690', customer: 'Rohan Mehra', status: 'delivered', amount: 150, date: '14 Feb' },
                                             ].map((order, i) => (
                                                 <tr key={i} className="group hover:bg-slate-50/50 transition-colors cursor-pointer">
-                                                    <td className="px-8 py-5">
+                                                    <td className="px-4 py-5">
                                                         <span className="text-xs font-black text-slate-900">{order.id}</span>
                                                         <p className="text-[10px] font-bold text-slate-400">{order.date}</p>
                                                     </td>
-                                                    <td className="px-8 py-5">
+                                                    <td className="px-4 py-5">
                                                         <span className="text-xs font-bold text-slate-700">{order.customer}</span>
                                                     </td>
-                                                    <td className="px-8 py-5 text-center">
+                                                    <td className="px-4 py-5 text-center">
                                                         <Badge
                                                             variant={order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'danger' : 'warning'}
                                                             className="text-[9px] font-black"
@@ -215,7 +215,7 @@ const SellerDetail = () => {
                                                             {order.status.toUpperCase()}
                                                         </Badge>
                                                     </td>
-                                                    <td className="px-8 py-5 text-right font-black text-slate-900">
+                                                    <td className="px-4 py-5 text-right font-black text-slate-900">
                                                         ₹{order.amount.toLocaleString()}
                                                     </td>
                                                 </tr>
@@ -227,7 +227,7 @@ const SellerDetail = () => {
                         )}
 
                         {activeTab === 'transactions' && (
-                            <div className="animate-in fade-in slide-in-from-right-2 duration-300 p-8">
+                            <div className="animate-in fade-in slide-in-from-right-2 duration-300 p-4">
                                 <div className="flex items-center justify-between mb-8">
                                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Financial ledger</h4>
                                     <Badge variant="blue" className="text-[9px] font-black">LAST 30 DAYS</Badge>
@@ -306,22 +306,22 @@ const SellerDetail = () => {
                         )}
 
                         {activeTab === 'payouts' && (
-                            <div className="animate-in fade-in slide-in-from-right-2 duration-300 p-8 text-center py-20">
+                            <div className="animate-in fade-in slide-in-from-right-2 duration-300 p-4 text-center py-20">
                                 <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <Clock className="h-10 w-10 text-slate-200" />
                                 </div>
                                 <h4 className="text-lg font-black text-slate-900 uppercase">Withdrawal tracking</h4>
                                 <p className="text-sm font-bold text-slate-400 mt-2 max-w-xs mx-auto">View withdrawal history and pending requests here.</p>
-                                <button className="mt-8 px-8 py-3 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:-translate-y-1 shadow-xl shadow-slate-200 transition-all">
+                                <button className="mt-8 px-4 py-3 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:-translate-y-1 shadow-xl shadow-slate-200 transition-all">
                                     START MANUAL PAYOUT
                                 </button>
                             </div>
                         )}
 
                         {activeTab === 'info' && (
-                            <div className="animate-in fade-in slide-in-from-right-2 duration-300 p-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left">
-                                    <div className="space-y-8">
+                            <div className="animate-in fade-in slide-in-from-right-2 duration-300 p-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left">
+                                    <div className="ds-section-spacing">
                                         <div>
                                             <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Store Identity</h5>
                                             <div className="space-y-4">
@@ -349,7 +349,7 @@ const SellerDetail = () => {
 
                                         <div>
                                             <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Bank Verification</h5>
-                                            <div className="p-6 bg-emerald-50/50 rounded-3xl border border-emerald-100 space-y-4">
+                                            <div className="p-6 bg-emerald-50/50 rounded-xl border border-emerald-100 space-y-4">
                                                 <div className="flex items-center justify-between">
                                                     <p className="text-xs font-bold text-slate-600">Account Verified</p>
                                                     <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -363,10 +363,10 @@ const SellerDetail = () => {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-8">
+                                    <div className="ds-section-spacing">
                                         <div>
                                             <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Operational Status</h5>
-                                            <div className="p-6 bg-slate-900 rounded-[32px] text-white">
+                                            <div className="p-6 bg-slate-900 rounded-xl text-white">
                                                 <div className="flex items-center justify-between mb-6">
                                                     <div className="flex items-center gap-2">
                                                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -387,7 +387,7 @@ const SellerDetail = () => {
                                             </div>
                                         </div>
 
-                                        <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100">
+                                        <div className="p-6 bg-rose-50 rounded-xl border border-rose-100">
                                             <h5 className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                                                 <XCircle className="h-4 w-4" />
                                                 Safety Controls
@@ -407,7 +407,7 @@ const SellerDetail = () => {
                 {/* Sidebar Context */}
                 <div className="space-y-6">
                     {/* Owner Card */}
-                    <Card className="p-8 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] text-left">
+                    <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl text-left">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-16 w-16 bg-slate-100 rounded-2xl flex items-center justify-center overflow-hidden">
                                 <User className="h-8 w-8 text-slate-300" />
@@ -445,7 +445,7 @@ const SellerDetail = () => {
                     </Card>
 
                     {/* Quick Notifications */}
-                    <Card className="p-8 border-none shadow-xl ring-1 ring-slate-900 bg-slate-900 rounded-[32px] text-white">
+                    <Card className="p-4 border-none shadow-xl ring-1 ring-slate-900 bg-slate-900 rounded-xl text-white">
                         <h4 className="text-[10px] font-bold opacity-40 uppercase tracking-[0.2em] mb-6">Strategic Comms</h4>
                         <div className="space-y-4">
                             <p className="text-xs font-medium text-slate-400 italic leading-relaxed">Send a high-priority push to the shop manager app.</p>

@@ -113,17 +113,17 @@ const CashCollection = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Cash Collection Hub
                         <div className="p-1.5 bg-emerald-100 rounded-lg">
                             <CircleDollarSign className="h-5 w-5 text-emerald-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">Manage physical cash collected by delivery partners and track settlements.</p>
+                    <p className="ds-description mt-1">Manage physical cash collected by delivery partners and track settlements.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 px-5 py-3 bg-white ring-1 ring-slate-200 text-slate-700 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">
@@ -152,8 +152,8 @@ const CashCollection = () => {
                             </div>
                             {stat.sub && <Badge variant="danger" className="text-[8px] px-1.5 py-0">{stat.sub}</Badge>}
                         </div>
-                        <p className="admin-label mb-1 uppercase tracking-tight font-black">{stat.label}</p>
-                        <h3 className="admin-stat-value text-3xl">{stat.value}</h3>
+                        <p className="ds-label mb-1 uppercase tracking-tight font-black">{stat.label}</p>
+                        <h3 className="ds-stat-medium ds-stat-large">{stat.value}</h3>
                     </Card>
                 ))}
             </div>
@@ -198,17 +198,17 @@ const CashCollection = () => {
             </div>
 
             {/* Main Content Area */}
-            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-[32px]">
+            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-xl">
                 <div className="overflow-x-auto">
                     {activeTab === 'live_balances' ? (
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="admin-table-header pl-8 py-5">Delivery Partner</th>
-                                    <th className="admin-table-header">Cash Statistics</th>
-                                    <th className="admin-table-header text-center">Safety Status</th>
-                                    <th className="admin-table-header">Last Settle Date</th>
-                                    <th className="admin-table-header text-right pr-8">Management</th>
+                                    <th className="ds-table-header-cell pl-8 py-5">Delivery Partner</th>
+                                    <th className="ds-table-header-cell">Cash Statistics</th>
+                                    <th className="ds-table-header-cell text-center">Safety Status</th>
+                                    <th className="ds-table-header-cell">Last Settle Date</th>
+                                    <th className="ds-table-header-cell text-right pr-8">Management</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -288,11 +288,11 @@ const CashCollection = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="admin-table-header pl-8 py-5">Settlement ID</th>
-                                    <th className="admin-table-header">Partner Name</th>
-                                    <th className="admin-table-header text-center">Amount Settled</th>
-                                    <th className="admin-table-header">Method</th>
-                                    <th className="admin-table-header text-right pr-8">Date</th>
+                                    <th className="ds-table-header-cell pl-8 py-5">Settlement ID</th>
+                                    <th className="ds-table-header-cell">Partner Name</th>
+                                    <th className="ds-table-header-cell text-center">Amount Settled</th>
+                                    <th className="ds-table-header-cell">Method</th>
+                                    <th className="ds-table-header-cell text-right pr-8">Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -331,9 +331,9 @@ const CashCollection = () => {
                 size="md"
             >
                 {selectedRider && (
-                    <div className="space-y-8">
-                        <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-[32px] border border-slate-100">
-                            <img src={selectedRider.avatar} alt="" className="h-20 w-20 rounded-3xl shadow-xl ring-4 ring-white" />
+                    <div className="ds-section-spacing">
+                        <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-xl border border-slate-100">
+                            <img src={selectedRider.avatar} alt="" className="h-20 w-20 rounded-xl shadow-xl ring-4 ring-white" />
                             <div>
                                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">{selectedRider.name}</h3>
                                 <div className="flex items-center gap-2 mt-2">
@@ -346,7 +346,7 @@ const CashCollection = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <Card className="p-6 border-none bg-slate-900 text-white rounded-[28px] relative overflow-hidden">
+                            <Card className="p-6 border-none bg-slate-900 text-white rounded-xl relative overflow-hidden">
                                 <p className="text-[10px] opacity-60 font-black uppercase tracking-widest mb-2">Primary Wallet</p>
                                 <h4 className="text-3xl font-black italic">₹{selectedRider.currentCash.toLocaleString()}</h4>
                                 <div className="mt-4 flex items-center gap-2">
@@ -357,7 +357,7 @@ const CashCollection = () => {
                                 </div>
                                 <CircleDollarSign className="absolute -bottom-4 -right-4 h-20 w-20 opacity-10" />
                             </Card>
-                            <Card className="p-6 border-none bg-slate-50 ring-1 ring-slate-100 rounded-[28px]">
+                            <Card className="p-6 border-none bg-slate-50 ring-1 ring-slate-100 rounded-xl">
                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Pending COD Orders</p>
                                 <h4 className="text-3xl font-black text-slate-900">{selectedRider.pendingOrders}</h4>
                                 <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase">Requires immediate sync</p>
@@ -412,9 +412,9 @@ const CashCollection = () => {
                 size="sm"
             >
                 {settlementData.rider && (
-                    <div className="space-y-8 py-4">
+                    <div className="ds-section-spacing py-4">
                         <div className="text-center space-y-4">
-                            <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-[32px] flex items-center justify-center mx-auto shadow-inner border border-emerald-100">
+                            <div className="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto shadow-inner border border-emerald-100">
                                 <CircleDollarSign className="h-10 w-10" />
                             </div>
                             <div>
@@ -425,15 +425,15 @@ const CashCollection = () => {
                             </div>
                         </div>
 
-                        <div className="bg-slate-50 p-6 rounded-[28px] ring-1 ring-slate-100">
+                        <div className="bg-slate-50 p-6 rounded-xl ring-1 ring-slate-100">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center mb-2">Total Amount to Settle</p>
                             <div className="flex items-center justify-center gap-2">
-                                <span className="text-4xl font-black italic text-slate-900">₹</span>
+                                <span className="text-xl font-black italic text-slate-900">₹</span>
                                 <input
                                     type="number"
                                     value={settlementData.amount}
                                     onChange={(e) => setSettlementData({ ...settlementData, amount: e.target.value })}
-                                    className="bg-transparent text-4xl font-black italic text-slate-900 w-40 outline-none text-center"
+                                    className="bg-transparent ds-h2 font-black italic text-slate-900 w-40 outline-none text-center"
                                 />
                             </div>
                         </div>

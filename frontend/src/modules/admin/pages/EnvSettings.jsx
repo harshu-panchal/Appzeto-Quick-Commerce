@@ -110,17 +110,17 @@ const EnvSettings = () => {
     );
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Environment Controls
                         <div className="p-2 bg-slate-900 rounded-xl">
                             <Terminal className="h-5 w-5 text-white" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1 text-slate-500">
+                    <p className="ds-description mt-1 text-slate-500">
                         Manage critical application secrets and configurations.
                         <span className="text-red-500 font-bold ml-1 flex items-center gap-1 inline-flex">
                             <AlertTriangle className="h-3 w-3" />
@@ -168,32 +168,32 @@ const EnvSettings = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-8">
+            <div className="grid grid-cols-1 gap-4">
 
                 {/* Frontend Tab */}
                 {activeTab === 'frontend' && (
-                    <div className="space-y-8 animate-in slide-in-from-left-4 duration-500">
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                    <div className="ds-section-spacing animate-in slide-in-from-left-4 duration-500">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     <Globe className="h-4 w-4 text-slate-400" />
                                     Core Client Config
                                 </h3>
                             </div>
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputField label="API Base URL" name="VITE_API_BASE_URL" icon={Server} placeholder="https://api.yourdomain.com/v1" />
                                 <InputField label="Google Maps API Key" name="VITE_GOOGLE_MAPS_API_KEY" icon={Key} isSecret={true} />
                             </div>
                         </Card>
 
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     <Cloud className="h-4 w-4 text-amber-500" />
                                     Firebase Client SDK
                                 </h3>
                             </div>
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputField label="API Key" name="VITE_FIREBASE_API_KEY" icon={Key} isSecret={true} />
                                 <InputField label="Auth Domain" name="VITE_FIREBASE_AUTH_DOMAIN" icon={Shield} />
                                 <InputField label="Project ID" name="VITE_FIREBASE_PROJECT_ID" icon={Database} />
@@ -211,18 +211,18 @@ const EnvSettings = () => {
 
                 {/* Backend Tab */}
                 {activeTab === 'backend' && (
-                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                    <div className="ds-section-spacing animate-in slide-in-from-right-4 duration-500">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     <Server className="h-4 w-4 text-slate-400" />
                                     Server & Security
                                 </h3>
                             </div>
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputField label="Frontend URL (CORS)" name="FRONTEND_URL" icon={Globe} />
                                 <InputField label="Server Port" name="PORT" icon={Server} type="number" />
-                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                     <InputField label="JWT Secret" name="JWT_SECRET" icon={Lock} isSecret={true} />
                                     <InputField label="JWT Refresh Secret" name="JWT_REFRESH_SECRET" icon={Lock} isSecret={true} />
                                     <InputField label="Token Expiry" name="JWT_EXPIRES_IN" icon={Terminal} placeholder="7d" />
@@ -231,14 +231,14 @@ const EnvSettings = () => {
                             </div>
                         </Card>
 
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     <CreditCard className="h-4 w-4 text-purple-500" />
                                     Integrations
                                 </h3>
                             </div>
-                            <div className="p-8 space-y-8">
+                            <div className="p-4 space-y-8">
                                 {/* Cloudinary */}
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-bold text-slate-400 uppercase">Cloudinary (Media)</h4>
@@ -271,14 +271,14 @@ const EnvSettings = () => {
                             </div>
                         </Card>
 
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     <Shield className="h-4 w-4 text-red-500" />
                                     Firebase Admin Service Account
                                 </h3>
                             </div>
-                            <div className="p-8">
+                            <div className="p-4">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                         Service Account JSON

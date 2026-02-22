@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import PageHeader from '@shared/components/ui/PageHeader';
+import StatCard from '@shared/components/ui/StatCard';
 import {
     TrendingUp,
     DollarSign,
@@ -144,12 +146,12 @@ const AdminWallet = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="admin-h1">Admin Wallet & Finance</h1>
-                    <p className="admin-description mt-1">Manage transactions, track earnings, and process withdrawals.</p>
+                    <h1 className="ds-h1">Admin Wallet & Finance</h1>
+                    <p className="ds-description mt-1">Manage transactions, track earnings, and process withdrawals.</p>
                 </div>
                 <div className="flex items-center space-x-3">
                     <button
@@ -195,8 +197,8 @@ const AdminWallet = () => {
 
                                 {/* Middle Row: Label and Value */}
                                 <div className="mb-2.5">
-                                    <p className="admin-label mb-0.5">{stat.label}</p>
-                                    <h3 className="admin-stat-value">{stat.value}</h3>
+                                    <p className="ds-label mb-0.5">{stat.label}</p>
+                                    <h3 className="ds-stat-medium">{stat.value}</h3>
                                 </div>
 
                                 {/* Bottom Row: Description */}
@@ -225,7 +227,7 @@ const AdminWallet = () => {
                             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                 <History className="h-5 w-5" />
                             </div>
-                            <h2 className="admin-h2">Recent Transactions</h2>
+                            <h2 className="ds-h2">Recent Transactions</h2>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -260,11 +262,11 @@ const AdminWallet = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50/50 border-b border-slate-100">
-                                        <th className="admin-table-header pl-8">Transaction Details</th>
-                                        <th className="admin-table-header">Entities</th>
-                                        <th className="admin-table-header text-center">Amount</th>
-                                        <th className="admin-table-header">Status</th>
-                                        <th className="admin-table-header text-right pr-8">Actions</th>
+                                        <th className="ds-table-header-cell pl-8">Transaction Details</th>
+                                        <th className="ds-table-header-cell">Entities</th>
+                                        <th className="ds-table-header-cell text-center">Amount</th>
+                                        <th className="ds-table-header-cell">Status</th>
+                                        <th className="ds-table-header-cell text-right pr-8">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-50">
@@ -346,7 +348,7 @@ const AdminWallet = () => {
                             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                                 <PieChart className="h-5 w-5" />
                             </div>
-                            <h2 className="admin-h2">Settlements</h2>
+                            <h2 className="ds-h2">Settlements</h2>
                         </div>
                         <Card className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative">
                             <div className="relative z-10 space-y-6">

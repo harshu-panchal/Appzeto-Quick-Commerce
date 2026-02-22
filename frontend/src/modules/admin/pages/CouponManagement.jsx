@@ -149,15 +149,15 @@ const CouponManagement = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header Area */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Promo Engine
                         <Badge variant="primary" className="text-[10px] font-black uppercase tracking-widest">v4.2 PRO</Badge>
                     </h1>
-                    <p className="admin-description mt-1">Design, deploy, and track high-conversion discount campaigns.</p>
+                    <p className="ds-description mt-1">Design, deploy, and track high-conversion discount campaigns.</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
@@ -194,9 +194,9 @@ const CouponManagement = () => {
             </div>
 
             {/* Main Content Area */}
-            <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+            <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                 {/* Table Filters */}
-                <div className="p-8 border-b border-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="p-4 border-b border-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex items-center gap-4 flex-1">
                         <div className="relative group flex-1 max-w-md">
                             <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
@@ -230,18 +230,18 @@ const CouponManagement = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-50">
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Coupon Code</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Offerings</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Performance</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Validity</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Coupon Code</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Offerings</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Performance</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Validity</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {filteredCoupons.map((c) => (
                                 <tr key={c.id} className="group hover:bg-slate-50/30 transition-colors">
-                                    <td className="px-8 py-6">
+                                    <td className="px-4 py-6">
                                         <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
                                                 <HiOutlineTicket className="h-6 w-6" />
@@ -252,7 +252,7 @@ const CouponManagement = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6">
+                                    <td className="px-4 py-6">
                                         <div className="space-y-1">
                                             <p className="text-xs font-black text-slate-900">
                                                 {c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `₹${c.discountValue} OFF`}
@@ -260,7 +260,7 @@ const CouponManagement = () => {
                                             <p className="text-[10px] font-bold text-slate-400">Min. Order: ₹{c.minOrder}</p>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6">
+                                    <td className="px-4 py-6">
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-end">
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Redeemed</span>
@@ -274,18 +274,18 @@ const CouponManagement = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6">
+                                    <td className="px-4 py-6">
                                         <div className="flex items-center gap-2 text-slate-500">
                                             <HiOutlineCalendarDays className="h-4 w-4" />
                                             <span className="text-[10px] font-bold uppercase tracking-tighter">Till {new Date(c.endDate).toLocaleDateString()}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-6 text-center">
+                                    <td className="px-4 py-6 text-center">
                                         <Badge variant={c.status === 'active' ? 'success' : 'secondary'} className="text-[9px] font-black uppercase">
                                             {c.status}
                                         </Badge>
                                     </td>
-                                    <td className="px-8 py-6">
+                                    <td className="px-4 py-6">
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => handleOpenModal(c)}
@@ -309,7 +309,7 @@ const CouponManagement = () => {
 
                 {filteredCoupons.length === 0 && (
                     <div className="p-20 text-center">
-                        <div className="h-20 w-20 bg-slate-50 rounded-[32px] flex items-center justify-center mx-auto mb-6">
+                        <div className="h-20 w-20 bg-slate-50 rounded-xl flex items-center justify-center mx-auto mb-6">
                             <HiOutlineTicket className="h-10 w-10 text-slate-200" />
                         </div>
                         <h3 className="text-lg font-black text-slate-900">No codes found</h3>

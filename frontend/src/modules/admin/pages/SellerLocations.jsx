@@ -127,11 +127,11 @@ const SellerLocations = () => {
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 shrink-0 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-2">
+                    <h1 className="ds-h1 flex items-center gap-2">
                         Delivery Map
                         <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Live Coverage</Badge>
                     </h1>
-                    <p className="admin-description mt-0.5">Global view of seller service areas and delivery reach.</p>
+                    <p className="ds-description mt-0.5">Global view of seller service areas and delivery reach.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -170,7 +170,7 @@ const SellerLocations = () => {
             <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
                 {/* Left Sidebar: Seller Selection */}
                 <div className="lg:w-80 flex flex-col gap-4 min-h-0 h-full">
-                    <Card className="flex-1 flex flex-col border-none shadow-xl ring-1 ring-slate-100 rounded-[32px] overflow-hidden bg-white hover:bg-white/95 transition-all">
+                    <Card className="flex-1 flex flex-col border-none shadow-xl ring-1 ring-slate-100 rounded-xl overflow-hidden bg-white hover:bg-white/95 transition-all">
                         <div className="p-5 border-b border-slate-50 space-y-4">
                             <div className="relative group">
                                 <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
@@ -183,7 +183,7 @@ const SellerLocations = () => {
                                 />
                             </div>
                             <div className="flex items-center justify-between px-1 relative">
-                                <span className="admin-label">Active Nodes ({filteredSellers.length})</span>
+                                <span className="ds-label">Active Nodes ({filteredSellers.length})</span>
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
                                     className={cn(
@@ -287,7 +287,7 @@ const SellerLocations = () => {
                 </div>
 
                 {/* Right Area: Interactive Map */}
-                <Card className="flex-1 border-none shadow-2xl ring-1 ring-slate-200 rounded-[40px] overflow-hidden bg-slate-100 relative group">
+                <Card className="flex-1 border-none shadow-2xl ring-1 ring-slate-200 rounded-2xl overflow-hidden bg-slate-100 relative group">
                     {/* Map Placeholder with Rich Styling */}
                     <div className="absolute inset-0 grayscale-[0.3] contrast-[1.1] opacity-40 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=2000')]" />
                     <div className="absolute inset-0 bg-gradient-to-tr from-slate-200/50 via-transparent to-primary/5" />
@@ -356,9 +356,9 @@ const SellerLocations = () => {
                                 initial={{ opacity: 0, y: -20, x: -20 }}
                                 animate={{ opacity: 1, y: 0, x: 0 }}
                                 exit={{ opacity: 0, y: -20, x: -20 }}
-                                className="absolute top-8 left-8 w-80 z-20"
+                                className="absolute top-4 left-8 w-80 z-20"
                             >
-                                <Card className="border-none shadow-[0_32px_64px_rgba(0,0,0,0.15)] ring-1 ring-slate-200/50 p-6 rounded-[32px] bg-white/95 backdrop-blur-xl relative overflow-hidden">
+                                <Card className="border-none shadow-[0_32px_64px_rgba(0,0,0,0.15)] ring-1 ring-slate-200/50 p-6 rounded-xl bg-white/95 backdrop-blur-xl relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-4">
                                         <button onClick={() => setSelectedSeller(null)} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
                                             <HiOutlineXMark className="h-4 w-4" />
@@ -370,7 +370,7 @@ const SellerLocations = () => {
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <h4 className="admin-h4 truncate tracking-tight">{selectedSeller.shopName}</h4>
-                                            <p className="admin-label text-primary mt-0.5">{selectedSeller.category}</p>
+                                            <p className="ds-label text-primary mt-0.5">{selectedSeller.category}</p>
                                         </div>
                                     </div>
 
@@ -422,23 +422,23 @@ const SellerLocations = () => {
                                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                                    className="w-full max-w-lg relative z-[210] bg-white rounded-[40px] p-10 shadow-2xl"
+                                    className="w-full max-w-lg relative z-[210] bg-white rounded-2xl p-5 shadow-2xl"
                                 >
                                     <div className="text-center space-y-4">
-                                        <div className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-6">
+                                        <div className="h-20 w-20 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-6">
                                             <HiOutlineBuildingOffice2 className="h-10 w-10" />
                                         </div>
-                                        <h3 className="admin-h2">{selectedSeller.shopName}</h3>
-                                        <p className="admin-description">Delivery & Performance Report</p>
+                                        <h3 className="ds-h2">{selectedSeller.shopName}</h3>
+                                        <p className="ds-description">Delivery & Performance Report</p>
                                         <div className="grid grid-cols-2 gap-4 pt-4">
-                                            <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-center">Coverage Health</p>
                                                 <div className="flex items-center justify-center gap-2">
                                                     <HiOutlineCheckCircle className="h-4 w-4 text-emerald-500" />
                                                     <span className="text-lg font-bold text-slate-900">Optimal</span>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-center">Peak Load</p>
                                                 <div className="flex items-center justify-center gap-2">
                                                     <HiOutlineArrowPath className="h-4 w-4 text-primary animate-spin-slow" />
@@ -447,7 +447,7 @@ const SellerLocations = () => {
                                             </div>
                                         </div>
 
-                                        <div className="p-6 bg-slate-900 rounded-3xl text-left space-y-4">
+                                        <div className="p-6 bg-slate-900 rounded-xl text-left space-y-4">
                                             <div className="flex justify-between items-center text-white/50 text-[10px] font-bold uppercase tracking-widest">
                                                 <span>Real-time Alerts</span>
                                                 <span className="h-2 w-2 rounded-full bg-emerald-500" />

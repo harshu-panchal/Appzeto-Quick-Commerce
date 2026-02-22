@@ -157,17 +157,17 @@ const OrdersList = () => {
     const pageTitle = status === 'all' ? 'All Orders' : status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         {pageTitle}
                         <div className="p-2 bg-fuchsia-100 rounded-xl">
                             <ShoppingBag className="h-5 w-5 text-fuchsia-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">View and manage all orders.</p>
+                    <p className="ds-description mt-1">View and manage all orders.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -211,7 +211,7 @@ const OrdersList = () => {
             </div>
 
             {/* Orders Table Section */}
-            <Card className="border-none shadow-2xl ring-1 ring-slate-100/50 bg-white rounded-[32px] overflow-hidden">
+            <Card className="border-none shadow-2xl ring-1 ring-slate-100/50 bg-white rounded-xl overflow-hidden">
                 <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="relative group flex-1 max-w-md">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-fuchsia-500 transition-colors" />
@@ -234,17 +234,17 @@ const OrdersList = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-slate-50/50">
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Details</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer & Shop</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Amount</th>
-                                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Details</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer & Shop</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Amount</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {filteredOrders.length > 0 ? filteredOrders.map((order) => (
                                 <tr key={order.id} className="group hover:bg-slate-50/30 transition-all cursor-pointer" onClick={() => navigate(`/admin/orders/view/${order.id}`)}>
-                                    <td className="px-8 py-5">
+                                    <td className="px-4 py-5">
                                         <div className="flex items-center gap-4">
                                             <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-white group-hover:shadow-sm transition-all text-slate-400 group-hover:text-fuchsia-500 font-bold text-xs">
                                                 <Package className="h-5 w-5" />
@@ -264,7 +264,7 @@ const OrdersList = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-5">
+                                    <td className="px-4 py-5">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
                                                 <div className="h-2 w-2 rounded-full bg-blue-500" />
@@ -276,7 +276,7 @@ const OrdersList = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-5">
+                                    <td className="px-4 py-5">
                                         <div className={cn(
                                             "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all",
                                             getStatusStyles(order.status)
@@ -285,13 +285,13 @@ const OrdersList = () => {
                                             {order.status.replace(/-/g, ' ')}
                                         </div>
                                     </td>
-                                    <td className="px-8 py-5 text-right">
+                                    <td className="px-4 py-5 text-right">
                                         <div className="flex flex-col items-end">
                                             <span className="text-sm font-black text-slate-900">₹{order.amount.toLocaleString()}</span>
                                             <span className="text-[10px] font-bold text-slate-400 mt-0.5">{order.payment}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-5 text-right">
+                                    <td className="px-4 py-5 text-right">
                                         <button className="p-2.5 bg-slate-50 text-slate-400 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-xl transition-all">
                                             <Eye className="h-4 w-4" />
                                         </button>
@@ -299,7 +299,7 @@ const OrdersList = () => {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" className="px-8 py-20 text-center">
+                                    <td colSpan="5" className="px-4 py-20 text-center">
                                         <div className="flex flex-col items-center gap-4">
                                             <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center">
                                                 <Search className="h-10 w-10 text-slate-200" />
@@ -316,7 +316,7 @@ const OrdersList = () => {
                     </table>
                 </div>
 
-                <div className="p-8 border-t border-slate-50 flex items-center justify-between">
+                <div className="p-4 border-t border-slate-50 flex items-center justify-between">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                         Showing <span className="text-slate-900 font-black">{filteredOrders.length}</span> of {orders.length} Orders
                     </p>

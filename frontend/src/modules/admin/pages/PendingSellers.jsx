@@ -103,15 +103,15 @@ const PendingSellers = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
             {/* Page Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-2">
+                    <h1 className="ds-h1 flex items-center gap-2">
                         Pending Approvals
                         <Badge variant="warning" className="admin-tiny px-1.5 py-0 font-bold animate-pulse">Action Required</Badge>
                     </h1>
-                    <p className="admin-description mt-0.5">Check new seller applications before they can start selling.</p>
+                    <p className="ds-description mt-0.5">Check new seller applications before they can start selling.</p>
                 </div>
                 <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-xl ring-1 ring-amber-100">
                     <HiOutlineClock className="h-4 w-4 text-amber-600" />
@@ -129,8 +129,8 @@ const PendingSellers = () => {
                     <Card key={i} className="border-none shadow-sm ring-1 ring-slate-100 p-5">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="admin-label">{stat.label}</p>
-                                <h4 className="admin-stat-value mt-1">{stat.val}</h4>
+                                <p className="ds-label">{stat.label}</p>
+                                <h4 className="ds-stat-medium mt-1">{stat.val}</h4>
                             </div>
                             <div className={cn("h-12 w-12 rounded-2xl flex items-center justify-center shadow-inner", stat.bg, stat.color)}>
                                 <stat.icon className="h-6 w-6" />
@@ -141,7 +141,7 @@ const PendingSellers = () => {
             </div>
 
             {/* Content Area */}
-            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-[32px]">
+            <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-xl">
                 <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row gap-4 items-center justify-between bg-white">
                     <div className="relative flex-1 w-full max-w-md">
                         <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -163,10 +163,10 @@ const PendingSellers = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="admin-table-header px-6">Applicant Store</th>
-                                <th className="admin-table-header px-6">Documentation</th>
-                                <th className="admin-table-header px-6">Applied On</th>
-                                <th className="admin-table-header px-6 text-right">Actions</th>
+                                <th className="ds-table-header-cell px-6">Applicant Store</th>
+                                <th className="ds-table-header-cell px-6">Documentation</th>
+                                <th className="ds-table-header-cell px-6">Applied On</th>
+                                <th className="ds-table-header-cell px-6 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -234,7 +234,7 @@ const PendingSellers = () => {
             <AnimatePresence>
                 {isReviewModalOpen && viewingSeller && (
                     <div className="fixed inset-0 z-[100] overflow-y-auto">
-                        <div className="min-h-full flex items-center justify-center p-4 lg:p-8">
+                        <div className="min-h-full flex items-center justify-center p-4 lg:p-4">
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -247,13 +247,13 @@ const PendingSellers = () => {
                                 initial={{ opacity: 0, scale: 0.9, y: 30 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                                className="w-full max-w-4xl relative z-10 bg-white rounded-[40px] shadow-2xl overflow-hidden"
+                                className="w-full max-w-4xl relative z-10 bg-white rounded-2xl shadow-2xl overflow-hidden"
                             >
                                 <div className="grid grid-cols-1 lg:grid-cols-12">
                                     {/* Sidebar Info */}
-                                    <div className="lg:col-span-4 bg-slate-50 p-8 border-r border-slate-100">
+                                    <div className="lg:col-span-4 bg-slate-50 p-4 border-r border-slate-100">
                                         <div className="flex justify-between items-start mb-8">
-                                            <div className="h-20 w-20 rounded-3xl bg-white shadow-xl flex items-center justify-center text-3xl font-bold text-primary border-4 border-white">
+                                            <div className="h-20 w-20 rounded-xl bg-white shadow-xl flex items-center justify-center ds-stat-large font-bold text-primary border-4 border-white">
                                                 {viewingSeller.shopName[0]}
                                             </div>
                                             <button
@@ -266,7 +266,7 @@ const PendingSellers = () => {
 
                                         <div className="space-y-6">
                                             <div>
-                                                <h3 className="admin-h2 leading-tight">{viewingSeller.shopName}</h3>
+                                                <h3 className="ds-h2 leading-tight">{viewingSeller.shopName}</h3>
                                                 <p className="text-xs font-bold text-primary mt-1 uppercase tracking-widest">{viewingSeller.category} PARTNER</p>
                                             </div>
 
@@ -299,15 +299,15 @@ const PendingSellers = () => {
                                     </div>
 
                                     {/* Main Review Section */}
-                                    <div className="lg:col-span-8 p-8 lg:p-12 bg-white relative">
+                                    <div className="lg:col-span-8 p-4 lg:p-5 bg-white relative">
                                         <button
                                             onClick={() => setIsReviewModalOpen(false)}
-                                            className="hidden lg:block absolute right-8 top-8 p-2 hover:bg-slate-100 rounded-full transition-colors"
+                                            className="hidden lg:block absolute right-8 top-4 p-2 hover:bg-slate-100 rounded-full transition-colors"
                                         >
                                             <HiOutlineXMark className="h-6 w-6 text-slate-300" />
                                         </button>
 
-                                        <div className="space-y-10">
+                                        <div className="ds-section-spacing">
                                             <div>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <HiOutlineDocumentText className="h-5 w-5 text-indigo-500" />
@@ -337,7 +337,7 @@ const PendingSellers = () => {
                                                 ))}
                                             </div>
 
-                                            <div className="bg-amber-50 rounded-3xl p-6 border border-amber-100/50">
+                                            <div className="bg-amber-50 rounded-xl p-6 border border-amber-100/50">
                                                 <div className="flex gap-4">
                                                     <div className="h-10 w-10 rounded-full bg-amber-200 flex items-center justify-center shrink-0">
                                                         <HiOutlineCheckCircle className="h-6 w-6 text-amber-700" />

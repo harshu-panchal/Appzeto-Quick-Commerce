@@ -159,15 +159,15 @@ const ActiveDeliveryBoys = () => {
     ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="ds-section-spacing animate-in fade-in duration-700">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Delivery Boys
                         <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     </h1>
-                    <p className="admin-description mt-1">Manage all your active delivery partners here.</p>
+                    <p className="ds-description mt-1">Manage all your active delivery partners here.</p>
                 </div>
                 <button
                     onClick={() => setIsOnboardModalOpen(true)}
@@ -184,8 +184,8 @@ const ActiveDeliveryBoys = () => {
                     <Card key={idx} className="p-6 border-none shadow-xl ring-1 ring-slate-100 hover:ring-primary/20 transition-all group overflow-hidden relative">
                         <div className="flex justify-between items-start relative z-10">
                             <div>
-                                <p className="admin-label mb-2">{stat.label}</p>
-                                <h3 className="admin-stat-value">{stat.value}</h3>
+                                <p className="ds-label mb-2">{stat.label}</p>
+                                <h3 className="ds-stat-medium">{stat.value}</h3>
                             </div>
                             <div className={cn(
                                 "p-3 rounded-2xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg",
@@ -354,16 +354,16 @@ const ActiveDeliveryBoys = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="w-full max-w-2xl relative z-10 bg-white rounded-[40px] shadow-2xl overflow-hidden"
+                            className="w-full max-w-2xl relative z-10 bg-white rounded-2xl shadow-2xl overflow-hidden"
                         >
                             <div className="p-10">
                                 <div className="flex justify-between items-start mb-10">
                                     <div className="flex gap-6">
-                                        <div className="h-24 w-24 rounded-[32px] bg-slate-100 flex items-center justify-center text-slate-400">
+                                        <div className="h-24 w-24 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400">
                                             <User className="h-14 w-14" />
                                         </div>
                                         <div>
-                                            <h2 className="admin-h1">{viewingRider.name}</h2>
+                                            <h2 className="ds-h1">{viewingRider.name}</h2>
                                             <div className="flex items-center gap-3 mt-2">
                                                 <Badge variant={viewingRider.status === 'available' ? 'success' : viewingRider.status === 'busy' ? 'warning' : 'neutral'} className="uppercase font-black text-[9px] px-3">
                                                     {viewingRider.status}
@@ -404,7 +404,7 @@ const ActiveDeliveryBoys = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-slate-50 rounded-[32px]">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 bg-slate-50 rounded-xl">
                                     <div className="text-center">
                                         <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Lifetime Rating</p>
                                         <div className="flex justify-center items-center gap-1">
@@ -458,12 +458,12 @@ const ActiveDeliveryBoys = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                            className="w-full max-w-lg relative z-[120] bg-white rounded-[40px] p-10 shadow-3xl"
+                            className="w-full max-w-lg relative z-[120] bg-white rounded-2xl p-5 shadow-3xl"
                         >
-                            <h3 className="admin-h2 mb-2">
+                            <h3 className="ds-h2 mb-2">
                                 {isEditModalOpen ? 'Edit Rider' : 'Add New Rider'}
                             </h3>
-                            <p className="admin-label mt-1 text-slate-500">
+                            <p className="ds-label mt-1 text-slate-500">
                                 {isEditModalOpen ? 'Update rider details below.' : 'Enter details to register a new delivery partner.'}
                             </p>
 

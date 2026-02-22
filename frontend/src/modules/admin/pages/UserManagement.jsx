@@ -8,7 +8,7 @@ const UserManagement = () => {
     return (
         <div>
             <div className="flex justify-between items-center mb-6">
-                <h2 className="admin-h1">Platform Users</h2>
+                <h2 className="ds-h1">Platform Users</h2>
                 <Button>
                     <HiOutlineUserAdd className="mr-2 h-5 w-5" />
                     Add Internal User
@@ -20,10 +20,10 @@ const UserManagement = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b">
                             <tr>
-                                <th className="admin-table-header">User</th>
-                                <th className="admin-table-header">Role</th>
-                                <th className="admin-table-header">Status</th>
-                                <th className="admin-table-header">Actions</th>
+                                <th className="ds-table-header-cell">User</th>
+                                <th className="ds-table-header-cell">Role</th>
+                                <th className="ds-table-header-cell">Status</th>
+                                <th className="ds-table-header-cell">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y">

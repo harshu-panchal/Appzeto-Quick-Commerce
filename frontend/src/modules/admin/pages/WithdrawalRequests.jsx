@@ -144,15 +144,15 @@ const WithdrawalRequests = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         Withdrawal Requests
                         <Badge variant="primary" className="text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">Financial Hub</Badge>
                     </h1>
-                    <p className="admin-description mt-1">Review and process fund disbursement requests from sellers and delivery partners.</p>
+                    <p className="ds-description mt-1">Review and process fund disbursement requests from sellers and delivery partners.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 text-slate-600 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm">
@@ -175,8 +175,8 @@ const WithdrawalRequests = () => {
                                 <stat.icon className={cn("h-6 w-6", stat.iconColor)} />
                             </div>
                             <div>
-                                <p className="admin-label mb-1">{stat.label}</p>
-                                <h3 className="admin-stat-value">{stat.value}</h3>
+                                <p className="ds-label mb-1">{stat.label}</p>
+                                <h3 className="ds-stat-medium">{stat.value}</h3>
                             </div>
                         </div>
                     </Card>
@@ -246,16 +246,16 @@ const WithdrawalRequests = () => {
                 </div>
 
                 {/* Content Area */}
-                <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-[32px]">
+                <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-xl">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="admin-table-header pl-8">Requester Details</th>
-                                    <th className="admin-table-header">Financial Scope</th>
-                                    <th className="admin-table-header text-center">Amount Requested</th>
-                                    <th className="admin-table-header">Gateway Status</th>
-                                    <th className="admin-table-header text-right pr-8">Actions</th>
+                                    <th className="ds-table-header-cell pl-8">Requester Details</th>
+                                    <th className="ds-table-header-cell">Financial Scope</th>
+                                    <th className="ds-table-header-cell text-center">Amount Requested</th>
+                                    <th className="ds-table-header-cell">Gateway Status</th>
+                                    <th className="ds-table-header-cell text-right pr-8">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -359,10 +359,10 @@ const WithdrawalRequests = () => {
                 size="md"
             >
                 {selectedRequest && (
-                    <div className="space-y-8">
-                        <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-[32px] border border-slate-100">
+                    <div className="ds-section-spacing">
+                        <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-xl border border-slate-100">
                             <div className={cn(
-                                "h-20 w-20 rounded-3xl flex items-center justify-center shadow-xl",
+                                "h-20 w-20 rounded-xl flex items-center justify-center shadow-xl",
                                 selectedRequest.type === 'seller' ? "bg-indigo-600 text-white" : "bg-emerald-600 text-white"
                             )}>
                                 {selectedRequest.type === 'seller' ? <Building2 className="h-10 w-10" /> : <Truck className="h-10 w-10" />}
@@ -380,13 +380,13 @@ const WithdrawalRequests = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <Card className="p-5 border-none bg-slate-50 ring-1 ring-slate-100 rounded-3xl">
-                                <p className="admin-label mb-2">Request Amount</p>
+                            <Card className="p-5 border-none bg-slate-50 ring-1 ring-slate-100 rounded-xl">
+                                <p className="ds-label mb-2">Request Amount</p>
                                 <h4 className="text-2xl font-black text-slate-900">₹{selectedRequest.amount.toLocaleString()}</h4>
                                 <p className="text-[10px] font-semibold text-slate-400 mt-1">From available balance</p>
                             </Card>
-                            <Card className="p-5 border-none bg-slate-50 ring-1 ring-slate-100 rounded-3xl">
-                                <p className="admin-label mb-2">Wallet Balance</p>
+                            <Card className="p-5 border-none bg-slate-50 ring-1 ring-slate-100 rounded-xl">
+                                <p className="ds-label mb-2">Wallet Balance</p>
                                 <h4 className="text-2xl font-black text-slate-900">₹{selectedRequest.walletBalance.toLocaleString()}</h4>
                                 <p className="text-[10px] font-semibold text-slate-400 mt-1">Status after: ₹{(selectedRequest.walletBalance - selectedRequest.amount).toLocaleString()}</p>
                             </Card>
@@ -464,7 +464,7 @@ const WithdrawalRequests = () => {
                 {actionModal.request && (
                     <div className="text-center space-y-6">
                         <div className={cn(
-                            "h-16 w-16 rounded-3xl flex items-center justify-center mx-auto",
+                            "h-16 w-16 rounded-xl flex items-center justify-center mx-auto",
                             actionModal.type === 'approve' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
                         )}>
                             {actionModal.type === 'approve' ? <CheckCircle className="h-8 w-8" /> : <XCircle className="h-8 w-8" />}

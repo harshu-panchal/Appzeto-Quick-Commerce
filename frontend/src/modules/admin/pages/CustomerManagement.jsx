@@ -2,6 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import PageHeader from '@shared/components/ui/PageHeader';
+import StatCard from '@shared/components/ui/StatCard';
 import {
     Users,
     Search,
@@ -102,78 +104,81 @@ const CustomerManagement = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
-            {/* Header Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
-                <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
-                        Customers
-                        <div className="p-2 bg-sky-100 rounded-xl">
-                            <Users className="h-5 w-5 text-sky-600" />
-                        </div>
-                    </h1>
-                    <p className="admin-description mt-1">Manage and track all customer accounts.</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={handleExport}
-                        disabled={isExporting}
-                        className="flex items-center gap-2 px-5 py-3 bg-white ring-1 ring-slate-200 text-slate-700 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm"
-                    >
-                        {isExporting ? <RotateCw className="h-4 w-4 animate-spin text-sky-500" /> : <Download className="h-4 w-4" />}
-                        {isExporting ? 'EXPORTING...' : 'EXPORT USERS'}
-                    </button>
-                    <button className="flex items-center gap-2 px-5 py-3 bg-sky-600 text-white rounded-2xl text-xs font-bold hover:bg-sky-700 transition-all shadow-lg active:scale-95 shadow-sky-200">
-                        <UserPlus className="h-4 w-4" />
-                        NEW CUSTOMER
-                    </button>
-                </div>
-            </div>
+        <div className="ds-section-spacing">
+            <PageHeader
+                title="Customers"
+                description="Manage and track all customer accounts"
+                badge={
+                    <div className="ds-stat-card-icon bg-sky-50">
+                        <Users className="ds-icon-lg text-sky-600" />
+                    </div>
+                }
+                actions={
+                    <>
+                        <button
+                            onClick={handleExport}
+                            disabled={isExporting}
+                            className="ds-btn ds-btn-md bg-white ring-1 ring-gray-200 text-gray-700 hover:bg-gray-50"
+                        >
+                            {isExporting ? <RotateCw className="ds-icon-sm animate-spin" /> : <Download className="ds-icon-sm" />}
+                            {isExporting ? 'EXPORTING...' : 'EXPORT'}
+                        </button>
+                        <button className="ds-btn ds-btn-md bg-primary text-white shadow-lg shadow-primary/20">
+                            <UserPlus className="ds-icon-sm" />
+                            NEW CUSTOMER
+                        </button>
+                    </>
+                }
+            />
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                    { label: 'Total Customers', value: stats.total, icon: Users, bg: 'bg-sky-50', iconColor: 'text-sky-600' },
-                    { label: 'Active Users', value: stats.active, icon: Activity, bg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-                    { label: 'New Today', value: stats.newToday, icon: UserPlus, bg: 'bg-indigo-50', iconColor: 'text-indigo-600' },
-                ].map((stat, i) => (
-                    <Card key={i} className="p-6 border-none shadow-sm ring-1 ring-slate-100 bg-white group hover:ring-sky-200 transition-all overflow-hidden relative">
-                        <div className="relative z-10 flex items-center gap-4">
-                            <div className={cn("p-3 rounded-2xl h-12 w-12 flex items-center justify-center", stat.bg)}>
-                                <stat.icon className={cn("h-6 w-6", stat.iconColor)} />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</p>
-                                <h3 className="text-2xl font-black text-slate-900">{stat.value}</h3>
-                            </div>
-                        </div>
-                    </Card>
-                ))}
+            <div className="ds-grid-cards-3">
+                <StatCard
+                    label="Total Customers"
+                    value={stats.total}
+                    icon={Users}
+                    color="text-sky-600"
+                    bg="bg-sky-50"
+                />
+                <StatCard
+                    label="Active Users"
+                    value={stats.active}
+                    icon={Activity}
+                    color="text-emerald-600"
+                    bg="bg-emerald-50"
+                />
+                <StatCard
+                    label="New Today"
+                    value={stats.newToday}
+                    icon={UserPlus}
+                    color="text-indigo-600"
+                    bg="bg-indigo-50"
+                />
             </div>
 
             {/* Filter & Search Bar */}
-            <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-[28px]">
-                <div className="flex flex-col lg:flex-row gap-4">
+            <Card className="ds-card-compact">
+                <div className="flex flex-col lg:flex-row gap-3">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 ds-icon-sm text-gray-400 group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Search by name, email or phone..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-sky-500/10 transition-all"
+                            className="ds-input pl-9"
                         />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <div className="flex items-center gap-2">
+                        <div className="flex bg-gray-100 p-0.5 rounded-lg">
                             {['all', 'active', 'inactive'].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setFilterStatus(status)}
                                     className={cn(
-                                        "px-5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight transition-all",
-                                        filterStatus === status ? "bg-white text-sky-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                        "px-3 py-1.5 rounded-md ds-caption transition-all",
+                                        filterStatus === status ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600"
                                     )}
                                 >
                                     {status}
@@ -185,69 +190,69 @@ const CustomerManagement = () => {
             </Card>
 
             {/* Customer List Table */}
-            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-[32px]">
+            <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/80 border-b border-slate-100">
-                                <th className="admin-table-header pl-8 py-5">Customer</th>
-                                <th className="admin-table-header">Activity</th>
-                                <th className="admin-table-header">Total Spend</th>
-                                <th className="admin-table-header">Status</th>
-                                <th className="admin-table-header text-right pr-8">Actions</th>
+                    <table className="ds-table">
+                        <thead className="ds-table-header">
+                            <tr>
+                                <th className="ds-table-header-cell">Customer</th>
+                                <th className="ds-table-header-cell">Activity</th>
+                                <th className="ds-table-header-cell">Total Spend</th>
+                                <th className="ds-table-header-cell">Status</th>
+                                <th className="ds-table-header-cell text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody>
                             {filteredCustomers.map((cust) => (
-                                <tr key={cust.id} className="group hover:bg-slate-50/40 transition-all">
-                                    <td className="px-6 py-5 pl-8">
-                                        <div className="flex items-center gap-4">
-                                            <img src={cust.avatar} alt="" className="h-12 w-12 rounded-2xl bg-slate-100 ring-4 ring-white shadow-sm" />
+                                <tr key={cust.id} className="ds-table-row">
+                                    <td className="ds-table-cell">
+                                        <div className="flex items-center gap-3">
+                                            <img src={cust.avatar} alt="" className="h-10 w-10 rounded-lg bg-gray-100 ring-2 ring-white shadow-sm" />
                                             <div>
                                                 <p
                                                     onClick={() => navigate(`/admin/customers/${cust.id}`)}
-                                                    className="text-sm font-black text-slate-900 leading-none hover:text-sky-600 cursor-pointer transition-colors"
+                                                    className="ds-h4 hover:text-primary cursor-pointer transition-colors"
                                                 >
                                                     {cust.name}
                                                 </p>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">{cust.email}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <Phone className="h-2.5 w-2.5 text-slate-300" />
-                                                    <span className="text-[9px] font-black text-slate-400">{cust.phone}</span>
+                                                <p className="ds-body-sm text-gray-500">{cust.email}</p>
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    <Phone className="ds-icon-sm text-gray-300" />
+                                                    <span className="text-[9px] text-gray-400">{cust.phone}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5">
+                                    <td className="ds-table-cell">
                                         <div>
-                                            <div className="flex items-center gap-1.5 font-black text-slate-700 text-xs">
-                                                <ShoppingBag className="h-3 w-3 text-sky-500" />
+                                            <div className="flex items-center gap-1.5 ds-body font-semibold">
+                                                <ShoppingBag className="ds-icon-sm text-primary" />
                                                 {cust.totalOrders} Orders
                                             </div>
-                                            <p className="text-[10px] font-bold text-slate-400 mt-0.5">Last: {cust.lastOrder}</p>
+                                            <p className="ds-body-sm text-gray-400 mt-0.5">Last: {cust.lastOrder}</p>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 font-black text-slate-900 text-sm">
-                                        ₹{cust.totalSpent ? cust.totalSpent.toLocaleString() : cust.ltv.toLocaleString()}
+                                    <td className="ds-table-cell ds-h4">
+                                        ₹{cust.totalSpent.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-5">
+                                    <td className="ds-table-cell">
                                         <Badge
-                                            variant={cust.status === 'active' ? 'success' : 'danger'}
-                                            className="text-[8px] font-black px-2 py-0.5 uppercase tracking-widest"
+                                            variant={cust.status === 'active' ? 'success' : 'error'}
+                                            className="ds-badge"
                                         >
                                             {cust.status}
                                         </Badge>
                                     </td>
-                                    <td className="px-6 py-5 text-right pr-8">
+                                    <td className="ds-table-cell text-right">
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 onClick={() => navigate(`/admin/customers/${cust.id}`)}
-                                                className="p-2.5 bg-sky-50 text-sky-600 rounded-xl hover:bg-sky-600 hover:text-white transition-all active:scale-90"
+                                                className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all"
                                             >
-                                                <Eye className="h-4 w-4" />
+                                                <Eye className="ds-icon-sm" />
                                             </button>
-                                            <button className="p-2.5 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all">
-                                                <MoreVertical className="h-4 w-4" />
+                                            <button className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-gray-900 hover:text-white transition-all">
+                                                <MoreVertical className="ds-icon-sm" />
                                             </button>
                                         </div>
                                     </td>

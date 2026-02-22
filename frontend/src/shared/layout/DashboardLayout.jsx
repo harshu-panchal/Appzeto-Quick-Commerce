@@ -10,10 +10,10 @@ const DashboardLayout = ({ children, navItems, title }) => {
             <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
 
             <Sidebar items={navItems} title={title} />
-            <div className="pl-64">
+            <div className="pl-56">
                 <Topbar />
-                <main className="pt-28 p-10 min-h-screen">
-                    <div className="max-w-7xl mx-auto pb-20">
+                <main className="pt-20 p-6 min-h-screen">
+                    <div className="max-w-7xl mx-auto pb-12">
                         {children}
                     </div>
                 </main>

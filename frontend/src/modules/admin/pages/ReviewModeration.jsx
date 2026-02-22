@@ -81,11 +81,11 @@ const ReviewModeration = () => {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1">Moderation Suite</h1>
-                    <p className="admin-description mt-0.5">Protect community integrity and store reputations.</p>
+                    <h1 className="ds-h1">Moderation Suite</h1>
+                    <p className="ds-description mt-0.5">Protect community integrity and store reputations.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -97,15 +97,15 @@ const ReviewModeration = () => {
 
             <div className="grid grid-cols-1 gap-6">
                 {reviews.map((r) => (
-                    <Card key={r.id} className="p-8 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] group overflow-hidden relative">
+                    <Card key={r.id} className="p-4 border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl group overflow-hidden relative">
                         {/* Decorative background icon */}
                         <HiOutlineChatBubbleBottomCenterText className="absolute -top-6 -right-6 h-32 w-32 text-slate-50 opacity-[0.03] group-hover:scale-110 transition-transform duration-1000" />
 
-                        <div className="flex flex-col lg:flex-row gap-8 relative z-10">
+                        <div className="flex flex-col lg:flex-row gap-4 relative z-10">
                             {/* User Info & Rating */}
                             <div className="lg:w-64 shrink-0 space-y-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xl">
+                                    <div className="h-12 w-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black ds-h2">
                                         {r.user[0]}
                                     </div>
                                     <div>

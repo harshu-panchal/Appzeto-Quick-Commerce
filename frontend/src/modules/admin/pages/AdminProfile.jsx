@@ -102,17 +102,17 @@ const AdminProfile = () => {
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+        <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
             {/* Header Section */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-1">
                 <div>
-                    <h1 className="admin-h1 flex items-center gap-3">
+                    <h1 className="ds-h1 flex items-center gap-3">
                         My Profile
                         <div className="p-2 bg-indigo-100 rounded-xl">
                             <User className="h-5 w-5 text-indigo-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">Manage your account settings and security preferences.</p>
+                    <p className="ds-description mt-1">Manage your account settings and security preferences.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -125,10 +125,10 @@ const AdminProfile = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 {/* Sidebar / User Card */}
                 <div className="lg:col-span-4 space-y-6">
-                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden">
+                    <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
                         <div className="p-8 flex flex-col items-center text-center">
                             <div className="relative group cursor-pointer">
                                 <div className="h-32 w-32 rounded-full ring-4 ring-slate-50 bg-slate-100 flex items-center justify-center overflow-hidden">
@@ -141,7 +141,7 @@ const AdminProfile = () => {
                                     <Camera className="h-8 w-8 text-white" />
                                 </div>
                             </div>
-                            <h2 className="mt-6 text-xl font-black text-slate-900">{profile.name}</h2>
+                            <h2 className="mt-6 ds-h2 font-black text-slate-900">{profile.name}</h2>
                             <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200">
                                 <Shield className="h-3 w-3" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">{profile.role}</span>
@@ -181,7 +181,7 @@ const AdminProfile = () => {
 
                     {/* Profile Information Tab */}
                     {activeTab === 'profile' && (
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30 flex items-center justify-between">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     Edit Profile
@@ -219,7 +219,7 @@ const AdminProfile = () => {
                                         type="submit"
                                         disabled={isSaving}
                                         className={cn(
-                                            "flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
+                                            "flex items-center gap-2 px-4 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
                                             isSaving ? "opacity-70 cursor-wait" : "hover:bg-indigo-700"
                                         )}
                                     >
@@ -232,7 +232,7 @@ const AdminProfile = () => {
 
                     {/* Security Tab */}
                     {activeTab === 'security' && (
-                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500">
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-500">
                             <div className="p-6 border-b border-slate-50 bg-slate-50/30">
                                 <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-3">
                                     Change Password
@@ -286,7 +286,7 @@ const AdminProfile = () => {
                                         type="submit"
                                         disabled={isSaving}
                                         className={cn(
-                                            "flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
+                                            "flex items-center gap-2 px-4 py-4 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
                                             isSaving ? "opacity-70 cursor-wait" : "hover:bg-indigo-700"
                                         )}
                                     >
