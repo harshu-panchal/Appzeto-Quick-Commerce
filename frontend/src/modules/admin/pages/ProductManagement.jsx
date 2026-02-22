@@ -298,8 +298,9 @@ const ProductManagement = () => {
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
                                 <th className="admin-table-header px-6">Product</th>
-                                <th className="admin-table-header px-6">Header</th>
+                                <th className="admin-table-header px-6">Seller</th>
                                 <th className="admin-table-header px-6">Category</th>
+                                <th className="admin-table-header px-6">Sub-Category</th>
                                 <th className="admin-table-header px-6 text-center">Price</th>
                                 <th className="admin-table-header px-6 text-center">Stock</th>
                                 <th className="admin-table-header px-6 text-center">Status</th>
@@ -309,7 +310,7 @@ const ProductManagement = () => {
                         <tbody className="divide-y divide-slate-50">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan="7" className="px-6 py-20 text-center">
+                                    <td colSpan="8" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <HiOutlineArrowPath className="h-8 w-8 text-primary animate-spin" />
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading Products...</p>
@@ -318,19 +319,25 @@ const ProductManagement = () => {
                                 </tr>
                             ) : products.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="px-6 py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No products found</td>
+                                    <td colSpan="8" className="px-6 py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No products found</td>
                                 </tr>
                             ) : products.map((p) => (
                                 <tr key={p._id} className="hover:bg-slate-50/30 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 ring-1 ring-slate-200">
-                                                <img src={p.images?.[0]} alt={p.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                <img src={p.mainImage || p.images?.[0]} alt={p.name} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                             </div>
                                             <div>
                                                 <p className="text-xs font-bold text-slate-900">{p.name}</p>
                                                 <p className="text-[9px] font-semibold text-slate-400">{p.unit}</p>
                                             </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{p.sellerId?.shopName || 'Admin'}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

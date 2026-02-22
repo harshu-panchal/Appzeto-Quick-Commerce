@@ -27,6 +27,8 @@ import Modal from "@shared/components/ui/Modal";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { sellerApi } from "../services/sellerApi";
+import { toast } from "sonner";
 
 import { MagicCard } from "@/components/ui/magic-card";
 import { BlurFade } from "@/components/ui/blur-fade";
@@ -35,73 +37,41 @@ import ShimmerButton from "@/components/ui/shimmer-button";
 const ProductManagement = () => {
   const navigate = useNavigate();
 
-  // Mock Data
-  const [products, setProducts] = useState([
-    {
-      id: "p1",
-      name: "Fresh Alphonso Mangoes",
-      slug: "fresh-alphonso-mangoes",
-      sku: "FRT-MAN-001",
-      price: 799,
-      salePrice: 599,
-      stock: 45,
-      category: "Fruits & Vegetables",
-      header: "Grocery",
-      status: "active",
-      image:
-        "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&q=80&w=200",
-      sales: 124,
-      rating: 4.8,
-    },
-    {
-      id: "p2",
-      name: "Amul Taaza Milk 1L",
-      slug: "amul-taaza-milk-1l",
-      sku: "DRY-MLK-002",
-      price: 66,
-      salePrice: 64,
-      stock: 12,
-      category: "Milk",
-      header: "Grocery",
-      status: "active",
-      image:
-        "https://images.unsplash.com/photo-1563636619-e910ef4a8b9b?auto=format&fit=crop&q=80&w=200",
-      sales: 890,
-      rating: 4.9,
-    },
-    {
-      id: "p3",
-      name: "Samsung Galaxy S24 Ultra",
-      slug: "samsung-galaxy-s24-ultra",
-      sku: "ELE-MOB-001",
-      price: 129000,
-      salePrice: 119000,
-      stock: 5,
-      category: "Smartphone",
-      header: "Electronics",
-      status: "active",
-      image:
-        "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=200",
-      sales: 45,
-      rating: 4.7,
-    },
-    {
-      id: "p4",
-      name: "Organic Whole Wheat Bread",
-      slug: "organic-whole-wheat-bread",
-      sku: "BRD-WHT-001",
-      price: 45,
-      salePrice: 40,
-      stock: 0,
-      category: "Bread & Pav",
-      header: "Grocery",
-      status: "inactive",
-      image:
-        "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=200",
-      sales: 320,
-      rating: 4.5,
-    },
-  ]);
+  const [products, setProducts] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const res = await sellerApi.getProducts();
+      if (res.data.success) {
+        setProducts(res.data.results || res.data.result || []);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch products");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await sellerApi.getCategoryTree();
+      if (res.data.success) {
+        setDbCategories(res.data.results || res.data.result || []);
+      }
+    } catch (error) {
+      // fail silently
+    }
+  };
+
+  React.useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  const categories = dbCategories;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -123,6 +93,7 @@ const ProductManagement = () => {
     lowStockAlert: 5,
     category: "",
     header: "",
+    subcategory: "",
     status: "active",
     tags: "",
     weight: "",
@@ -130,35 +101,19 @@ const ProductManagement = () => {
     mainImage: null,
     galleryImages: [],
     variants: [
-      { id: 1, name: "Default", price: "", salePrice: "", stock: "", sku: "" },
+      { id: Date.now(), name: "Default", price: "", salePrice: "", stock: "", sku: "" },
     ],
   });
-
-  const categories = useMemo(
-    () => [
-      {
-        id: "h1",
-        name: "Grocery",
-        children: ["Fruits & Vegetables", "Milk", "Bread & Pav"],
-      },
-      {
-        id: "h2",
-        name: "Electronics",
-        children: ["Smartphone", "Laptops", "Wearables"],
-      },
-    ],
-    [],
-  );
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.sku.toLowerCase().includes(searchTerm.toLowerCase());
+        (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesCategory =
         filterCategory === "all" ||
-        p.category === filterCategory ||
-        p.header === filterCategory;
+        (p.categoryId?._id || p.categoryId) === filterCategory ||
+        (p.headerId?._id || p.headerId) === filterCategory;
 
       let matchesStatus = filterStatus === "All";
       if (filterStatus === "Active") matchesStatus = p.status === "active";
@@ -180,24 +135,70 @@ const ProductManagement = () => {
     [products],
   );
 
-  const handleSave = () => {
-    if (editingItem) {
-      setProducts(
-        products.map((p) =>
-          p.id === editingItem.id ? { ...p, ...formData } : p,
-        ),
-      );
-    } else {
-      const newProduct = {
-        ...formData,
-        id: Date.now().toString(),
-        image:
-          "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?auto=format&fit=crop&q=80&w=200",
-      };
-      setProducts([newProduct, ...products]);
+  const handleSave = async () => {
+    try {
+      if (!formData.name || !formData.price || !formData.stock || !formData.header || !formData.category || !formData.subcategory) {
+        toast.error("Please fill all required fields, including categories");
+        return;
+      }
+
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("slug", formData.slug);
+      data.append("sku", formData.sku);
+      data.append("description", formData.description);
+      data.append("price", Number(formData.price));
+      data.append("salePrice", Number(formData.salePrice) || 0);
+      data.append("stock", Number(formData.stock));
+      data.append("headerId", formData.header);
+      data.append("categoryId", formData.category);
+      data.append("subcategoryId", formData.subcategory);
+      data.append("status", formData.status);
+      data.append("brand", formData.brand);
+      data.append("weight", formData.weight);
+      data.append("tags", formData.tags);
+      data.append("variants", JSON.stringify(formData.variants));
+
+      if (formData.mainImageFile) {
+        data.append("mainImage", formData.mainImageFile);
+      }
+      if (formData.galleryFiles && formData.galleryFiles.length > 0) {
+        formData.galleryFiles.forEach((file) => data.append("galleryImages", file));
+      }
+
+      if (editingItem) {
+        await sellerApi.updateProduct(editingItem._id || editingItem.id, data);
+        toast.success("Product updated successfully");
+      } else {
+        await sellerApi.createProduct(data);
+        toast.success("Product created successfully");
+      }
+
+      setIsProductModalOpen(false);
+      setEditingItem(null);
+      fetchProducts();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to save product");
     }
-    setIsProductModalOpen(false);
-    setEditingItem(null);
+  };
+
+  const handleImageUpload = (e, type) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === "main") {
+          setFormData({ ...formData, mainImage: reader.result, mainImageFile: file });
+        } else {
+          setFormData({
+            ...formData,
+            galleryImages: [...formData.galleryImages, reader.result],
+            galleryFiles: [...(formData.galleryFiles || []), file]
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const exportProducts = () => {
@@ -210,10 +211,16 @@ const ProductManagement = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    setProducts(products.filter((p) => p.id !== itemToDelete.id));
-    setIsDeleteModalOpen(false);
-    setItemToDelete(null);
+  const confirmDelete = async () => {
+    try {
+      await sellerApi.deleteProduct(itemToDelete._id || itemToDelete.id);
+      toast.success("Product deleted successfully");
+      setIsDeleteModalOpen(false);
+      setItemToDelete(null);
+      fetchProducts();
+    } catch (error) {
+      toast.error("Failed to delete product");
+    }
   };
 
   const openEditModal = (item = null) => {
@@ -227,15 +234,16 @@ const ProductManagement = () => {
         salePrice: item.salePrice || "",
         stock: item.stock || "",
         lowStockAlert: item.lowStockAlert || 5,
-        category: item.category || "",
-        header: item.header || "",
+        header: item.headerId?._id || item.headerId || "",
+        category: item.categoryId?._id || item.categoryId || "",
+        subcategory: item.subcategoryId?._id || item.subcategoryId || "",
         status: item.status || "active",
-        tags: item.tags || "",
+        tags: Array.isArray(item.tags) ? item.tags.join(", ") : item.tags || "",
         weight: item.weight || "",
         brand: item.brand || "",
-        mainImage: item.image || item.mainImage || null,
+        mainImage: item.mainImage || null,
         galleryImages: item.galleryImages || [],
-        variants: item.variants || [
+        variants: (item.variants && item.variants.length > 0) ? item.variants.map(v => ({ ...v, id: v._id || Date.now() })) : [
           {
             id: Date.now(),
             name: "Default",
@@ -411,10 +419,10 @@ const ProductManagement = () => {
                 className="flex-1 lg:flex-none px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:ring-2 focus:ring-primary/5 outline-none appearance-none cursor-pointer">
                 <option value="all">All Categories</option>
                 {categories.map((h) => (
-                  <optgroup key={h.id} label={h.name}>
-                    {h.children.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
+                  <optgroup key={h._id || h.id} label={h.name}>
+                    {(h.children || []).map((c) => (
+                      <option key={c._id || c.id} value={c._id || c.id}>
+                        {c.name}
                       </option>
                     ))}
                   </optgroup>
@@ -443,6 +451,9 @@ const ProductManagement = () => {
                     Header
                   </th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
+                    Seller
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
                     Category
                   </th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
@@ -465,13 +476,13 @@ const ProductManagement = () => {
               <tbody className="divide-y divide-slate-50">
                 {filteredProducts.map((p) => (
                   <tr
-                    key={p.id}
+                    key={p._id || p.id}
                     className="hover:bg-slate-50/30 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 ring-1 ring-slate-200">
                           <img
-                            src={p.image}
+                            src={p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2"}
                             alt={p.name}
                             className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />
@@ -481,19 +492,29 @@ const ProductManagement = () => {
                             {p.name}
                           </p>
                           <p className="text-[9px] font-semibold text-slate-400">
-                            Product Code: {p.sku}
+                            Product Code: {p.sku || "N/A"}
                           </p>
                         </div>
                       </div>
                     </td>
+                    <td className="px-6 py-4 text-left">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full w-fit">
+                          {p.headerId?.name || "N/A"}
+                        </span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full">
-                        {p.header || "Grocery"}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight">
+                          {p.sellerId?.shopName || "Self"}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-[10px] font-bold text-slate-600">
-                        {p.category}
+                        {p.categoryId?.name || "N/A"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -819,14 +840,136 @@ const ProductManagement = () => {
                     </div>
                   )}
                   {/* Additional tabs populated as needed */}
-                  {modalTab === "variants" && (
-                    <div className="text-center text-slate-400 text-xs py-10 italic">
-                      Variants management interface (Admin Style)
+                  {modalTab === "category" && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-1.5 flex flex-col">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                            Main Group <span className="text-rose-500">*</span>
+                          </label>
+                          <select
+                            value={formData.header}
+                            onChange={(e) =>
+                              setFormData({ ...formData, header: e.target.value, category: "", subcategory: "" })
+                            }
+                            className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer">
+                            <option value="">Select Main Group</option>
+                            {categories.map((h) => (
+                              <option key={h._id || h.id} value={h._id || h.id}>
+                                {h.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-1.5 flex flex-col">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                            Specific Category <span className="text-rose-500">*</span>
+                          </label>
+                          <select
+                            value={formData.category}
+                            onChange={(e) =>
+                              setFormData({ ...formData, category: e.target.value, subcategory: "" })
+                            }
+                            disabled={!formData.header}
+                            className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer disabled:opacity-50">
+                            <option value="">Select Category</option>
+                            {categories
+                              .find((h) => (h._id || h.id) === formData.header)
+                              ?.children?.map((c) => (
+                                <option key={c._id || c.id} value={c._id || c.id}>
+                                  {c.name}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5 flex flex-col">
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                          Sub-Category <span className="text-rose-500">*</span>
+                        </label>
+                        <select
+                          value={formData.subcategory}
+                          onChange={(e) =>
+                            setFormData({ ...formData, subcategory: e.target.value })
+                          }
+                          disabled={!formData.category}
+                          className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer disabled:opacity-50">
+                          <option value="">Select Sub-Category</option>
+                          {categories
+                            .find((h) => (h._id || h.id) === formData.header)
+                            ?.children?.find((c) => (c._id || c.id) === formData.category)
+                            ?.children?.map((sc) => (
+                              <option key={sc._id || sc.id} value={sc._id || sc.id}>
+                                {sc.name}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
                     </div>
                   )}
+
                   {modalTab === "media" && (
-                    <div className="text-center text-slate-400 text-xs py-10 italic">
-                      Media management (Admin Style)
+                    <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                          Main Cover Photo
+                        </label>
+                        <div className="flex flex-col md:flex-row items-start gap-6">
+                          <div className="w-48 aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center group hover:border-primary hover:bg-primary/5 transition-all cursor-pointer overflow-hidden relative">
+                            <input
+                              type="file"
+                              className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                              onChange={(e) => handleImageUpload(e, "main")}
+                            />
+                            {formData.mainImage ? (
+                              <img src={formData.mainImage} alt="Main Preview" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="flex flex-col items-center">
+                                <HiOutlinePhoto className="h-10 w-10 text-slate-200" />
+                                <p className="text-[10px] text-slate-400 font-bold mt-2">UPLOAD</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {modalTab === "variants" && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-bold">Product Variants</h4>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, variants: [...formData.variants, { id: Date.now(), name: "", price: "", salePrice: "", stock: "", sku: "" }] })}
+                          className="bg-primary/10 text-primary px-3 py-1 rounded-lg text-[10px] font-bold">+ ADD</button>
+                      </div>
+                      <div className="space-y-3">
+                        {formData.variants.map((v, i) => (
+                          <div key={v.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                            <input value={v.name} onChange={e => {
+                              const news = [...formData.variants];
+                              news[i].name = e.target.value;
+                              setFormData({ ...formData, variants: news });
+                            }} placeholder="Name" className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
+                            <input type="number" value={v.price} onChange={e => {
+                              const news = [...formData.variants];
+                              news[i].price = e.target.value;
+                              setFormData({ ...formData, variants: news });
+                            }} placeholder="Price" className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
+                            <input type="number" value={v.stock} onChange={e => {
+                              const news = [...formData.variants];
+                              news[i].stock = e.target.value;
+                              setFormData({ ...formData, variants: news });
+                            }} placeholder="Stock" className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
+                            <div className="flex justify-end">
+                              <button type="button" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, idx) => idx !== i) })} className="text-rose-500 p-2 hover:bg-rose-50 rounded-lg">
+                                <HiOutlineTrash className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -888,7 +1031,7 @@ const ProductManagement = () => {
           </div>
         </div>
       </Modal>
-    </div>
+    </div >
   );
 };
 

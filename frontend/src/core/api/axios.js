@@ -12,16 +12,32 @@ axiosInstance.interceptors.request.use(
     (config) => {
         let token = null;
         const url = config.url;
+        const pagePath = window.location.pathname;
 
-        // 1. Try role-specific token first based on URL
-        if (url.startsWith('/seller')) {
+        // Determination strategy: 
+        // 1. If we are on a module-specific page (e.g. /seller/dashboard), prioritize that module's token
+        // This is crucial for shared APIs like /products or /admin/categories
+        if (pagePath.startsWith('/seller')) {
             token = localStorage.getItem('auth_seller');
-        } else if (url.startsWith('/admin')) {
+        } else if (pagePath.startsWith('/admin')) {
             token = localStorage.getItem('auth_admin');
-        } else if (url.startsWith('/delivery')) {
+        } else if (pagePath.startsWith('/delivery')) {
             token = localStorage.getItem('auth_delivery');
-        } else if (url.startsWith('/customer')) {
+        } else if (pagePath.startsWith('/customer')) {
             token = localStorage.getItem('auth_customer');
+        }
+
+        // 2. Fallback to URL-based detection if no page-based token found (for background tasks or mixed usage)
+        if (!token) {
+            if (url.startsWith('/seller')) token = localStorage.getItem('auth_seller');
+            else if (url.startsWith('/admin')) token = localStorage.getItem('auth_admin');
+            else if (url.startsWith('/delivery')) token = localStorage.getItem('auth_delivery');
+            else if (url.startsWith('/customer')) token = localStorage.getItem('auth_customer');
+        }
+
+        // 3. Last fallback: Check common 'token' key if implemented
+        if (!token) {
+            token = localStorage.getItem('token');
         }
 
         if (token) {
@@ -42,21 +58,19 @@ axiosInstance.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            // Map URL to storage key for targeted logout
-            const url = originalRequest.url;
-            let storageKeys = []; // Array of keys to clear
+            // Determine which token was used or which module we are in
+            const pagePath = window.location.pathname;
+            let storageKey = null;
 
-            if (url.startsWith('/seller')) storageKeys.push('auth_seller');
-            else if (url.startsWith('/admin')) storageKeys.push('auth_admin');
-            else if (url.startsWith('/delivery')) storageKeys.push('auth_delivery');
-            else if (url.startsWith('/customer')) storageKeys.push('auth_customer');
-            else {
-                // For shared routes, try to clear whatever exists
-                storageKeys.push('auth_customer', 'auth_seller', 'auth_admin', 'auth_delivery');
+            if (pagePath.startsWith('/seller')) storageKey = 'auth_seller';
+            else if (pagePath.startsWith('/admin')) storageKey = 'auth_admin';
+            else if (pagePath.startsWith('/delivery')) storageKey = 'auth_delivery';
+            else if (pagePath.startsWith('/customer')) storageKey = 'auth_customer';
+
+            if (storageKey) {
+                localStorage.removeItem(storageKey);
+                window.location.reload();
             }
-
-            storageKeys.forEach(key => localStorage.removeItem(key));
-            window.location.reload(); // Refresh to update auth state
         }
         return Promise.reject(error);
     }

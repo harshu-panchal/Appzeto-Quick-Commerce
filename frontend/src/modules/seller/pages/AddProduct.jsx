@@ -18,6 +18,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { sellerApi } from "../services/sellerApi";
 
 
 const AddProduct = () => {
@@ -55,55 +56,28 @@ const AddProduct = () => {
     ],
   });
 
-  const categories = useMemo(
-    () => [
-      {
-        id: "h1",
-        name: "Grocery",
-        children: [
-          {
-            id: "c1",
-            name: "Fruits & Vegetables",
-            subcategories: ["Fresh Fruits", "Fresh Vegetables", "Organic"],
-          },
-          {
-            id: "c2",
-            name: "Milk",
-            subcategories: ["Full Cream", "Toned", "Skimmed"],
-          },
-          {
-            id: "c3",
-            name: "Bread & Pav",
-            subcategories: ["White Bread", "Brown Bread", "Pav"],
-          },
-        ],
-      },
-      {
-        id: "h2",
-        name: "Electronics",
-        children: [
-          {
-            id: "c4",
-            name: "Smartphone",
-            subcategories: ["Android", "iOS", "Feature Phones"],
-          },
-          {
-            id: "c5",
-            name: "Laptops",
-            subcategories: ["Gaming", "Business", "Ultrabooks"],
-          },
-          {
-            id: "c6",
-            name: "Wearables",
-            subcategories: ["Smart Watches", "Fitness Bands", "Earbuds"],
-          },
-        ],
-      },
-    ],
-    [],
-  );
+  const [dbCategories, setDbCategories] = useState([]);
+  const [isLoadingCats, setIsLoadingCats] = useState(true);
 
-  const handleSave = () => {
+  React.useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const res = await sellerApi.getCategoryTree();
+        if (res.data.success) {
+          setDbCategories(res.data.results || res.data.result || []);
+        }
+      } catch (error) {
+        toast.error("Failed to load categories");
+      } finally {
+        setIsLoadingCats(false);
+      }
+    };
+    fetchCats();
+  }, []);
+
+  const categories = dbCategories;
+
+  const handleSave = async () => {
     // Validate required fields
     if (!formData.name) {
       toast.error("Please fill in the Product Title");
@@ -116,23 +90,60 @@ const AddProduct = () => {
       return;
     }
 
-    // Validate at least one variant exists with price and stock
-    const hasValidVariant = formData.variants.some(
-      (v) => v.name && v.price && v.stock
-    );
-    if (!hasValidVariant) {
-      toast.error("Please add at least one variant with name, price, and stock");
+    const firstVariant = formData.variants[0] || {};
+    if (!firstVariant.price || !firstVariant.stock) {
+      toast.error("Main variant must have price and stock");
       return;
     }
 
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const data = new FormData();
+
+      // Basic fields
+      data.append("name", formData.name);
+      data.append("slug", formData.slug);
+      data.append("sku", formData.sku);
+      data.append("description", formData.description);
+      data.append("brand", formData.brand);
+      data.append("weight", formData.weight);
+      data.append("status", formData.status);
+
+      // Map top-level price/stock from first variant for indexing/listing
+      data.append("price", firstVariant.price);
+      data.append("salePrice", firstVariant.salePrice || 0);
+      data.append("stock", firstVariant.stock);
+
+      // Category IDs
+      data.append("headerId", formData.header);
+      data.append("categoryId", formData.category);
+      data.append("subcategoryId", formData.subcategory);
+
+      // Tags
+      data.append("tags", formData.tags);
+
+      // Images
+      if (formData.mainImageFile) {
+        data.append("mainImage", formData.mainImageFile);
+      }
+
+      if (formData.galleryFiles && formData.galleryFiles.length > 0) {
+        formData.galleryFiles.forEach(file => {
+          data.append("galleryImages", file);
+        });
+      }
+
+      // Variants
+      data.append("variants", JSON.stringify(formData.variants));
+
+      await sellerApi.createProduct(data);
       toast.success("Product saved successfully!");
-      console.log("Saving Product:", formData);
       navigate("/seller/products");
-    }, 1500);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to save product");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleImageUpload = (e, type) => {
@@ -141,11 +152,16 @@ const AddProduct = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (type === "main") {
-          setFormData({ ...formData, mainImage: reader.result });
+          setFormData({
+            ...formData,
+            mainImage: reader.result,
+            mainImageFile: file
+          });
         } else {
           setFormData({
             ...formData,
             galleryImages: [...formData.galleryImages, reader.result],
+            galleryFiles: [...(formData.galleryFiles || []), file]
           });
         }
       };
@@ -439,7 +455,7 @@ const AddProduct = () => {
                     className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all">
                     <option value="">Select Main Group</option>
                     {categories.map((h) => (
-                      <option key={h.id} value={h.name}>
+                      <option key={h._id || h.id} value={h._id || h.id}>
                         {h.name}
                       </option>
                     ))}
@@ -458,9 +474,9 @@ const AddProduct = () => {
                     className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="">Select Category</option>
                     {categories
-                      .find((h) => h.name === formData.header)
+                      .find((h) => (h._id || h.id) === formData.header)
                       ?.children?.map((c) => (
-                        <option key={c.id} value={c.name}>
+                        <option key={c._id || c.id} value={c._id || c.id}>
                           {c.name}
                         </option>
                       ))}
@@ -481,11 +497,11 @@ const AddProduct = () => {
                     className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none cursor-pointer focus:ring-2 focus:ring-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     <option value="">Select Sub-Category</option>
                     {categories
-                      .find((h) => h.name === formData.header)
-                      ?.children?.find((c) => c.name === formData.category)
-                      ?.subcategories?.map((sc, index) => (
-                        <option key={index} value={sc}>
-                          {sc}
+                      .find((h) => (h._id || h.id) === formData.header)
+                      ?.children?.find((c) => (c._id || c.id) === formData.category)
+                      ?.children?.map((sc) => (
+                        <option key={sc._id || sc.id} value={sc._id || sc.id}>
+                          {sc.name}
                         </option>
                       ))}
                   </select>
