@@ -6,66 +6,60 @@ import LiveTrackingMap from '../components/order/LiveTrackingMap';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import {
     ChevronLeft, Package, Truck, CheckCircle, Clock, MapPin,
-    CreditCard, Download, HelpCircle, Phone, ArrowRight, User
+    CreditCard, Download, HelpCircle, Phone, ArrowRight, User, Loader2
 } from 'lucide-react';
+import { customerApi } from '../services/customerApi';
 
 const OrderDetailPage = () => {
     const { orderId } = useParams();
     const [showInvoice, setShowInvoice] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     // Scroll to top on load
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    // Mock Order Data - Ideally this would be fetched based on orderId
-    // In a real app, you would use useQuery or similar to fetch order details
-    // Mock Order Data Lookup
-    const mockOrders = {
-        'ORD-2024-001': {
-            id: 'ORD-2024-001',
-            date: 'Oct 24, 2024 at 10:30 AM',
-            status: 'Delivered',
-            total: 450,
-            items: [
-                { id: 1, name: 'Fresh Red Apple', qty: '1 kg', price: 120, image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200' },
-                { id: 2, name: 'Amul Gold Milk', qty: '500 ml', price: 32, image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=200' },
-                { id: 3, name: 'Whole Wheat Bread', qty: '1 pack', price: 45, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=200' },
-            ],
-            bill: { itemTotal: 197, delivery: 0, tax: 15, grandTotal: 212 },
-            address: { name: 'John Doe', type: 'Home', text: 'Flat 402, Sunshine Apartments, Sector 12, Dwarka, New Delhi - 110075', phone: '+91 98765 43210' },
-            payment: { method: 'UPI (Google Pay)', status: 'Paid', txnId: 'UPI-1234567890' },
-            timeline: [
-                { status: 'Order Placed', date: '6:30 PM', completed: true },
-                { status: 'Packed', date: '6:45 PM', completed: true },
-                { status: 'Out for Delivery', date: '7:00 PM', completed: true },
-                { status: 'Delivered', date: '7:15 PM', completed: true },
-            ]
-        },
-        'ORD-2024-002': {
-            id: 'ORD-2024-002',
-            date: 'Yesterday, 8:15 PM',
-            status: 'Out for Delivery',
-            total: 1250,
-            items: [
-                { id: 1, name: 'Vegetables Pack', qty: '1 kg', price: 450, image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=200' },
-                { id: 2, name: 'Rice 5kg', qty: '1 bag', price: 600, image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=200' },
-                { id: 3, name: 'Cooking Oil', qty: '1 liter', price: 200, image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=200' },
-            ],
-            bill: { itemTotal: 1250, delivery: 0, tax: 50, grandTotal: 1300 },
-            address: { name: 'John Doe', type: 'Work', text: 'Office No. 5, Technohub, Cyber City, Gurugram - 122002', phone: '+91 98765 43210' },
-            payment: { method: 'Credit Card', status: 'Paid', txnId: 'CC-9876543210' },
-            timeline: [
-                { status: 'Order Placed', date: 'Yesterday, 8:15 PM', completed: true },
-                { status: 'Packed', date: 'Yesterday, 8:30 PM', completed: true },
-                { status: 'Out for Delivery', date: 'Today, 8:00 AM', completed: true },
-                { status: 'Delivered', date: 'Expected by 10:00 AM', completed: false },
-            ]
-        }
-    };
+    useEffect(() => {
+        const fetchOrderDetails = async () => {
+            try {
+                const response = await customerApi.getOrderDetails(orderId);
+                setOrder(response.data.result);
+            } catch (error) {
+                console.error("Failed to fetch order details:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const order = mockOrders[orderId] || mockOrders['ORD-2024-001'];
+        if (orderId) {
+            fetchOrderDetails();
+        }
+    }, [orderId]);
+
+    if (loading) {
+        return (
+            <CustomerLayout showHeader={false}>
+                <div className="min-h-screen flex items-center justify-center">
+                    <Loader2 className="animate-spin text-green-600" size={32} />
+                </div>
+            </CustomerLayout>
+        );
+    }
+
+    if (!order) {
+        return (
+            <CustomerLayout showHeader={false}>
+                <div className="min-h-screen flex flex-col items-center justify-center">
+                    <Package size={64} className="text-gray-300 mb-4" />
+                    <h3 className="text-lg font-bold text-gray-800">Order not found</h3>
+                    <Link to="/orders" className="text-green-600 font-bold mt-4">Back to my orders</Link>
+                </div>
+            </CustomerLayout>
+        );
+    }
 
     return (
         <CustomerLayout showHeader={false}>
@@ -77,7 +71,7 @@ const OrderDetailPage = () => {
                     </Link>
                     <div>
                         <h1 className="text-lg font-black text-slate-800">Order Details</h1>
-                        <p className="text-xs text-slate-500 font-medium">#{order.id}</p>
+                        <p className="text-xs text-slate-500 font-medium">#{order.orderId}</p>
                     </div>
                 </div>
 
@@ -87,7 +81,7 @@ const OrderDetailPage = () => {
                     <div className="rounded-3xl overflow-hidden shadow-sm border border-slate-100">
                         <LiveTrackingMap
                             status={order.status}
-                            eta={order.status === 'Delivered' ? 'Arrived' : '8 mins'}
+                            eta={order.status === 'delivered' ? 'Arrived' : '8 mins'}
                             riderName="Ramesh Kumar"
                         />
                     </div>
@@ -99,17 +93,17 @@ const OrderDetailPage = () => {
                             Items in this Order
                         </h3>
                         <div className="divide-y divide-slate-50">
-                            {order.items.map((item) => (
-                                <div key={item.id} className="py-4 flex items-center gap-4 first:pt-0 last:pb-0 hover:bg-slate-50/50 rounded-xl transition-colors px-2 -mx-2">
+                            {order.items.map((item, idx) => (
+                                <div key={idx} className="py-4 flex items-center gap-4 first:pt-0 last:pb-0 hover:bg-slate-50/50 rounded-xl transition-colors px-2 -mx-2">
                                     <div className="h-16 w-16 bg-slate-50 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
                                         <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h4>
-                                        <p className="text-slate-500 text-xs font-medium">{item.qty} quantity</p>
+                                        <p className="text-slate-500 text-xs font-medium">{item.quantity} quantity</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-black text-slate-800">₹{item.price}</p>
+                                        <p className="font-black text-slate-800">₹{item.price * item.quantity}</p>
                                     </div>
                                 </div>
                             ))}
@@ -122,19 +116,27 @@ const OrderDetailPage = () => {
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between text-slate-500 font-medium px-2">
                                 <span>Item Total</span>
-                                <span>₹{order.bill.itemTotal}</span>
+                                <span>₹{order.pricing.subtotal}</span>
                             </div>
                             <div className="flex justify-between text-slate-500 font-medium px-2">
                                 <span>Delivery Fee</span>
-                                <span className="text-[#0c831f]">FREE</span>
+                                <span className={order.pricing.deliveryFee === 0 ? "text-[#0c831f]" : ""}>
+                                    {order.pricing.deliveryFee === 0 ? "FREE" : `₹${order.pricing.deliveryFee}`}
+                                </span>
                             </div>
                             <div className="flex justify-between text-slate-500 font-medium px-2">
-                                <span>Taxes & Charges</span>
-                                <span>₹{order.bill.tax}</span>
+                                <span>GST</span>
+                                <span>₹{order.pricing.gst}</span>
                             </div>
+                            {order.pricing.tip > 0 && (
+                                <div className="flex justify-between text-slate-500 font-medium px-2">
+                                    <span>Tip</span>
+                                    <span>₹{order.pricing.tip}</span>
+                                </div>
+                            )}
                             <div className="border-t border-slate-100 mt-4 pt-4 flex justify-between items-center px-2">
                                 <span className="text-lg font-black text-slate-800">Grand Total</span>
-                                <span className="text-2xl font-black text-[#0c831f]">₹{order.bill.grandTotal}</span>
+                                <span className="text-2xl font-black text-[#0c831f]">₹{order.pricing.total}</span>
                             </div>
                         </div>
                         <div className="mt-6 bg-green-50 rounded-2xl p-4 flex items-center justify-between border border-green-100 border-dashed">
@@ -144,10 +146,14 @@ const OrderDetailPage = () => {
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-xs font-bold text-[#0c831f] uppercase tracking-wider">Payment Method</span>
-                                    <span className="text-sm font-bold text-slate-800">{order.payment.method}</span>
+                                    <span className="text-sm font-bold text-slate-800 truncate max-w-[150px]">
+                                        {order.payment.method === 'cash' ? 'Cash on Delivery' : order.payment.method}
+                                    </span>
                                 </div>
                             </div>
-                            <span className="text-[10px] bg-white px-2 py-1 rounded-md text-slate-500 font-mono shadow-sm border border-green-100">{order.payment.txnId}</span>
+                            <span className="text-[10px] bg-white px-2 py-1 rounded-md text-slate-500 font-mono shadow-sm border border-green-100">
+                                {order.payment.transactionId || 'N/A'}
+                            </span>
                         </div>
                     </div>
 
@@ -163,7 +169,7 @@ const OrderDetailPage = () => {
                                     <h4 className="font-bold text-slate-800">{order.address.type}</h4>
                                     <span className="bg-slate-100 text-slate-500 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase">{order.address.name}</span>
                                 </div>
-                                <p className="text-sm text-slate-500 leading-relaxed font-medium max-w-xs">{order.address.text}</p>
+                                <p className="text-sm text-slate-500 leading-relaxed font-medium max-w-xs">{order.address.address}, {order.address.city}</p>
                                 <p className="text-sm text-slate-800 font-bold mt-2 flex items-center gap-2">
                                     <Phone size={14} className="text-slate-400" /> {order.address.phone}
                                 </p>

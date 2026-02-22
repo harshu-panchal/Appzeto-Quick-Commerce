@@ -12,12 +12,13 @@ const MiniCart = () => {
     // Show up to 2 product images
     const displayItems = cart.slice(0, 2);
 
-    // Hide MiniCart on checkout page only (cart page removed)
+    // Hide MiniCart on checkout page and order details page
     const isCheckoutPage = location.pathname === '/checkout';
+    const isOrderDetailsPage = location.pathname.startsWith('/orders/');
 
     return (
         <AnimatePresence>
-            {cart.length > 0 && !isCheckoutPage && (
+            {cart.length > 0 && !isCheckoutPage && !isOrderDetailsPage && (
                 <div
                     key="mini-cart-wrapper"
                     id="mini-cart-target"

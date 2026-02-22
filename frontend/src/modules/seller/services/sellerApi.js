@@ -20,7 +20,8 @@ export const sellerApi = {
 
     // Others
     getStats: () => axiosInstance.get('/seller/stats'),
-    getOrders: () => axiosInstance.get('/seller/orders'),
+    getOrders: () => axiosInstance.get('/orders/seller-orders'),
+    updateOrderStatus: (orderId, data) => axiosInstance.put(`/orders/status/${orderId}`, data),
     getEarnings: () => axiosInstance.get('/seller/earnings'),
     getProfile: () => axiosInstance.get('/seller/profile'),
     updateProfile: (data) => axiosInstance.put('/seller/profile', data),

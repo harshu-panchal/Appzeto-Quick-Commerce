@@ -8,7 +8,7 @@ import { slugify } from "../utils/slugify.js";
 ================================ */
 export const getProducts = async (req, res) => {
     try {
-        const { search, category, subcategory, header, status, sellerId, featured } = req.query;
+        const { search, category, subcategory, header, status, sellerId, featured, limit } = req.query;
 
         const query = {};
         if (search) {
@@ -21,12 +21,18 @@ export const getProducts = async (req, res) => {
         if (sellerId) query.sellerId = sellerId;
         if (featured !== undefined) query.isFeatured = featured === 'true';
 
-        const products = await Product.find(query)
+        let productsQuery = Product.find(query)
             .populate('headerId', 'name')
             .populate('categoryId', 'name')
             .populate('subcategoryId', 'name')
             .populate('sellerId', 'shopName')
             .sort({ createdAt: -1 });
+
+        if (limit) {
+            productsQuery = productsQuery.limit(parseInt(limit));
+        }
+
+        const products = await productsQuery;
 
         return handleResponse(res, 200, "Products fetched successfully", products);
     } catch (error) {

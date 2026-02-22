@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Heart, Search, Minus, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,93 +10,74 @@ import { cn } from '@/lib/utils';
 import ProductCard from '../components/shared/ProductCard';
 import ProductDetailSheet from '../components/shared/ProductDetailSheet';
 import { ProductDetailProvider } from '../context/ProductDetailContext';
+import { customerApi } from '../services/customerApi';
 import MiniCart from '../components/shared/MiniCart';
 
-const subCategories = [
-    { id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' },
-    { id: 'veg', name: 'Fresh Vegetables', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321801.png' },
-    { id: 'new', name: 'New Launches', icon: 'https://cdn-icons-png.flaticon.com/128/1147/1147832.png' },
-    { id: 'fruits', name: 'Fresh Fruits', icon: 'https://cdn-icons-png.flaticon.com/128/3194/3194761.png' },
-    { id: 'exotics', name: 'Exotics & Premium', icon: 'https://cdn-icons-png.flaticon.com/128/2909/2909808.png' },
-    { id: 'organic', name: 'Organics & More', icon: 'https://cdn-icons-png.flaticon.com/128/3014/3014498.png' },
-];
-
-const allProducts = [
-    {
-        id: 1,
-        name: 'Apple Ber',
-        weight: '250g',
-        price: 31,
-        originalPrice: 46,
-
-        category: 'fruits',
-        image: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?q=80&w=260&auto=format&fit=crop',
-        deliveryTime: '8 mins'
-    },
-    {
-        id: 2,
-        name: 'Coriander Leaves',
-        weight: '100g',
-        price: 7,
-        originalPrice: 14,
-
-        category: 'veg',
-        image: 'https://images.unsplash.com/photo-1564149504817-d1378368926e?q=80&w=260&auto=format&fit=crop',
-        deliveryTime: '12 mins'
-    },
-    {
-        id: 3,
-        name: 'Tomato Local',
-        weight: '500g',
-        price: 16,
-        originalPrice: 28,
-
-        category: 'veg',
-        image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=260&auto=format&fit=crop',
-        deliveryTime: '10 mins'
-    },
-    {
-        id: 4,
-        name: 'Tender Coconut',
-        weight: '1 pc',
-        price: 58,
-        originalPrice: 102,
-
-        category: 'fruits',
-        image: 'https://images.unsplash.com/photo-1589927986089-35812388d1f4?q=80&w=260&auto=format&fit=crop',
-        deliveryTime: '15 mins'
-    },
-    {
-        id: 5,
-        name: 'Green Chili',
-        weight: '100g',
-        price: 5,
-        originalPrice: 10,
-
-        category: 'veg',
-        image: 'https://images.unsplash.com/photo-1589656966895-2f33e7653819?q=80&w=260&auto=format&fit=crop',
-        deliveryTime: '7 mins'
-    },
-    {
-        id: 6,
-        name: 'Potato New',
-        weight: '1kg',
-        price: 24,
-        originalPrice: 35,
-
-        category: 'veg',
-        image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?q=80&w=260&auto=format&fit=crop',
-        deliveryTime: '9 mins'
-    },
-];
-
 const CategoryProductsPage = () => {
-    const { categoryName } = useParams();
+    const { categoryName: catId } = useParams();
     const navigate = useNavigate();
     const [selectedSubCategory, setSelectedSubCategory] = useState('all');
+    const [category, setCategory] = useState(null);
+    const [subCategories, setSubCategories] = useState([{ id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' }]);
+    const [products, setProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredProducts = allProducts.filter(p =>
-        selectedSubCategory === 'all' || p.category === selectedSubCategory
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            // Fetch products for this category
+            const prodRes = await customerApi.getProducts({ categoryId: catId });
+            if (prodRes.data.success) {
+                const dbProds = prodRes.data.results || prodRes.data.result || [];
+                const formattedProds = dbProds.map(p => ({
+                    ...p,
+                    id: p._id,
+                    image: p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2",
+                    price: p.salePrice || p.price,
+                    originalPrice: p.price,
+                    weight: p.weight || "1 unit",
+                    deliveryTime: "8-15 mins"
+                }));
+                setProducts(formattedProds);
+            }
+
+            // Fetch subcategories
+            const catRes = await customerApi.getCategories({ tree: true });
+            if (catRes.data.success) {
+                const tree = catRes.data.results || catRes.data.result || [];
+                // Find current category in tree
+                let currentCat = null;
+                for (const header of tree) {
+                    const found = (header.children || []).find(c => c._id === catId);
+                    if (found) {
+                        currentCat = found;
+                        break;
+                    }
+                }
+
+                if (currentCat) {
+                    setCategory(currentCat);
+                    const subs = (currentCat.children || []).map(s => ({
+                        id: s._id,
+                        name: s.name,
+                        icon: s.image || 'https://cdn-icons-png.flaticon.com/128/2321/2321801.png'
+                    }));
+                    setSubCategories([{ id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' }, ...subs]);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching category data:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [catId]);
+
+    const filteredProducts = products.filter(p =>
+        selectedSubCategory === 'all' || p.subcategoryId?._id === selectedSubCategory || p.subcategoryId === selectedSubCategory
     );
 
     return (
@@ -109,7 +90,7 @@ const CategoryProductsPage = () => {
                             <ChevronLeft size={24} className="text-gray-900" />
                         </button>
                         <h1 className="text-[18px] font-bold text-gray-800 tracking-tight">
-                            {categoryName === '1' ? 'Fruits & Vegetables' : categoryName}
+                            {category?.name || catId}
                         </h1>
                     </div>
 
@@ -151,10 +132,11 @@ const CategoryProductsPage = () => {
                             {filteredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} compact={true} />
                             ))}
-                            {/* Visual Fill */}
-                            {filteredProducts.map((product) => (
-                                <ProductCard key={product.id + 10} product={{ ...product, id: product.id + 10 }} compact={true} />
-                            ))}
+                            {filteredProducts.length === 0 && !isLoading && (
+                                <div className="col-span-2 py-20 text-center">
+                                    <p className="text-gray-400 font-bold italic">No products found in this category</p>
+                                </div>
+                            )}
                         </div>
                     </main>
                 </div>

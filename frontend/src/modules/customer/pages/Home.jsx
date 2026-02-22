@@ -1,10 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import { Search, Mic, MapPin, ChevronDown, Star, Home as HomeIcon, Heart, Snowflake, Laptop, Sparkles, Clock, Apple, Baby, Dog, Coffee, Gift, Shirt } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { customerApi } from '../services/customerApi';
+import { toast } from 'sonner';
 import ProductCard from '../components/shared/ProductCard';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
+
+const DEFAULT_CATEGORY_THEME = {
+    gradient: "linear-gradient(to bottom, #25D366, #4ADE80)",
+    shadow: "shadow-green-500/20",
+    accent: "text-[#1A1A1A]"
+};
+
+const CATEGORY_METADATA = {
+    'All': { icon: HomeIcon, theme: DEFAULT_CATEGORY_THEME, banner: { title: "HOUSEFULL", subtitle: "SALE", floatingElements: "sparkles" } },
+    'Groceries': { icon: Apple, theme: { gradient: "linear-gradient(to bottom, #FF9F1C, #FFBF69)", shadow: "shadow-orange-500/20", accent: "text-orange-900" }, banner: { title: "SUPERSAVER", subtitle: "FRESH & FAST", floatingElements: "leaves" } },
+    'Wedding': { icon: Heart, theme: { gradient: "linear-gradient(to bottom, #FF4D6D, #FF8FA3)", shadow: "shadow-rose-500/20", accent: "text-rose-900" }, banner: { title: "WEDDING", subtitle: "BLISS", floatingElements: "hearts" } },
+    'Winter': { icon: Snowflake, theme: { gradient: "linear-gradient(to bottom, #00B4D8, #90E0EF)", shadow: "shadow-cyan-500/20", accent: "text-cyan-900" }, banner: { title: "WINTER", subtitle: "CHILLS", floatingElements: "snow" } },
+    'Electronics': { icon: Laptop, theme: { gradient: "linear-gradient(to bottom, #7209B7, #B5179E)", shadow: "shadow-purple-500/20", accent: "text-purple-900" }, banner: { title: "TECH FEST", subtitle: "GADGETS", floatingElements: "tech" } },
+    'Beauty': { icon: Sparkles, theme: { gradient: "linear-gradient(to bottom, #F72585, #FF70A6)", shadow: "shadow-pink-500/20", accent: "text-pink-900" }, banner: { title: "GLOW UP", subtitle: "BEAUTY", floatingElements: "stars" } },
+    'Baby Care': { icon: Baby, theme: { gradient: "linear-gradient(to bottom, #4CC9F0, #A0E7E5)", shadow: "shadow-blue-500/20", accent: "text-blue-900" }, banner: { title: "LITTLE ONE", subtitle: "CARE", floatingElements: "bubbles" } },
+    'Pet Care': { icon: Dog, theme: { gradient: "linear-gradient(to bottom, #FB8500, #FFB703)", shadow: "shadow-yellow-500/20", accent: "text-yellow-900" }, banner: { title: "PAWSOME", subtitle: "DEALS", floatingElements: "bones" } },
+    'Bakery': { icon: Coffee, theme: { gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)", shadow: "shadow-amber-500/20", accent: "text-amber-900" }, banner: { title: "FRESHLY", subtitle: "BAKED", floatingElements: "smoke" } },
+    'Fashion': { icon: Shirt, theme: { gradient: "linear-gradient(to bottom, #4361EE, #4895EF)", shadow: "shadow-indigo-500/20", accent: "text-indigo-900" }, banner: { title: "STYLE", subtitle: "ICON", floatingElements: "confetti" } },
+    'Gifts': { icon: Gift, theme: { gradient: "linear-gradient(to bottom, #EF233C, #D90429)", shadow: "shadow-red-500/20", accent: "text-red-900" }, banner: { title: "JOY OF", subtitle: "GIVING", floatingElements: "ribbons" } },
+};
+
+const ALL_CATEGORY = {
+    id: 'all',
+    _id: 'all',
+    name: 'All',
+    icon: HomeIcon,
+    theme: DEFAULT_CATEGORY_THEME,
+    banner: {
+        title: "HOUSEFULL",
+        subtitle: "SALE",
+        floatingElements: "sparkles",
+        textColor: "text-white"
+    }
+};
 
 const categories = [
     {
@@ -251,7 +287,81 @@ const bestsellerCategories = [
 const Home = () => {
     const { scrollY } = useScroll();
     const navigate = useNavigate();
-    const [activeCategory, setActiveCategory] = useState(categories[0]);
+
+    const [categories, setCategories] = useState([ALL_CATEGORY]);
+    const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY);
+    const [products, setProducts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const [catRes, prodRes] = await Promise.all([
+                customerApi.getCategories(),
+                customerApi.getProducts({ limit: 20 })
+            ]);
+
+            if (catRes.data.success) {
+                const dbCats = catRes.data.results || catRes.data.result || [];
+                const formattedCats = dbCats
+                    .filter(cat => cat.type === 'header') // Show only header types as requested
+                    .map(cat => {
+                        const meta = CATEGORY_METADATA[cat.name] || {
+                            icon: Sparkles,
+                            theme: DEFAULT_CATEGORY_THEME,
+                            banner: { title: cat.name.toUpperCase(), subtitle: "TOP PICKS", floatingElements: "sparkles" }
+                        };
+                        return {
+                            ...cat,
+                            id: cat._id,
+                            icon: meta.icon,
+                            theme: meta.theme,
+                            banner: { ...meta.banner, textColor: "text-white" }
+                        };
+                    });
+                setCategories([ALL_CATEGORY, ...formattedCats]);
+            }
+
+            if (prodRes.data.success) {
+                const dbProds = prodRes.data.results || prodRes.data.result || [];
+                const formattedProds = dbProds.map(p => ({
+                    ...p,
+                    id: p._id,
+                    image: p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2",
+                    price: p.salePrice || p.price,
+                    originalPrice: p.price,
+                    weight: p.weight || "1 unit",
+                    deliveryTime: "8-15 mins"
+                }));
+                setProducts(formattedProds);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            // toast.error("Failed to load content");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const bestsellerCategories = useMemo(() => {
+        // Group products by category and take top 4 images for each
+        const grouped = {};
+        products.forEach(p => {
+            const catId = p.categoryId?._id || 'other';
+            const catName = p.categoryId?.name || 'Other';
+            if (!grouped[catId]) {
+                grouped[catId] = { id: catId, name: catName, images: [] };
+            }
+            if (grouped[catId].images.length < 4) {
+                grouped[catId].images.push(p.image);
+            }
+        });
+        return Object.values(grouped).slice(0, 6);
+    }, [products]);
 
     // Fade out banner as user scrolls (0 to 100px)
     // Parallax effect for banner - moves slower than scroll
@@ -441,7 +551,7 @@ const Home = () => {
                                 key={cat.id}
                                 whileHover={{ y: -4 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={() => navigate(`/category/${cat.name}`)}
+                                onClick={() => navigate(`/category/${cat.id}`)}
                                 className="flex flex-col group cursor-pointer"
                             >
                                 <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">
@@ -497,16 +607,14 @@ const Home = () => {
                         </div>
 
                         <div className="relative z-10 flex overflow-x-auto gap-4 pb-2 no-scrollbar -mx-5 px-5 snap-x">
-                            {[
-                                { id: 1, name: "Fresh Pineapple", price: 449, originalPrice: 499, weight: "1kg", image: "https://images.unsplash.com/photo-1550258114-b838e9766c9d?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "8 mins", ratings: 5 },
-                                { id: 2, name: "Organic Wild Honey", price: 450, originalPrice: 500, weight: "250g", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 4 },
-                                { id: 3, name: "Handcrafted Chocolate", price: 280, originalPrice: 350, weight: "100g", image: "https://images.unsplash.com/photo-1549007994-cb92caebd54b?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
-                                { id: 4, name: "Fresh Blueberries", price: 190, originalPrice: 200, weight: "125g", image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "10 mins", ratings: 5 },
-                            ].map((product, idx) => (
+                            {products.slice(0, 8).map((product) => (
                                 <div key={product.id} className="w-[135px] flex-shrink-0 snap-start">
                                     <ProductCard product={product} className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors" compact={true} />
                                 </div>
                             ))}
+                            {products.length === 0 && !isLoading && (
+                                <div className="w-full py-10 text-center text-slate-400 font-bold italic">No bestsellers available</div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -518,13 +626,8 @@ const Home = () => {
                         <span className="text-[#0c831f] font-bold text-sm">See all</span>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
-                        {[
-                            { id: 101, name: "Fresh Banana", price: 60, originalPrice: 70, weight: "1 doz", image: "https://images.unsplash.com/photo-1571771894821-ad996211fdf4?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "9 mins", ratings: 4 },
-                            { id: 102, name: "Farm Fresh Eggs", price: 90, originalPrice: 110, weight: "6 pcs", image: "https://images.unsplash.com/photo-1506976785307-8732e854ad03?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "11 mins", ratings: 5 },
-                            { id: 103, name: "Double Toned Milk", price: 55, originalPrice: 60, weight: "1L", image: "https://images.unsplash.com/photo-1563636619-e910019335cd?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "8 mins", ratings: 4 },
-                            { id: 104, name: "Whole Wheat Bread", price: 40, originalPrice: 50, weight: "400g", image: "https://images.unsplash.com/photo-1589367920969-ab8e050bab3e?auto=format&fit=crop&q=80&w=300&h=300", deliveryTime: "12 mins", ratings: 5 },
-                        ].map((product, idx) => (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {products.slice(4, 10).map((product) => (
                             <div key={product.id} className="h-full">
                                 <ProductCard product={product} compact={true} />
                             </div>
