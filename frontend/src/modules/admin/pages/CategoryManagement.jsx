@@ -234,7 +234,8 @@ const CategoryManagement = () => {
                 parentId: item.parentId || ''
             });
             setEditingItem(item);
-            setPreviewUrl(item.image);
+            setPreviewUrl(item.image || null);
+            setImageFile(null);
         } else {
             setFormData({
                 name: '',

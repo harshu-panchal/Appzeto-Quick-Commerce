@@ -11,7 +11,6 @@ import {
     HiOutlineTrash,
     HiOutlinePencilSquare,
     HiOutlinePhoto,
-    HiOutlineCurrencyDollar,
     HiOutlineArchiveBox,
     HiOutlineTag,
     HiOutlineScale,
@@ -47,16 +46,26 @@ const ProductManagement = () => {
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
+        sku: '',
         description: '',
         price: '',
-        discountPrice: '',
+        salePrice: '',
         stock: '',
+        lowStockAlert: 5,
         unit: 'packet',
+        header: '',
         categoryId: '',
         subcategoryId: '',
         status: 'active',
         isFeatured: false,
-        images: []
+        tags: '',
+        weight: '',
+        brand: '',
+        mainImage: null,
+        galleryImages: [],
+        variants: [
+            { id: Date.now(), name: 'Default', price: '', salePrice: '', stock: '', sku: '' }
+        ]
     });
 
     const [imageFiles, setImageFiles] = useState([]);
@@ -64,7 +73,7 @@ const ProductManagement = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await adminApi.getCategories();
+            const response = await adminApi.getCategoryTree();
             if (response.data.success) {
                 setCategories(response.data.results || response.data.result || []);
             }
@@ -108,25 +117,41 @@ const ProductManagement = () => {
             return toast.error('Only product editing is allowed for admins');
         }
 
-        if (!formData.name || !formData.price || !formData.categoryId || !formData.unit) {
-            return toast.error('Please fill required fields');
+        if (!formData.name || !formData.price || !formData.stock || !formData.header || !formData.categoryId || !formData.subcategoryId) {
+            return toast.error('Please fill all required fields, including categories');
         }
 
         setIsSaving(true);
         try {
             const data = new FormData();
-            Object.keys(formData).forEach(key => {
-                if (key !== 'images') {
-                    data.append(key, formData[key]);
-                }
-            });
+            data.append('name', formData.name);
+            data.append('slug', formData.slug);
+            data.append('sku', formData.sku);
+            data.append('description', formData.description);
+            data.append('price', Number(formData.price));
+            data.append('salePrice', Number(formData.salePrice) || 0);
+            data.append('stock', Number(formData.stock));
+            data.append('lowStockAlert', Number(formData.lowStockAlert) || 5);
+            data.append('unit', formData.unit);
+            data.append('headerId', formData.header);
+            data.append('categoryId', formData.categoryId);
+            data.append('subcategoryId', formData.subcategoryId);
+            data.append('status', formData.status);
+            data.append('isFeatured', formData.isFeatured);
+            data.append('brand', formData.brand);
+            data.append('weight', formData.weight);
+            data.append('tags', formData.tags);
+            data.append('variants', JSON.stringify(formData.variants));
 
-            imageFiles.forEach(file => {
-                data.append('images', file);
-            });
+            if (formData.mainImageFile) {
+                data.append('mainImage', formData.mainImageFile);
+            }
+            if (formData.galleryFiles && formData.galleryFiles.length > 0) {
+                formData.galleryFiles.forEach((file) => data.append('galleryImages', file));
+            }
 
             await adminApi.updateProduct(editingItem._id, data);
-            toast.success('Product updated');
+            toast.success('Product updated successfully');
             setIsProductModalOpen(false);
             fetchProducts();
         } catch (error) {
@@ -158,29 +183,70 @@ const ProductManagement = () => {
         setImageFiles([...imageFiles, ...files]);
     };
 
+    const handleImageUpload = (e, type) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (type === 'main') {
+                    setFormData({ ...formData, mainImage: reader.result, mainImageFile: file });
+                } else {
+                    setFormData({
+                        ...formData,
+                        galleryImages: [...formData.galleryImages, reader.result],
+                        galleryFiles: [...(formData.galleryFiles || []), file]
+                    });
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const openModal = (item = null) => {
         if (item) {
             setFormData({
                 name: item.name || '',
                 slug: item.slug || '',
+                sku: item.sku || '',
                 description: item.description || '',
                 price: item.price || '',
-                discountPrice: item.discountPrice || '',
+                salePrice: item.salePrice || item.discountPrice || '',
                 stock: item.stock || '',
+                lowStockAlert: item.lowStockAlert || 5,
                 unit: item.unit || 'packet',
+                header: item.headerId?._id || item.headerId || '',
                 categoryId: item.categoryId?._id || item.categoryId || '',
                 subcategoryId: item.subcategoryId?._id || item.subcategoryId || '',
                 status: item.status || 'active',
                 isFeatured: item.isFeatured || false,
+                tags: Array.isArray(item.tags) ? item.tags.join(', ') : item.tags || '',
+                weight: item.weight || '',
+                brand: item.brand || '',
+                mainImage: item.mainImage || null,
+                galleryImages: item.galleryImages || [],
+                variants: (item.variants && item.variants.length > 0) ? item.variants.map(v => ({ ...v, id: v._id || Date.now() })) : [
+                    {
+                        id: Date.now(),
+                        name: 'Default',
+                        price: item.price || '',
+                        salePrice: item.salePrice || item.discountPrice || '',
+                        stock: item.stock || '',
+                        sku: item.sku || ''
+                    }
+                ]
             });
             setPreviews(item.images || []);
             setEditingItem(item);
         } else {
             setFormData({
-                name: '', slug: '', description: '', price: '',
-                discountPrice: '', stock: '', unit: 'packet',
-                categoryId: '', subcategoryId: '', status: 'active',
-                isFeatured: false
+                name: '', slug: '', sku: '', description: '', price: '',
+                salePrice: '', stock: '', lowStockAlert: 5, unit: 'packet',
+                header: '', categoryId: '', subcategoryId: '', status: 'active',
+                isFeatured: false, tags: '', weight: '', brand: '',
+                mainImage: null, galleryImages: [],
+                variants: [
+                    { id: Date.now(), name: 'Default', price: '', salePrice: '', stock: '', sku: '' }
+                ]
             });
             setPreviews([]);
             setEditingItem(null);
@@ -297,19 +363,21 @@ const ProductManagement = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/50 border-b border-slate-100">
-                                <th className="ds-table-header-cell px-6">Product</th>
-                                <th className="ds-table-header-cell px-6">Header</th>
-                                <th className="ds-table-header-cell px-6">Category</th>
-                                <th className="ds-table-header-cell px-6 text-center">Price</th>
-                                <th className="ds-table-header-cell px-6 text-center">Stock</th>
-                                <th className="ds-table-header-cell px-6 text-center">Status</th>
-                                <th className="ds-table-header-cell px-6 text-right">Actions</th>
+                                <th className="px-6 py-3 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Product</th>
+                                <th className="px-6 py-3 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Seller</th>
+                                <th className="px-6 py-3 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Variant</th>
+                                <th className="px-6 py-3 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Category</th>
+                                <th className="px-6 py-3 text-left text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Subcategory</th>
+                                <th className="px-6 py-3 text-center text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Price</th>
+                                <th className="px-6 py-3 text-center text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
+                                <th className="px-6 py-3 text-center text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-right text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan="8" className="px-6 py-20 text-center">
+                                    <td colSpan="9" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <HiOutlineArrowPath className="h-8 w-8 text-primary animate-spin" />
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading Products...</p>
@@ -318,10 +386,11 @@ const ProductManagement = () => {
                                 </tr>
                             ) : products.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="px-6 py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No products found</td>
+                                    <td colSpan="9" className="px-6 py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No products found</td>
                                 </tr>
                             ) : products.map((p) => (
                                 <tr key={p._id} className="hover:bg-slate-50/30 transition-colors group">
+                                    {/* Product Column */}
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 rounded-lg overflow-hidden bg-slate-100 ring-1 ring-slate-200">
@@ -333,32 +402,58 @@ const ProductManagement = () => {
                                             </div>
                                         </div>
                                     </td>
+                                    
+                                    {/* Seller Column */}
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <div className="h-2 w-2 rounded-full bg-blue-500" />
-                                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{p.sellerId?.shopName || 'Admin'}</span>
+                                            <span className="text-xs font-bold text-slate-700">{p.sellerId?.shopName || 'Admin'}</span>
                                         </div>
                                     </td>
+                                    
+                                    {/* Variant Column */}
                                     <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight bg-slate-100 px-2 py-0.5 rounded-full">{p.categoryId?.name || 'N/A'}</span>
+                                        {p.variants && p.variants.length > 0 ? (
+                                            <div className="flex items-center gap-1.5">
+                                                <HiOutlineSwatch className="h-3.5 w-3.5 text-purple-500" />
+                                                <span className="text-xs font-bold text-purple-700">{p.variants.length} Variant{p.variants.length > 1 ? 's' : ''}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs font-semibold text-slate-400">No variants</span>
+                                        )}
                                     </td>
+                                    
+                                    {/* Category Column */}
                                     <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold text-slate-600">{p.subcategoryId?.name || 'N/A'}</span>
+                                        <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">{p.categoryId?.name || 'N/A'}</span>
                                     </td>
+                                    
+                                    {/* Subcategory Column */}
+                                    <td className="px-6 py-4">
+                                        <span className="text-xs font-bold text-slate-600">{p.subcategoryId?.name || 'N/A'}</span>
+                                    </td>
+                                    
+                                    {/* Price Column */}
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex flex-col items-center">
                                             <span className={cn("text-xs font-bold", p.discountPrice ? "text-slate-400 line-through scale-90" : "text-slate-900")}>₹{p.price}</span>
                                             {p.discountPrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{p.discountPrice}</span>}
                                         </div>
                                     </td>
+                                    
+                                    {/* Stock Column */}
                                     <td className="px-6 py-4 text-center">
                                         <span className={cn("text-xs font-bold", p.stock === 0 ? "text-rose-500" : p.stock <= 10 ? "text-amber-500" : "text-emerald-500")}>
                                             {p.stock}
                                         </span>
                                     </td>
+                                    
+                                    {/* Status Column */}
                                     <td className="px-6 py-4 text-center">
                                         <StatusBadge status={p.status} stock={p.stock} />
                                     </td>
+                                    
+                                    {/* Actions Column */}
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end space-x-1.5">
                                             <button
@@ -426,10 +521,10 @@ const ProductManagement = () => {
                                 <div className="lg:w-1/4 bg-slate-50/50 border-r border-slate-100 p-4 space-y-1 overflow-y-auto scrollbar-hide">
                                     {[
                                         { id: 'general', label: 'General Info', icon: HiOutlineTag },
-                                        { id: 'pricing', label: 'Pricing & Stock', icon: HiOutlineCurrencyDollar },
+                                        { id: 'variants', label: 'Item Variants', icon: HiOutlineSwatch },
                                         { id: 'category', label: 'Groups', icon: HiOutlineFolderOpen },
                                         { id: 'media', label: 'Photos', icon: HiOutlinePhoto },
-                                        { id: 'attributes', label: 'Details', icon: HiOutlineScale }
+                                        { id: 'attributes', label: 'SEO & Details', icon: HiOutlineScale }
                                     ].map((tab) => (
                                         <button
                                             key={tab.id}
@@ -506,50 +601,23 @@ const ProductManagement = () => {
                                                     placeholder="Describe the item here..."
                                                 />
                                             </div>
-                                        </div>
-                                    )}
-
-                                    {modalTab === 'pricing' && (
-                                        <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
-                                            <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Brand Name</label>
                                                     <input
-                                                        type="number"
-                                                        value={formData.price}
-                                                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                                        className="w-full px-4 py-3 bg-white shadow-sm ring-1 ring-slate-200 border-none rounded-xl ds-h3 font-bold outline-none focus:ring-2 focus:ring-primary/10"
+                                                        value={formData.brand}
+                                                        onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-semibold outline-none ring-primary/5 focus:ring-2"
+                                                        placeholder="e.g. Amul"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest ml-1 text-emerald-600">Discount Price (₹)</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Product Code</label>
                                                     <input
-                                                        type="number"
-                                                        value={formData.discountPrice}
-                                                        onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
-                                                        className="w-full px-4 py-3 bg-emerald-50/50 shadow-sm ring-1 ring-emerald-100 border-none rounded-xl ds-h3 font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-6">
-                                                <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Stock Count</label>
-                                                    <input
-                                                        type="number"
-                                                        value={formData.stock}
-                                                        onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none ring-primary/5 focus:ring-2"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Unit Type</label>
-                                                    <input
-                                                        type="text"
-                                                        value={formData.unit}
-                                                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none ring-primary/5 focus:ring-2"
-                                                        placeholder="e.g. 1kg packet, 500ml bottle"
+                                                        value={formData.sku}
+                                                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-mono font-bold outline-none ring-primary/5 focus:ring-2"
+                                                        placeholder="AUTO-GENERATED"
                                                     />
                                                 </div>
                                             </div>
@@ -560,10 +628,10 @@ const ProductManagement = () => {
                                         <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Main Group (Header)</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Main Group (Header) <span className="text-rose-500">*</span></label>
                                                     <select
-                                                        value={formData.categoryId}
-                                                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value, subcategoryId: '' })}
+                                                        value={formData.header}
+                                                        onChange={(e) => setFormData({ ...formData, header: e.target.value, categoryId: '', subcategoryId: '' })}
                                                         className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer"
                                                     >
                                                         <option value="">Select Main Group</option>
@@ -571,56 +639,125 @@ const ProductManagement = () => {
                                                     </select>
                                                 </div>
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Specific Category</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Specific Category <span className="text-rose-500">*</span></label>
                                                     <select
-                                                        value={formData.subcategoryId}
-                                                        onChange={(e) => setFormData({ ...formData, subcategoryId: e.target.value })}
-                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer"
-                                                        disabled={!formData.categoryId}
+                                                        value={formData.categoryId}
+                                                        onChange={(e) => setFormData({ ...formData, categoryId: e.target.value, subcategoryId: '' })}
+                                                        disabled={!formData.header}
+                                                        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer disabled:opacity-50"
                                                     >
                                                         <option value="">Select Category</option>
-                                                        {categories.find(h => h._id === formData.categoryId)?.children?.map(c => (
+                                                        {categories.find(h => h._id === formData.header)?.children?.map(c => (
                                                             <option key={c._id} value={c._id}>{c.name}</option>
                                                         ))}
                                                     </select>
                                                 </div>
+                                            </div>
+                                            <div className="space-y-1.5 flex flex-col">
+                                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Sub-Category <span className="text-rose-500">*</span></label>
+                                                <select
+                                                    value={formData.subcategoryId}
+                                                    onChange={(e) => setFormData({ ...formData, subcategoryId: e.target.value })}
+                                                    disabled={!formData.categoryId}
+                                                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none cursor-pointer disabled:opacity-50"
+                                                >
+                                                    <option value="">Select Sub-Category</option>
+                                                    {categories.find(h => h._id === formData.header)?.children?.find(c => c._id === formData.categoryId)?.children?.map(sc => (
+                                                        <option key={sc._id} value={sc._id}>{sc.name}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         </div>
                                     )}
 
                                     {modalTab === 'media' && (
                                         <div className="ds-section-spacing animate-in fade-in slide-in-from-right-2 duration-300">
-                                            {/* Gallery Section */}
                                             <div className="space-y-3">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Product Photos (Max 5)</label>
-                                                <div className="grid grid-cols-5 gap-3">
-                                                    {previews.map((src, i) => (
-                                                        <div key={i} className="aspect-square rounded-2xl border border-slate-200 overflow-hidden relative group">
-                                                            <img src={src} className="w-full h-full object-cover" />
-                                                            <button
-                                                                onClick={() => {
-                                                                    setPreviews(previews.filter((_, idx) => idx !== i));
-                                                                    setImageFiles(imageFiles.filter((_, idx) => idx !== i));
-                                                                }}
-                                                                className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            >
-                                                                <HiOutlineXMark className="h-3 w-3" />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                    {previews.length < 5 && (
-                                                        <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center group hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
-                                                            <HiOutlinePlus className="h-5 w-5 text-slate-200 group-hover:text-primary transition-colors" />
-                                                            <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest group-hover:text-primary">Upload</p>
-                                                            <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" />
-                                                        </label>
-                                                    )}
+                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Main Cover Photo</label>
+                                                <div className="flex flex-col md:flex-row items-start gap-6">
+                                                    <div className="w-48 aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center group hover:border-primary hover:bg-primary/5 transition-all cursor-pointer overflow-hidden relative">
+                                                        <input
+                                                            type="file"
+                                                            className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                                            onChange={(e) => handleImageUpload(e, 'main')}
+                                                        />
+                                                        {formData.mainImage ? (
+                                                            <img src={formData.mainImage} alt="Main Preview" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="flex flex-col items-center">
+                                                                <HiOutlinePhoto className="h-10 w-10 text-slate-200" />
+                                                                <p className="text-[10px] text-slate-400 font-bold mt-2">UPLOAD</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
 
                                             <p className="text-[10px] text-slate-400 font-medium italic text-center pt-4 border-t border-slate-50 outline-none">
                                                 Quick Tip: Multiple photos help users trust your products more!
                                             </p>
+                                        </div>
+                                    )}
+
+                                    {modalTab === 'variants' && (
+                                        <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="text-sm font-bold">Product Variants</h4>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, variants: [...formData.variants, { id: Date.now(), name: '', price: '', salePrice: '', stock: '', sku: '' }] })}
+                                                    className="bg-primary/10 text-primary px-3 py-1 rounded-lg text-[10px] font-bold"
+                                                >
+                                                    + ADD
+                                                </button>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {formData.variants.map((v, i) => (
+                                                    <div key={v.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                                        <input
+                                                            value={v.name}
+                                                            onChange={e => {
+                                                                const news = [...formData.variants];
+                                                                news[i].name = e.target.value;
+                                                                setFormData({ ...formData, variants: news });
+                                                            }}
+                                                            placeholder="Name"
+                                                            className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={v.price}
+                                                            onChange={e => {
+                                                                const news = [...formData.variants];
+                                                                news[i].price = e.target.value;
+                                                                setFormData({ ...formData, variants: news });
+                                                            }}
+                                                            placeholder="Price"
+                                                            className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none"
+                                                        />
+                                                        <input
+                                                            type="number"
+                                                            value={v.stock}
+                                                            onChange={e => {
+                                                                const news = [...formData.variants];
+                                                                news[i].stock = e.target.value;
+                                                                setFormData({ ...formData, variants: news });
+                                                            }}
+                                                            placeholder="Stock"
+                                                            className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none"
+                                                        />
+                                                        <div className="flex justify-end">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, idx) => idx !== i) })}
+                                                                className="text-rose-500 p-2 hover:bg-rose-50 rounded-lg"
+                                                            >
+                                                                <HiOutlineTrash className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
 
@@ -635,27 +772,20 @@ const ProductManagement = () => {
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                                <div className="flex items-center space-x-2">
-                                    {isSaving ? (
-                                        <>
-                                            <HiOutlineArrowPath className="h-4 w-4 text-emerald-500 animate-spin" />
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SAVING DATA...</span>
-                                        </>
-                                    ) : (
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Draft changes auto-saved</span>
-                                    )}
-                                </div>
-                                <div className="flex gap-3">
-                                    <button onClick={() => setIsProductModalOpen(false)} className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100">CLOSE</button>
-                                    <button
-                                        onClick={handleSave}
-                                        disabled={isSaving}
-                                        className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
-                                    >
-                                        {isSaving ? 'UPLOADING...' : 'UPDATE PRODUCT'}
-                                    </button>
-                                </div>
+                            <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
+                                <button
+                                    onClick={() => setIsProductModalOpen(false)}
+                                    className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100"
+                                >
+                                    CLOSE
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                    className="bg-slate-900 text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
+                                >
+                                    {isSaving ? 'SAVING...' : 'SAVE CHANGES'}
+                                </button>
                             </div>
                         </motion.div>
                     </div>

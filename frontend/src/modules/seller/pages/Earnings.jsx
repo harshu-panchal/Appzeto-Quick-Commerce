@@ -3,11 +3,14 @@ import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
 import Button from "@shared/components/ui/Button";
 import {
-  HiOutlineTrendingUp,
-  HiOutlineChartBar,
-  HiOutlineCurrencyDollar,
-  HiOutlineDownload,
-} from "react-icons/hi";
+  TrendingUp,
+  BarChart3,
+  DollarSign,
+  Download,
+  Banknote,
+  ArrowDownToLine,
+  Building2,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -49,6 +52,12 @@ const Earnings = () => {
     totalBalance.toString(),
   );
 
+  const earningsData = {
+    totalWithdrawn: 12450,
+    lastPayoutDate: "Jan 15, 2024",
+    availableBalance: 24850,
+  };
+
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0 || amount > totalBalance) {
@@ -85,7 +94,7 @@ const Earnings = () => {
               onClick={exportReport}
               variant="outline"
               className="border-gray-200">
-              <HiOutlineDownload className="mr-2 h-5 w-5" />
+              <Download className="mr-2 h-5 w-5" />
               Download Report
             </Button>
             <ShimmerButton
@@ -106,11 +115,11 @@ const Earnings = () => {
                 <h3 className="text-4xl font-bold mt-2">$24,850.00</h3>
               </div>
               <div className="p-3 bg-white/20 rounded-xl">
-                <HiOutlineCurrencyDollar className="h-8 w-8 text-white" />
+                <DollarSign className="h-8 w-8 text-white" />
               </div>
             </div>
             <div className="mt-8 flex items-center text-emerald-100 bg-white/10 w-fit px-3 py-1 rounded-full text-sm">
-              <HiOutlineTrendingUp className="mr-2" />
+              <TrendingUp className="mr-2" />
               <span>+12.5% increase from last month</span>
             </div>
           </Card>
@@ -128,13 +137,13 @@ const Earnings = () => {
                 </h2>
               </div>
               <div className="p-3 bg-indigo-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
-                <HiOutlineBanknotes className="h-6 w-6 text-indigo-500" />
+                <Banknote className="h-6 w-6 text-indigo-500" />
               </div>
             </div>
             <div className="mt-4">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs">
-                  <HiOutlineArrowDownTray className="h-4 w-4" />
+                  <ArrowDownToLine className="h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">
@@ -160,7 +169,7 @@ const Earnings = () => {
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className="w-full max-w-md relative z-10 bg-white rounded-lg shadow-2xl overflow-hidden p-8 text-center">
               <div className="h-16 w-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <HiOutlineBanknotes className="h-8 w-8 text-emerald-600" />
+                <Banknote className="h-8 w-8 text-emerald-600" />
               </div>
 
               <h2 className="text-2xl font-black text-slate-900 mb-2">
@@ -197,7 +206,7 @@ const Earnings = () => {
                   </label>
                   <div className="p-4 border border-slate-200 rounded-lg flex items-center gap-4 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/10 transition-all group">
                     <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
-                      <HiOutlineBuildingLibrary className="h-5 w-5" />
+                      <Building2 className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-black text-slate-900">

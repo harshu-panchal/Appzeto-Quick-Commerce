@@ -10,11 +10,14 @@ import {
   X,
   Upload,
   Image,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { adminApi } from "../../services/adminApi";
 import { toast } from "sonner";
+import IconSelector from "@shared/components/IconSelector";
+import { getIconSvg } from "@shared/constants/categoryIcons";
 
 const HeaderCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -22,6 +25,7 @@ const HeaderCategories = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isIconSelectorOpen, setIsIconSelectorOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -34,6 +38,7 @@ const HeaderCategories = () => {
     status: "active",
     type: "header",
     parentId: null,
+    iconId: "",
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -161,6 +166,7 @@ const HeaderCategories = () => {
       status: "active",
       type: "header",
       parentId: null,
+      iconId: "",
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -176,6 +182,7 @@ const HeaderCategories = () => {
       status: item.status,
       type: "header",
       parentId: null,
+      iconId: item.iconId || "",
     });
     setPreviewUrl(item.image?.url || null);
     setIsAddModalOpen(true);
@@ -280,7 +287,12 @@ const HeaderCategories = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
-                        {cat.image?.url || cat.image ? (
+                        {cat.iconId && getIconSvg(cat.iconId) ? (
+                          <div 
+                            className="w-6 h-6 text-indigo-600"
+                            dangerouslySetInnerHTML={{ __html: getIconSvg(cat.iconId) }}
+                          />
+                        ) : cat.image?.url || cat.image ? (
                           <img
                             src={cat.image?.url || cat.image}
                             alt={cat.name}
@@ -334,8 +346,8 @@ const HeaderCategories = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
                 <h2 className="text-lg font-bold text-gray-900">
                   {editingItem ? "Edit Header Category" : "Add Header Category"}
                 </h2>
@@ -346,34 +358,68 @@ const HeaderCategories = () => {
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
-                {/* Image Upload */}
-                <div className="flex justify-center">
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-24 h-24 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-indigo-500 overflow-hidden transition-colors">
-                    {previewUrl ? (
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-center">
-                        <Upload className="w-8 h-8 text-gray-400 mx-auto" />
-                        <span className="text-xs text-gray-500 mt-1">
-                          Upload
-                        </span>
+              <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
+                {/* Icon/Image Selection */}
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex gap-4">
+                    {/* SVG Icon Display */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 flex items-center justify-center">
+                        {formData.iconId && getIconSvg(formData.iconId) ? (
+                          <div 
+                            className="w-12 h-12 text-indigo-600"
+                            dangerouslySetInnerHTML={{ __html: getIconSvg(formData.iconId) }}
+                          />
+                        ) : (
+                          <Sparkles className="w-10 h-10 text-indigo-300" />
+                        )}
                       </div>
-                    )}
+                      <button
+                        type="button"
+                        onClick={() => setIsIconSelectorOpen(true)}
+                        className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                        {formData.iconId ? 'Change Icon' : 'Select Icon'}
+                      </button>
+                    </div>
+
+                    {/* OR Divider */}
+                    <div className="flex items-center">
+                      <span className="text-gray-400 font-medium">OR</span>
+                    </div>
+
+                    {/* Image Upload */}
+                    <div className="flex flex-col items-center gap-2">
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-24 h-24 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-indigo-500 overflow-hidden transition-colors">
+                        {previewUrl ? (
+                          <img
+                            src={previewUrl}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center">
+                            <Upload className="w-8 h-8 text-gray-400 mx-auto" />
+                            <span className="text-xs text-gray-500 mt-1">
+                              Upload
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={handleImageChange}
+                        accept="image/*"
+                      />
+                      <span className="text-xs text-gray-500">Custom Image</span>
+                    </div>
                   </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={handleImageChange}
-                    accept="image/*"
-                  />
+                  <p className="text-xs text-gray-500 text-center">
+                    Choose an SVG icon or upload a custom image
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -422,7 +468,7 @@ const HeaderCategories = () => {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 flex-shrink-0">
                 <button
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
@@ -440,6 +486,20 @@ const HeaderCategories = () => {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Icon Selector Modal */}
+      <AnimatePresence>
+        {isIconSelectorOpen && (
+          <IconSelector
+            selectedIcon={formData.iconId}
+            onSelect={(iconId) => {
+              setFormData({ ...formData, iconId });
+              setIsIconSelectorOpen(false);
+            }}
+            onClose={() => setIsIconSelectorOpen(false)}
+          />
         )}
       </AnimatePresence>
 

@@ -21,6 +21,10 @@ const categorySchema = new mongoose.Schema(
         image: {
             type: String, // Cloudinary URL
         },
+        iconId: {
+            type: String, // SVG icon identifier
+            trim: true,
+        },
         status: {
             type: String,
             enum: ["active", "inactive"],
