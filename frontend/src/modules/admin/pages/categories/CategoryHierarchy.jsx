@@ -51,7 +51,7 @@ const CategoryHierarchy = () => {
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const res = await adminApi.getCategories();
+      const res = await adminApi.getCategoryTree();
       if (res.data.success) {
         setCategories(res.data.results || res.data.result || []);
       }
@@ -133,9 +133,9 @@ const CategoryHierarchy = () => {
                         w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors
                         ${isSelected ? "bg-white shadow-sm" : "bg-gray-100 group-hover:bg-white group-hover:shadow-sm"}
                     `}>
-            {item.image?.url ? (
+            {item.image?.url || item.image ? (
               <img
-                src={item.image.url}
+                src={item.image?.url || item.image}
                 alt=""
                 className="w-full h-full object-cover rounded-lg"
               />
@@ -246,7 +246,7 @@ const CategoryHierarchy = () => {
                   isSelected={
                     selectedHeader &&
                     (selectedHeader._id || selectedHeader.id) ===
-                      (header._id || header.id)
+                    (header._id || header.id)
                   }
                   onClick={() => handleHeaderSelect(header)}
                   hasChildren={header.children && header.children.length > 0}
@@ -292,7 +292,7 @@ const CategoryHierarchy = () => {
                     isSelected={
                       selectedLevel2 &&
                       (selectedLevel2._id || selectedLevel2.id) ===
-                        (l2._id || l2.id)
+                      (l2._id || l2.id)
                     }
                     onClick={() => handleLevel2Select(l2)}
                     hasChildren={l2.children && l2.children.length > 0}
@@ -337,7 +337,7 @@ const CategoryHierarchy = () => {
                     item={sub}
                     type="subcategory"
                     isSelected={false}
-                    onClick={() => {}}
+                    onClick={() => { }}
                     hasChildren={false}
                   />
                 ))

@@ -17,11 +17,11 @@ router.get("/", getProducts);
 // Get single product
 router.get("/:id", getProductById);
 
-// Admin/Seller protected routes
+// Admin protected routes
 router.post(
     "/",
     verifyToken,
-    allowRoles("admin", "seller"),
+    allowRoles("admin"),
     upload.array('images', 5), // Allow up to 5 images
     createProduct
 );
@@ -29,7 +29,7 @@ router.post(
 router.put(
     "/:id",
     verifyToken,
-    allowRoles("admin", "seller"),
+    allowRoles("admin"),
     upload.array('images', 5),
     updateProduct
 );
@@ -37,7 +37,7 @@ router.put(
 router.delete(
     "/:id",
     verifyToken,
-    allowRoles("admin", "seller"),
+    allowRoles("admin"),
     deleteProduct
 );
 

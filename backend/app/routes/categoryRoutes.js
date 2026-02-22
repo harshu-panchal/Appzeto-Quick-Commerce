@@ -10,28 +10,26 @@ import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
-// Get all categories (Hierarchy)
+// Public route to get categories
 router.get("/", getCategories);
 
-// Create Category
+// Admin only routes
 router.post(
     "/",
     verifyToken,
     allowRoles("admin"),
-    upload.single('image'),
+    upload.single("image"),
     createCategory
 );
 
-// Update Category
 router.put(
     "/:id",
     verifyToken,
     allowRoles("admin"),
-    upload.single('image'),
+    upload.single("image"),
     updateCategory
 );
 
-// Delete Category
 router.delete(
     "/:id",
     verifyToken,
