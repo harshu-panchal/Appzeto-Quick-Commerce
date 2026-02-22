@@ -79,6 +79,8 @@ const ProductManagement = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [viewingVariants, setViewingVariants] = useState(null);
+  const [isVariantsViewModalOpen, setIsVariantsViewModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [modalTab, setModalTab] = useState("general");
 
@@ -450,9 +452,7 @@ const ProductManagement = () => {
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
                     Header
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
-                    Seller
-                  </th>
+
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
                     Category
                   </th>
@@ -504,14 +504,7 @@ const ProductManagement = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tight">
-                          {p.sellerId?.shopName || "Self"}
-                        </span>
-                      </div>
-                    </td>
+
                     <td className="px-6 py-4">
                       <span className="text-[10px] font-bold text-slate-600">
                         {p.categoryId?.name || "N/A"}
@@ -528,22 +521,44 @@ const ProductManagement = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">
-                        {p.variants?.[0]?.name || "Standard"}
-                      </span>
+                      {p.variants?.length > 0 ? (
+                        <div
+                          onClick={() => {
+                            setViewingVariants(p);
+                            setIsVariantsViewModalOpen(true);
+                          }}
+                          className="flex flex-col items-center cursor-pointer hover:bg-slate-50 p-1.5 rounded-xl transition-all active:scale-95 group"
+                        >
+                          <Badge variant="indigo" className="text-[9px] px-1.5 py-0 font-bold group-hover:shadow-sm transition-all">{p.variants.length} VARIANTS</Badge>
+                          <span className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">
+                            ₹{Math.min(...p.variants.map(v => v.price))} - ₹{Math.max(...p.variants.map(v => v.price))}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-300 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded italic">
+                          None
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span
-                        className={cn(
-                          "text-xs font-bold",
-                          p.stock === 0
-                            ? "text-rose-500"
-                            : p.stock <= 10
-                              ? "text-amber-500"
-                              : "text-emerald-500",
-                        )}>
-                        {p.stock}
-                      </span>
+                      {(() => {
+                        const totalStock = p.variants?.length > 0
+                          ? p.variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0)
+                          : p.stock;
+                        return (
+                          <span
+                            className={cn(
+                              "text-xs font-bold",
+                              totalStock === 0
+                                ? "text-rose-500"
+                                : totalStock <= 10
+                                  ? "text-amber-500"
+                                  : "text-emerald-500",
+                            )}>
+                            {totalStock}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end space-x-1.5">
@@ -946,24 +961,49 @@ const ProductManagement = () => {
                       </div>
                       <div className="space-y-3">
                         {formData.variants.map((v, i) => (
-                          <div key={v.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                            <input value={v.name} onChange={e => {
-                              const news = [...formData.variants];
-                              news[i].name = e.target.value;
-                              setFormData({ ...formData, variants: news });
-                            }} placeholder="Name" className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
-                            <input type="number" value={v.price} onChange={e => {
-                              const news = [...formData.variants];
-                              news[i].price = e.target.value;
-                              setFormData({ ...formData, variants: news });
-                            }} placeholder="Price" className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
-                            <input type="number" value={v.stock} onChange={e => {
-                              const news = [...formData.variants];
-                              news[i].stock = e.target.value;
-                              setFormData({ ...formData, variants: news });
-                            }} placeholder="Stock" className="bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
-                            <div className="flex justify-end">
-                              <button type="button" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, idx) => idx !== i) })} className="text-rose-500 p-2 hover:bg-rose-50 rounded-lg">
+                          <div key={v.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                            <div className="md:col-span-2 space-y-1">
+                              <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Variant Name</label>
+                              <input value={v.name} onChange={e => {
+                                const news = [...formData.variants];
+                                news[i].name = e.target.value;
+                                setFormData({ ...formData, variants: news });
+                              }} placeholder="e.g. 1kg" className="w-full bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Price</label>
+                              <input type="number" value={v.price} onChange={e => {
+                                const news = [...formData.variants];
+                                news[i].price = e.target.value;
+                                setFormData({ ...formData, variants: news });
+                              }} placeholder="Price" className="w-full bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest ml-1">Sale Price</label>
+                              <input type="number" value={v.salePrice} onChange={e => {
+                                const news = [...formData.variants];
+                                news[i].salePrice = e.target.value;
+                                setFormData({ ...formData, variants: news });
+                              }} placeholder="Sale" className="w-full bg-emerald-50/50 px-3 py-2 rounded-xl text-xs ring-1 ring-emerald-100 text-emerald-700 outline-none" />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Stock</label>
+                              <input type="number" value={v.stock} onChange={e => {
+                                const news = [...formData.variants];
+                                news[i].stock = e.target.value;
+                                setFormData({ ...formData, variants: news });
+                              }} placeholder="Stock" className="w-full bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 space-y-1">
+                                <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">SKU</label>
+                                <input value={v.sku} onChange={e => {
+                                  const news = [...formData.variants];
+                                  news[i].sku = e.target.value;
+                                  setFormData({ ...formData, variants: news });
+                                }} placeholder="SKU" className="w-full bg-white px-3 py-2 rounded-xl text-[10px] ring-1 ring-slate-100 outline-none" />
+                              </div>
+                              <button type="button" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, idx) => idx !== i) })} className="text-rose-500 p-2 hover:bg-rose-50 rounded-lg shrink-0 mb-0.5">
                                 <HiOutlineTrash className="h-4 w-4" />
                               </button>
                             </div>
@@ -1028,6 +1068,83 @@ const ProductManagement = () => {
               </span>{" "}
               from the catalog.
             </p>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Viewing Variants Modal */}
+      <Modal
+        isOpen={isVariantsViewModalOpen}
+        onClose={() => setIsVariantsViewModalOpen(false)}
+        title="Product Variants Details"
+        size="lg"
+      >
+        <div className="py-2">
+          <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div className="h-16 w-16 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center border border-slate-100">
+              {viewingVariants?.mainImage || viewingVariants?.galleryImages?.[0] || viewingVariants?.image ? (
+                <img src={viewingVariants.mainImage || viewingVariants.galleryImages?.[0] || viewingVariants.image} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <HiOutlineCube className="h-8 w-8 text-slate-200" />
+              )}
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-slate-900 leading-tight">{viewingVariants?.name}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="primary" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5">{viewingVariants?.categoryId?.name || 'Category'}</Badge>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Master SKU: {viewingVariants?.sku || viewingVariants?._id?.slice(-6).toUpperCase() || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-white">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100">
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Variant Specification</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Unit Price</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Available Stock</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Variant SKU</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {viewingVariants?.variants?.map((v, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50/30 transition-all cursor-default">
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-black text-slate-700 group-hover:text-primary transition-colors">{v.name}</span>
+                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Variation {idx + 1}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className={cn("text-xs font-bold", v.salePrice > 0 ? "text-slate-400 line-through scale-90" : "text-slate-900")}>₹{v.price}</span>
+                        {v.salePrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{v.salePrice}</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <Badge variant={v.stock === 0 ? "rose" : v.stock <= 10 ? "amber" : "emerald"} className="text-[10px] font-black uppercase tracking-widest px-2 shadow-sm">
+                        {v.stock === 0 ? 'OUT OF STOCK' : `${v.stock} UNITS`}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-[10px] font-bold text-slate-400 font-mono tracking-tighter uppercase bg-slate-100 px-2 py-1 rounded-lg">
+                        {v.sku || 'N/A'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-8 flex justify-end">
+            <button
+              onClick={() => setIsVariantsViewModalOpen(false)}
+              className="bg-slate-900 text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
+            >
+              CLOSE VIEWER
+            </button>
           </div>
         </div>
       </Modal>

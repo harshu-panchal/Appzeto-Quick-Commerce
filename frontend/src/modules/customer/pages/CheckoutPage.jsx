@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import CustomerLayout from '../components/layout/CustomerLayout';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../../../core/context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { customerApi } from '../services/customerApi';
 import {
     MapPin,
     Clock,
@@ -44,9 +46,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const CheckoutPage = () => {
-    const { cart, addToCart, cartTotal, cartCount, updateQuantity, removeFromCart } = useCart();
+    const { cart, addToCart, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart } = useCart();
     const { wishlist, addToWishlist } = useWishlist();
     const { showToast } = useToast();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     // State management
@@ -58,6 +61,8 @@ const CheckoutPage = () => {
     const [selectedCoupon, setSelectedCoupon] = useState(null);
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
     const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [orderId, setOrderId] = useState(null);
     const [currentAddress, setCurrentAddress] = useState({
         type: 'Home',
         name: 'Harshvardhan Panchal',
@@ -169,43 +174,127 @@ const CheckoutPage = () => {
 
     const handlePlaceOrder = async () => {
         setIsPlacingOrder(true);
+        try {
+            // Create order object for API
+            // Note: The backend placeOrder can derive items from cart if not passed, 
+            // but let's pass it for consistency with frontend logic.
+            const orderData = {
+                address: currentAddress, // Using the selected address state
+                payment: {
+                    method: selectedPayment,
+                    status: selectedPayment === 'cash' ? 'pending' : 'completed' // For simulation
+                },
+                pricing: {
+                    subtotal: cartTotal,
+                    deliveryFee,
+                    platformFee,
+                    gst,
+                    tip: selectedTip,
+                    discount: discountAmount,
+                    total: totalAmount
+                },
+                timeSlot: selectedTimeSlot,
+                items: cart.map(item => ({
+                    product: item.id || item._id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    image: item.image
+                }))
+            };
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+            const response = await customerApi.placeOrder(orderData);
 
-        // Create order object
-        const order = {
-            orderId: `ORD${Date.now()}`,
-            items: cart,
-            address: deliveryAddress,
-            timeSlot: selectedTimeSlot,
-            payment: selectedPayment,
-            tip: selectedTip,
-            subtotal: cartTotal,
-            deliveryFee,
-            platformFee,
-            gst,
-            total: totalAmount,
-            status: 'pending',
-            timestamp: new Date().toISOString()
-        };
+            if (response.data.success) {
+                const order = response.data.result;
 
-        // Store order in localStorage (simulating backend)
-        const existingOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-        existingOrders.push(order);
-        localStorage.setItem('orders', JSON.stringify(existingOrders));
+                if (selectedPayment === 'online') {
+                    // 1. Create Razorpay order
+                    try {
+                        const rpResponse = await customerApi.createPaymentOrder({
+                            amount: totalAmount,
+                            currency: 'INR'
+                        });
 
-        // Clear cart
-        cart.forEach(item => removeFromCart(item.id));
+                        const rpOrder = rpResponse.data.result;
 
-        // Show success message
-        showToast(`Order placed successfully! Order ID: ${order.orderId}`, 'success');
+                        // 2. Open Razorpay Checkout
+                        const options = {
+                            key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_b0PSRa7kNhbHj3',
+                            amount: rpOrder.amount,
+                            currency: rpOrder.currency,
+                            name: "Appzeto",
+                            description: "Payment for Order #" + order.orderId,
+                            order_id: rpOrder.id,
+                            handler: async (response) => {
+                                // 3. Verify Payment
+                                try {
+                                    await customerApi.verifyPayment({
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        orderId: order.orderId
+                                    });
 
-        // Redirect to Order Tracking page immediately
-        navigate(`/orders/${order.orderId}`);
+                                    // Clear cart locally
+                                    clearCart();
+
+                                    showToast(`Payment successful! Order Confirmed!`, 'success');
+                                    setOrderId(order.orderId);
+                                    setShowSuccess(true);
+
+                                    // Redirect to Order Tracking page
+                                    setTimeout(() => {
+                                        navigate(`/orders/${order.orderId}`);
+                                    }, 3000);
+                                } catch (err) {
+                                    showToast("Payment verification failed!", "error");
+                                }
+                            },
+                            prefill: {
+                                name: user?.name || "Customer",
+                                email: user?.email || "",
+                                contact: user?.phone || ""
+                            },
+                            theme: {
+                                color: "#0c831f"
+                            }
+                        };
+
+                        const rzp = new window.Razorpay(options);
+                        rzp.on('payment.failed', function (response) {
+                            showToast("Payment failed! Please try again.", "error");
+                        });
+                        rzp.open();
+
+                    } catch (err) {
+                        console.error("Razorpay error:", err);
+                        showToast("Failed to initiate payment.", "error");
+                    }
+                } else {
+                    // For Cash Payment
+                    // Clear cart locally
+                    clearCart();
+
+                    showToast(`Order Confirmed! Order ID: ${order.orderId}`, 'success');
+                    setOrderId(order.orderId);
+                    setShowSuccess(true);
+
+                    // Redirect to Order Tracking page after 3 seconds
+                    setTimeout(() => {
+                        navigate(`/orders/${order.orderId}`);
+                    }, 3000);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to place order:", error);
+            showToast(error.response?.data?.message || "Failed to place order. Please try again.", 'error');
+        } finally {
+            setIsPlacingOrder(false);
+        }
     };
 
-    if (cart.length === 0) {
+    if (cart.length === 0 && !showSuccess) {
         return (
             <CustomerLayout showHeader={false} showBottomNav={true}>
                 <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
@@ -767,6 +856,52 @@ const CheckoutPage = () => {
                     </DialogContent>
                 </Dialog>
             </div>
+
+            {/* Success Overlay */}
+            <AnimatePresence>
+                {showSuccess && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 text-center"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: "spring", damping: 12 }}
+                            className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-[#0c831f] mb-6"
+                        >
+                            <Check size={48} strokeWidth={4} />
+                        </motion.div>
+                        <motion.h2
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-3xl font-black text-slate-800 mb-2"
+                        >
+                            Order Confirmed!
+                        </motion.h2>
+                        <motion.p
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-slate-500 font-medium mb-8"
+                        >
+                            Your order #{orderId?.slice(-6)} has been placed successfully.<br />
+                            Redirecting to tracking screen...
+                        </motion.p>
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: "100%" }}
+                            transition={{ duration: 2.5, ease: "linear" }}
+                            className="w-48 h-1.5 bg-green-100 rounded-full overflow-hidden"
+                        >
+                            <div className="h-full bg-[#0c831f]" />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <style dangerouslySetInnerHTML={{
                 __html: `

@@ -50,6 +50,7 @@ const ProductManagement = () => {
         description: '',
         price: '',
         salePrice: '',
+        salePrice: '',
         stock: '',
         lowStockAlert: 5,
         unit: 'packet',
@@ -67,6 +68,9 @@ const ProductManagement = () => {
             { id: Date.now(), name: 'Default', price: '', salePrice: '', stock: '', sku: '' }
         ]
     });
+
+    const [viewingVariants, setViewingVariants] = useState(null);
+    const [isVariantsViewModalOpen, setIsVariantsViewModalOpen] = useState(false);
 
     const [imageFiles, setImageFiles] = useState([]);
     const [previews, setPreviews] = useState([]);
@@ -436,8 +440,8 @@ const ProductManagement = () => {
                                     {/* Price Column */}
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex flex-col items-center">
-                                            <span className={cn("text-xs font-bold", p.discountPrice ? "text-slate-400 line-through scale-90" : "text-slate-900")}>₹{p.price}</span>
-                                            {p.discountPrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{p.discountPrice}</span>}
+                                            <span className={cn("text-xs font-bold", p.salePrice > 0 ? "text-slate-400 line-through scale-90" : "text-slate-900")}>₹{p.price}</span>
+                                            {p.salePrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{p.salePrice}</span>}
                                         </div>
                                     </td>
                                     
@@ -700,6 +704,7 @@ const ProductManagement = () => {
                                     )}
 
                                     {modalTab === 'variants' && (
+                                    {modalTab === 'variants' && (
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="flex items-center justify-between">
                                                 <h4 className="text-sm font-bold">Product Variants</h4>
@@ -766,6 +771,111 @@ const ProductManagement = () => {
                                             <div className="p-6 bg-slate-50 rounded-xl border border-slate-100 italic text-slate-500 text-xs text-center font-medium">
                                                 Additional SEO data and technical specifications coming in future updates.
                                             </div>
+
+                                            {formData.variants?.length > 0 ? (
+                                                <div className="space-y-3">
+                                                    {formData.variants.map((variant, idx) => (
+                                                        <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-12 gap-4 items-end group relative">
+                                                            <div className="col-span-4 space-y-1">
+                                                                <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Variant Name</label>
+                                                                <input
+                                                                    value={variant.name}
+                                                                    onChange={(e) => {
+                                                                        const newVariants = [...formData.variants];
+                                                                        newVariants[idx].name = e.target.value;
+                                                                        setFormData({ ...formData, variants: newVariants });
+                                                                    }}
+                                                                    placeholder="e.g. 1kg Packet"
+                                                                    className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-lg text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/10"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-2 space-y-1">
+                                                                <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Price</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={variant.price}
+                                                                    onChange={(e) => {
+                                                                        const newVariants = [...formData.variants];
+                                                                        newVariants[idx].price = e.target.value;
+                                                                        setFormData({ ...formData, variants: newVariants });
+                                                                    }}
+                                                                    placeholder="0.00"
+                                                                    className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-primary/10"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-2 space-y-1">
+                                                                <label className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest ml-1">Sale Price</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={variant.salePrice}
+                                                                    onChange={(e) => {
+                                                                        const newVariants = [...formData.variants];
+                                                                        newVariants[idx].salePrice = e.target.value;
+                                                                        setFormData({ ...formData, variants: newVariants });
+                                                                    }}
+                                                                    placeholder="0.00"
+                                                                    className="w-full px-3 py-2 bg-emerald-50/50 ring-1 ring-emerald-100 border-none rounded-lg text-xs font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-1 space-y-1">
+                                                                <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">Stock</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={variant.stock}
+                                                                    onChange={(e) => {
+                                                                        const newVariants = [...formData.variants];
+                                                                        newVariants[idx].stock = e.target.value;
+                                                                        setFormData({ ...formData, variants: newVariants });
+                                                                    }}
+                                                                    placeholder="0"
+                                                                    className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-primary/10"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-2 space-y-1">
+                                                                <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">SKU (Opt)</label>
+                                                                <input
+                                                                    value={variant.sku}
+                                                                    onChange={(e) => {
+                                                                        const newVariants = [...formData.variants];
+                                                                        newVariants[idx].sku = e.target.value;
+                                                                        setFormData({ ...formData, variants: newVariants });
+                                                                    }}
+                                                                    placeholder="SKU"
+                                                                    className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-lg text-[10px] font-semibold outline-none focus:ring-2 focus:ring-primary/10"
+                                                                />
+                                                            </div>
+                                                            <div className="col-span-1 py-1">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const newVariants = formData.variants.filter((_, i) => i !== idx);
+                                                                        setFormData({ ...formData, variants: newVariants });
+                                                                    }}
+                                                                    className="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                                                >
+                                                                    <HiOutlineTrash className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="p-12 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-center">
+                                                    <div className="h-12 w-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-slate-300">
+                                                        <HiOutlineSwatch className="h-6 w-6" />
+                                                    </div>
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No Variants Added</p>
+                                                    <p className="text-[10px] text-slate-400 mt-1">Variants allow you to offer the same product in different sizes or quantities.</p>
+                                                    <button
+                                                        onClick={() => setFormData({
+                                                            ...formData,
+                                                            variants: [{ name: '', price: '', stock: '', sku: '' }]
+                                                        })}
+                                                        className="mt-6 px-4 py-2 bg-white ring-1 ring-slate-200 rounded-xl text-[10px] font-bold text-slate-600 hover:bg-slate-50 transition-all"
+                                                    >
+                                                        CREATE FIRST VARIANT
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -823,6 +933,83 @@ const ProductManagement = () => {
                         Are you sure you want to delete <span className="font-bold text-slate-900">"{itemToDelete?.name}"</span>?
                         This action cannot be undone.
                     </p>
+                </div>
+            </Modal>
+
+            {/* Viewing Variants Modal */}
+            <Modal
+                isOpen={isVariantsViewModalOpen}
+                onClose={() => setIsVariantsViewModalOpen(false)}
+                title="Product Variants Details"
+                size="lg"
+            >
+                <div className="py-2">
+                    <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="h-16 w-16 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center border border-slate-100">
+                            {viewingVariants?.mainImage || viewingVariants?.images?.[0] || viewingVariants?.galleryImages?.[0] ? (
+                                <img src={viewingVariants.mainImage || viewingVariants.images?.[0] || viewingVariants.galleryImages?.[0]} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                                <HiOutlineCube className="h-8 w-8 text-slate-200" />
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black text-slate-900 leading-tight">{viewingVariants?.name}</h3>
+                            <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="primary" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5">{viewingVariants?.categoryId?.name || 'Category'}</Badge>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Master SKU: {viewingVariants?.sku || viewingVariants?._id?.slice(-6).toUpperCase() || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-white">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-slate-50/50 border-b border-slate-100">
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Variant Specification</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Unit Price</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Available Stock</th>
+                                    <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Variant SKU</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                                {viewingVariants?.variants?.map((v, idx) => (
+                                    <tr key={idx} className="hover:bg-slate-50/30 transition-all cursor-default">
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-black text-slate-700 group-hover:text-primary transition-colors">{v.name}</span>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Variation {idx + 1}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <span className={cn("text-xs font-bold", v.salePrice > 0 ? "text-slate-400 line-through scale-90" : "text-slate-900")}>₹{v.price}</span>
+                                                {v.salePrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{v.salePrice}</span>}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <Badge variant={v.stock === 0 ? "rose" : v.stock <= 10 ? "amber" : "emerald"} className="text-[10px] font-black uppercase tracking-widest px-2 shadow-sm">
+                                                {v.stock === 0 ? 'OUT OF STOCK' : `${v.stock} UNITS`}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <span className="text-[10px] font-bold text-slate-400 font-mono tracking-tighter uppercase bg-slate-100 px-2 py-1 rounded-lg">
+                                                {v.sku || 'N/A'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="mt-8 flex justify-end">
+                        <button
+                            onClick={() => setIsVariantsViewModalOpen(false)}
+                            className="bg-slate-900 text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
+                        >
+                            CLOSE VIEWER
+                        </button>
+                    </div>
                 </div>
             </Modal>
 

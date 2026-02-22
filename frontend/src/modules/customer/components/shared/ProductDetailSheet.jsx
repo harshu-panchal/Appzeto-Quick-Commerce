@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, AnimatePresence, useAnimation, useDragControls } from 'framer-motion';
 import { X, ChevronDown, Share2, Heart, Search, Clock, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { useProductDetail } from '../../context/ProductDetailContext';
@@ -16,6 +16,32 @@ const ProductDetailSheet = () => {
     // Controls for sheet animation
     const controls = useAnimation();
     const [isExpanded, setIsExpanded] = useState(false);
+    const [selectedVariant, setSelectedVariant] = useState(null);
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+    const scrollRef = useRef(null);
+
+    const allImages = useMemo(() => {
+        if (!selectedProduct) return [];
+        const images = [];
+        if (selectedProduct.mainImage) images.push(selectedProduct.mainImage);
+        else if (selectedProduct.image) images.push(selectedProduct.image);
+
+        if (selectedProduct.galleryImages && Array.isArray(selectedProduct.galleryImages)) {
+            images.push(...selectedProduct.galleryImages);
+        }
+        return images.length > 0 ? images : ["https://images.unsplash.com/photo-1550989460-0adf9ea622e2"];
+    }, [selectedProduct]);
+
+    // Update variant when product changes
+    useEffect(() => {
+        if (selectedProduct && selectedProduct.variants && selectedProduct.variants.length > 0) {
+            setSelectedVariant(selectedProduct.variants[0]);
+        } else {
+            setSelectedVariant(null);
+        }
+        setActiveImageIndex(0);
+    }, [selectedProduct]);
 
     // If no product selected, don't render anything (well, Context handles isOpen, but still good check)
     // Removed early return to satisfy Rules of Hooks (hooks must be called in same order)
@@ -195,22 +221,44 @@ const ProductDetailSheet = () => {
                             onScroll={handleScroll}
                             onWheel={handleWheel}
                         >
-                            {/* Product Image Stage */}
-                            <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-[#F5F7F8] to-white pt-16 pb-8 px-8 flex items-center justify-center">
-                                <motion.img
-                                    initial={{ scale: 0.8, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ duration: 0.4 }}
-                                    src={selectedProduct.image}
-                                    alt={selectedProduct.name}
-                                    className="w-full h-full object-contain mix-blend-multiply drop-shadow-xl"
-                                />
-                                {/* Carousel Dots (Mock) */}
-                                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                            {/* Product Image Carousel */}
+                            <div className="relative w-full aspect-[4/3] bg-gradient-to-b from-[#F5F7F8] to-white pt-16 pb-8">
+                                <div
+                                    ref={scrollRef}
+                                    className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar h-full w-full"
+                                    onScroll={(e) => {
+                                        const index = Math.round(e.currentTarget.scrollLeft / e.currentTarget.offsetWidth);
+                                        setActiveImageIndex(index);
+                                    }}
+                                >
+                                    {allImages.map((img, i) => (
+                                        <div key={i} className="flex-shrink-0 w-full h-full snap-center flex items-center justify-center px-12">
+                                            <motion.img
+                                                initial={{ scale: 0.8, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ duration: 0.4 }}
+                                                src={img}
+                                                alt={`${selectedProduct.name} ${i + 1}`}
+                                                className="w-full h-full object-contain mix-blend-multiply drop-shadow-xl"
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
+
+                                {/* Carousel Dots */}
+                                {allImages.length > 1 && (
+                                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
+                                        {allImages.map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={cn(
+                                                    "h-1.5 rounded-full transition-all duration-300",
+                                                    i === activeImageIndex ? "w-6 bg-blue-600" : "w-1.5 bg-gray-300"
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Product Info Container */}
@@ -228,33 +276,31 @@ const ProductDetailSheet = () => {
                                     {selectedProduct.description || "Fresh, firm & great in gravies or sauces. Directly sourced from local farms to ensure maximum freshness and quality."}
                                 </p>
 
-                                {/* Variants - Type */}
-                                <div className="mb-6">
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Type</h4>
-                                    <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
-                                        <button className="flex-shrink-0 px-4 py-2 bg-white border-2 border-blue-600 text-blue-700 font-bold rounded-xl text-sm shadow-sm shadow-blue-100">
-                                            {selectedProduct.name.split(' ')[0] || "Standard"}
-                                        </button>
-                                        <button className="flex-shrink-0 px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 font-bold rounded-xl text-sm">
-                                            Alternative
-                                        </button>
+                                {/* Variants Section */}
+                                {selectedProduct.variants && selectedProduct.variants.length > 0 && (
+                                    <div className="mb-6">
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Variant</h4>
+                                        <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+                                            {selectedProduct.variants.map((v, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => setSelectedVariant(v)}
+                                                    className={cn(
+                                                        "flex-shrink-0 px-4 py-2 font-bold rounded-xl text-sm transition-all relative overflow-hidden",
+                                                        selectedVariant?.sku === v.sku
+                                                            ? "bg-white border-2 border-blue-600 text-blue-700 shadow-sm shadow-blue-100"
+                                                            : "bg-gray-50 border border-gray-200 text-gray-600"
+                                                    )}
+                                                >
+                                                    {v.name}
+                                                    {selectedVariant?.sku === v.sku && (
+                                                        <div className="absolute top-0 right-0 w-3 h-3 bg-blue-600 rounded-bl-lg" />
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-
-                                {/* Variants - Quantity */}
-                                <div className="mb-6">
-                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Quantity</h4>
-                                    <div className="flex gap-3">
-                                        <button className="flex-shrink-0 px-4 py-2 bg-white border-2 border-blue-600 text-blue-700 font-bold rounded-xl text-sm shadow-sm shadow-blue-100 relative overflow-hidden">
-                                            {selectedProduct.weight || "1 kg"}
-                                            {/* Selection indicator corner */}
-                                            <div className="absolute top-0 right-0 w-3 h-3 bg-blue-600 rounded-bl-lg" />
-                                        </button>
-                                        <button className="flex-shrink-0 px-4 py-2 bg-gray-50 border border-gray-200 text-gray-600 font-bold rounded-xl text-sm">
-                                            {parseInt(selectedProduct.weight) * 2 || "2"} kg
-                                        </button>
-                                    </div>
-                                </div>
+                                )}
 
                                 <div className="h-px bg-gray-100 my-6" />
 
@@ -291,14 +337,16 @@ const ProductDetailSheet = () => {
                                 <div className="flex flex-col">
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm font-medium text-gray-400 line-through decoration-gray-400/50">
-                                            ₹{selectedProduct.originalPrice || Math.round(selectedProduct.price * 1.2)}
+                                            ₹{selectedVariant?.price || selectedProduct.originalPrice}
                                         </span>
                                         <span className="bg-green-100 text-green-700 text-[10px] font-black px-1.5 py-0.5 rounded">
-                                            {Math.round(((selectedProduct.originalPrice - selectedProduct.price) / selectedProduct.originalPrice) * 100) || 20}% OFF
+                                            {selectedVariant
+                                                ? Math.round(((selectedVariant.price - selectedVariant.salePrice) / selectedVariant.price) * 100)
+                                                : Math.round(((selectedProduct.originalPrice - selectedProduct.price) / selectedProduct.originalPrice) * 100) || 20}% OFF
                                         </span>
                                     </div>
                                     <div className="text-2xl font-black text-[#1A1A1A]">
-                                        ₹{selectedProduct.price}
+                                        ₹{selectedVariant?.salePrice || selectedVariant?.price || selectedProduct.price}
                                     </div>
                                 </div>
 

@@ -27,12 +27,19 @@ axiosInstance.interceptors.request.use(
             token = localStorage.getItem('auth_customer');
         }
 
-        // 2. Fallback to URL-based detection if no page-based token found (for background tasks or mixed usage)
+        // 2. Fallback to URL-based detection
         if (!token) {
             if (url.startsWith('/seller')) token = localStorage.getItem('auth_seller');
             else if (url.startsWith('/admin')) token = localStorage.getItem('auth_admin');
             else if (url.startsWith('/delivery')) token = localStorage.getItem('auth_delivery');
-            else if (url.startsWith('/customer')) token = localStorage.getItem('auth_customer');
+            else if (url.startsWith('/customer') || url.startsWith('/cart') || url.startsWith('/wishlist') || url.startsWith('/categories') || url.startsWith('/products')) {
+                token = localStorage.getItem('auth_customer');
+            }
+        }
+
+        // 3. Final default: if we are on a general page and STILL no token, try customer token
+        if (!token && !pagePath.startsWith('/admin') && !pagePath.startsWith('/seller') && !pagePath.startsWith('/delivery')) {
+            token = localStorage.getItem('auth_customer');
         }
 
         // 3. Last fallback: Check common 'token' key if implemented
