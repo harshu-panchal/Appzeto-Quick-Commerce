@@ -115,39 +115,39 @@ const AdvancedAnalytics = () => {
                 </div>
             </div>
 
-            {/* KPI Section */}
+            {/* Goals Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Gross Revenue', value: '₹5,42,000', trend: '+12.5%', icon: HiOutlineBanknotes, color: 'indigo' },
                     { label: 'Total Orders', value: '1,248', trend: '+8.2%', icon: HiOutlineShoppingBag, color: 'emerald' },
                     { label: 'Active Sellers', value: '84', trend: '+2', icon: HiOutlineUsers, color: 'amber' },
                     { label: 'Avg Order Value', value: '₹434', trend: '-2.1%', icon: HiOutlineBolt, color: 'rose' },
-                ].map((kpi, i) => (
+                ].map((goal, i) => (
                     <Card key={i} className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white group hover:scale-[1.02] transition-all">
                         <div className="flex items-center justify-between mb-4">
                             <div className={cn("p-2.5 rounded-2xl",
-                                kpi.color === 'indigo' && "bg-indigo-50 text-indigo-600",
-                                kpi.color === 'emerald' && "bg-emerald-50 text-emerald-600",
-                                kpi.color === 'amber' && "bg-amber-50 text-amber-600",
-                                kpi.color === 'rose' && "bg-rose-50 text-rose-600",
+                                goal.color === 'indigo' && "bg-indigo-50 text-indigo-600",
+                                goal.color === 'emerald' && "bg-emerald-50 text-emerald-600",
+                                goal.color === 'amber' && "bg-amber-50 text-amber-600",
+                                goal.color === 'rose' && "bg-rose-50 text-rose-600",
                             )}>
-                                <kpi.icon className="h-6 w-6" />
+                                <goal.icon className="h-6 w-6" />
                             </div>
                             <div className={cn("flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-black",
-                                kpi.trend.startsWith('+') ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                goal.trend.startsWith('+') ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
                             )}>
-                                {kpi.trend.startsWith('+') ? <HiOutlineArrowTrendingUp className="h-3 w-3" /> : <HiOutlineArrowTrendingDown className="h-3 w-3" />}
-                                {kpi.trend}
+                                {goal.trend.startsWith('+') ? <HiOutlineArrowTrendingUp className="h-3 w-3" /> : <HiOutlineArrowTrendingDown className="h-3 w-3" />}
+                                {goal.trend}
                             </div>
                         </div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{kpi.label}</p>
-                        <h3 className="text-2xl font-black text-slate-900 leading-none">{kpi.value}</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{goal.label}</p>
+                        <h3 className="text-2xl font-black text-slate-900 leading-none">{goal.value}</h3>
                         <div className="mt-4 h-1 w-full bg-slate-50 rounded-full overflow-hidden">
                             <div className={cn("h-full rounded-full animate-progress",
-                                kpi.color === 'indigo' && "bg-indigo-500",
-                                kpi.color === 'emerald' && "bg-emerald-500",
-                                kpi.color === 'amber' && "bg-amber-500",
-                                kpi.color === 'rose' && "bg-rose-500",
+                                goal.color === 'indigo' && "bg-indigo-500",
+                                goal.color === 'emerald' && "bg-emerald-500",
+                                goal.color === 'amber' && "bg-amber-500",
+                                goal.color === 'rose' && "bg-rose-500",
                             )} style={{ width: '70%' }} />
                         </div>
                     </Card>
@@ -257,11 +257,11 @@ const AdvancedAnalytics = () => {
 
             {/* Bottom Row Insights */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Logistics Performance Heatmap (Simple representation) */}
+                {/* Delivery Performance Heatmap (Simple representation) */}
                 <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] p-8">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Logistics Load Pulse</h4>
+                            <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Delivery Load Pulse</h4>
                             <p className="text-[10px] font-bold text-slate-400 mt-0.5">Peak traffic hours monitoring.</p>
                         </div>
                         <HiOutlineClock className="h-5 w-5 text-indigo-500" />
@@ -286,23 +286,23 @@ const AdvancedAnalytics = () => {
                     </div>
                 </Card>
 
-                {/* Customer Retention Metrics */}
+                {/* Customer Keeping Metrics */}
                 <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-slate-900 rounded-[32px] p-8 text-white overflow-hidden relative group">
                     <div className="relative z-10">
-                        <h4 className="text-sm font-black opacity-60 uppercase tracking-tight mb-8">Retention Intelligence</h4>
+                        <h4 className="text-sm font-black opacity-60 uppercase tracking-tight mb-8">Keeping Customers</h4>
                         <div className="space-y-8">
                             <div>
                                 <div className="flex items-end justify-between mb-2">
                                     <h5 className="text-3xl font-black">78.4%</h5>
                                     <Badge variant="success" className="bg-emerald-500/20 text-emerald-400 border-none">+4.2%</Badge>
                                 </div>
-                                <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em]">Customer Retention Rate</p>
+                                <p className="text-[10px] font-black opacity-50 uppercase tracking-[0.2em]">Customers Who Return</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
                                     <h6 className="text-lg font-black">₹2.4k</h6>
-                                    <p className="text-[9px] font-black opacity-50 uppercase tracking-widest mt-1">LTV Average</p>
+                                    <p className="text-[9px] font-black opacity-50 uppercase tracking-widest mt-1">Average Spent</p>
                                 </div>
                                 <div>
                                     <h6 className="text-lg font-black">12m</h6>

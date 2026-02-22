@@ -487,7 +487,7 @@ const ProductManagement = () => {
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">URL Slug</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Web Address</label>
                                                     <div className="flex items-center bg-slate-50 rounded-xl px-4 py-2.5">
                                                         <span className="text-[10px] text-slate-400 font-bold mr-1">/product/</span>
                                                         <input
@@ -515,7 +515,7 @@ const ProductManagement = () => {
                                         <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 grid grid-cols-2 gap-8">
                                                 <div className="space-y-1.5 flex flex-col">
-                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Regular Price (₹)</label>
+                                                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
                                                     <input
                                                         type="number"
                                                         value={formData.price}
@@ -629,7 +629,7 @@ const ProductManagement = () => {
                                     {modalTab === 'attributes' && (
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 italic text-slate-500 text-xs text-center font-medium">
-                                                Additional SEO data and technical specifications will be available in future updates.
+                                                Additional SEO data and technical specifications coming in future updates.
                                             </div>
                                         </div>
                                     )}

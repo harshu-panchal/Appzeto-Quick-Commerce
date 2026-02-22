@@ -62,7 +62,7 @@ const OrderDetail = () => {
         customer: {
             id: 'CUST-001',
             name: 'Johnathan Doe',
-            email: 'john.doe@enterprise.com',
+            email: 'john.doe@business.com',
             phone: '+91 98765 43210',
             type: 'VVIP Premium',
             address: 'Penthouse 42, Sky Tower A, HSR Layout, Sector 2, Bangalore, KA - 560102',
@@ -88,8 +88,8 @@ const OrderDetail = () => {
             tracking: [
                 { time: '11:00 AM', event: 'Order Placed', desc: 'Handshake complete.' },
                 { time: '11:05 AM', event: 'Merchant Confirmed', desc: 'Fresh Mart acknowledged order.' },
-                { time: '11:12 AM', event: 'Rider Assigned', desc: 'Rahul Sharma accepted the dispatch.' },
-                { time: '11:18 AM', event: 'Out for Delivery', desc: 'Logistical transit initiated.' },
+                { time: '11:12 AM', event: 'Rider Assigned', desc: 'Rahul Sharma accepted the delivery.' },
+                { time: '11:18 AM', event: 'Out for Delivery', desc: 'On the way to customer.' },
                 { time: '11:25 AM', event: 'Delivered', desc: 'Successful handover at Penthouse 42.' }
             ]
         },

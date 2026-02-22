@@ -213,7 +213,7 @@ const StockManagement = () => {
                                             </div>
                                             <div>
                                                 <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{item.name}</h4>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SKU: {item.sku}</p>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Product Code: {item.sku}</p>
                                             </div>
                                         </div>
                                     </td>

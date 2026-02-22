@@ -225,21 +225,20 @@ const Auth = () => {
                     <Lock size={18} />
                   </div>
                   <input
-                                        type="password"
-                                        name="password"
-                                        required
-                                        placeholder="Secure Pin"
-                                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                    />
-                                </div>
+                    type="password"
+                    name="password"
+                    required
+                    placeholder="Secure Pin"
+                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full bg-slate-900 text-white rounded-lg py-4 text-sm font-black tracking-[4px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.3)] hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group"
-                                >
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-slate-900 text-white rounded-lg py-4 text-sm font-black tracking-[4px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.3)] hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group">
                   {isLoading
                     ? "WORKING..."
                     : isLogin

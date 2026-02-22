@@ -121,7 +121,7 @@ const AddProduct = () => {
                 Publishing...
               </>
             ) : (
-              "Publish Product"
+              "Save & Publish"
             )}
           </Button>
         </div>
@@ -194,7 +194,7 @@ const AddProduct = () => {
                 </div>
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    URL Slug
+                    Web Address
                   </label>
                   <div className="flex items-center bg-slate-50 rounded-md px-4 py-2.5">
                     <span className="text-[10px] text-slate-400 font-bold mr-1">
@@ -240,7 +240,7 @@ const AddProduct = () => {
                 </div>
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    SKU Identification
+                    Product Code
                   </label>
                   <input
                     value={formData.sku}
@@ -260,7 +260,7 @@ const AddProduct = () => {
               <div className="p-6 bg-slate-50 rounded-lg border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Regular Price (₹)
+                    Price (₹)
                   </label>
                   <input
                     type="number"
@@ -273,7 +273,7 @@ const AddProduct = () => {
                 </div>
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest ml-1">
-                    Sale Price (₹)
+                    Discounted Price (₹)
                   </label>
                   <input
                     type="number"
@@ -289,7 +289,7 @@ const AddProduct = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Initial Stock Count
+                    How many in stock
                   </label>
                   <input
                     type="number"
@@ -302,7 +302,7 @@ const AddProduct = () => {
                 </div>
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[9px] font-bold text-rose-500 uppercase tracking-widest ml-1">
-                    Low Stock Alert at
+                    Alert me when stock is below
                   </label>
                   <input
                     type="number"
@@ -424,7 +424,7 @@ const AddProduct = () => {
                     </div>
                     <div className="col-span-5 md:col-span-2 space-y-1">
                       <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                        SKU
+                        Product Code
                       </label>
                       <input
                         value={variant.sku}
@@ -535,7 +535,7 @@ const AddProduct = () => {
                       Choose a primary image
                     </p>
                     <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
-                      This image will be shown on the search page and the main
+                      We show this image on the search page and the main
                       store listing. Make sure it is clear and bright.
                     </p>
                     <button className="text-[10px] font-black text-primary uppercase tracking-wider hover:underline">

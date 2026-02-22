@@ -219,7 +219,7 @@ const PendingDeliveryBoys = () => {
                                             onClick={() => setViewingRider(rider)}
                                             className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
                                         >
-                                            REVIEW APPLICATION
+                                            VIEW APPLICATION
                                         </button>
                                     </td>
                                 </tr>
@@ -286,7 +286,7 @@ const PendingDeliveryBoys = () => {
                                 <div className="flex justify-between items-start mb-10">
                                     <div>
                                         <h2 className="admin-h1">Vetting Protocol</h2>
-                                        <p className="admin-description mt-1">Verify submitted legal documents for platform entry.</p>
+                                        <p className="admin-description mt-1">Check submitted legal documents for platform entry.</p>
                                     </div>
                                     <button onClick={() => setViewingRider(null)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all">
                                         <X className="h-6 w-6 text-slate-400" />

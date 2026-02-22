@@ -141,7 +141,7 @@ const SellerDetail = () => {
                         {[
                             { id: 'orders', label: 'Order History', icon: History },
                             { id: 'transactions', label: 'Transactions', icon: Banknote },
-                            { id: 'logistics', label: 'Logistics', icon: MapPin },
+                            { id: 'delivery', label: 'Delivery', icon: MapPin },
                             { id: 'payouts', label: 'Withdrawals', icon: Wallet },
                             { id: 'info', label: 'Store Info', icon: Building2 },
                         ].map((tab) => (
@@ -262,7 +262,7 @@ const SellerDetail = () => {
                             </div>
                         )}
 
-                        {activeTab === 'logistics' && (
+                        {activeTab === 'delivery' && (
                             <div className="animate-in fade-in slide-in-from-right-2 duration-300 h-[500px] relative overflow-hidden group">
                                 {/* Map Background Overlay */}
                                 <div className="absolute inset-0 grayscale-[0.3] contrast-[1.1] opacity-40 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=2000')]" />
@@ -295,7 +295,7 @@ const SellerDetail = () => {
                                 <div className="absolute top-6 left-6 flex flex-col gap-2">
                                     <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-xl shadow-lg border border-white/50">
                                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Coverage View</p>
-                                        <h5 className="text-sm font-black text-slate-900">{seller.serviceRadius}km Logistics Hub</h5>
+                                        <h5 className="text-sm font-black text-slate-900">{seller.serviceRadius}km Delivery Area</h5>
                                     </div>
                                 </div>
                                 <div className="absolute bottom-6 right-6 p-4 max-w-[200px] bg-slate-900/90 backdrop-blur rounded-2xl text-white shadow-2xl border border-white/10">
@@ -311,9 +311,9 @@ const SellerDetail = () => {
                                     <Clock className="h-10 w-10 text-slate-200" />
                                 </div>
                                 <h4 className="text-lg font-black text-slate-900 uppercase">Withdrawal tracking</h4>
-                                <p className="text-sm font-bold text-slate-400 mt-2 max-w-xs mx-auto">Withdrawal history and pending requests will be displayed here.</p>
+                                <p className="text-sm font-bold text-slate-400 mt-2 max-w-xs mx-auto">View withdrawal history and pending requests here.</p>
                                 <button className="mt-8 px-8 py-3 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:-translate-y-1 shadow-xl shadow-slate-200 transition-all">
-                                    INITIATE MANUAL PAYOUT
+                                    START MANUAL PAYOUT
                                 </button>
                             </div>
                         )}
@@ -454,7 +454,7 @@ const SellerDetail = () => {
                                 className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all min-h-[100px]"
                             />
                             <button className="w-full py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                                DISPATCH ALERT
+                                SEND ALERT
                             </button>
                         </div>
                     </Card>

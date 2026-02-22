@@ -398,7 +398,7 @@ const CategoryManagement = () => {
                             activeView === 'tree' ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-600"
                         )}
                     >
-                        Hierarchy Tree
+                        Category Tree
                     </button>
                     <button
                         onClick={() => setActiveView('subcategories')}
@@ -590,7 +590,7 @@ const CategoryManagement = () => {
                     <Card className="bg-slate-900 border-none shadow-xl p-6 rounded-3xl text-white relative overflow-hidden">
                         <div className="relative z-10">
                             <h3 className="text-lg font-bold mb-0.5 uppercase tracking-tight">Organization Guide</h3>
-                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-6">Mastering Hierarchy</p>
+                            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-6">Organize Categories</p>
 
                             <div className="space-y-4">
                                 {[

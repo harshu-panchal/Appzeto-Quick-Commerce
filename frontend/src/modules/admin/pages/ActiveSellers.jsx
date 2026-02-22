@@ -184,14 +184,14 @@ const ActiveSellers = () => {
                         Active Sellers
                         <Badge variant="success" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Verified</Badge>
                     </h1>
-                    <p className="admin-description mt-0.5">Manage and monitor verified store partners across the platform.</p>
+                    <p className="admin-description mt-0.5">View and manage all active sellers.</p>
                 </div>
                 <button
                     onClick={() => setIsOnboardingOpen(true)}
                     className="bg-slate-900 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:bg-slate-800 transition-all hover:-translate-y-0.5 flex items-center space-x-2"
                 >
                     <HiOutlinePlus className="h-4 w-4" />
-                    <span>ONBOARD NEW SELLER</span>
+                    <span>ADD NEW SELLER</span>
                 </button>
             </div>
 
@@ -419,7 +419,7 @@ const ActiveSellers = () => {
                                                 onClick={() => deleteSeller(viewingSeller.id)}
                                                 className="px-5 py-2.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-700 rounded-xl text-xs font-bold transition-all"
                                             >
-                                                DEACTIVATE
+                                                REMOVE SELLER
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -437,7 +437,7 @@ const ActiveSellers = () => {
                                                 }}
                                                 className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-lg transition-all hover:-translate-y-0.5"
                                             >
-                                                EDIT PROFILE
+                                                EDIT
                                             </button>
                                         </div>
                                     </div>

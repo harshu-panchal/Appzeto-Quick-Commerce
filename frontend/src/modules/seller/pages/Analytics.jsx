@@ -173,7 +173,7 @@ const Analytics = () => {
               className="px-5 py-2.5 rounded-lg text-xs font-bold text-white shadow-lg disabled:opacity-50"
               disabled={isExporting}>
               <HiOutlineArrowDownTray className="h-4 w-4 mr-2" />
-              {isExporting ? "EXPORTING..." : "EXPORT REPORT"}
+              {isExporting ? "DOWNLOADING..." : "DOWNLOAD REPORT"}
             </ShimmerButton>
           </div>
         </div>
@@ -468,7 +468,7 @@ const Analytics = () => {
           <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl p-6 bg-white overflow-hidden group h-full">
             <div className="mb-8">
               <h3 className="text-lg font-black text-slate-900">
-                Customer Acquisition
+                New Customers
               </h3>
               <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
                 Traffic Origin Analysis
@@ -580,7 +580,7 @@ const Analytics = () => {
                   {selectedProduct.name}
                 </h3>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
-                  Product ID: SKU-928374
+                  Product ID: 928374
                 </p>
               </div>
             </div>

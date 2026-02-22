@@ -167,7 +167,7 @@ const OrdersList = () => {
                             <ShoppingBag className="h-5 w-5 text-fuchsia-600" />
                         </div>
                     </h1>
-                    <p className="admin-description mt-1">Track and manage all orders on the platform.</p>
+                    <p className="admin-description mt-1">View and manage all orders.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button

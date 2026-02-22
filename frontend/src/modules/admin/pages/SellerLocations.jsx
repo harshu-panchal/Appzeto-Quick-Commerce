@@ -128,7 +128,7 @@ const SellerLocations = () => {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 shrink-0 px-1">
                 <div>
                     <h1 className="admin-h1 flex items-center gap-2">
-                        Logistics Radar
+                        Delivery Map
                         <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">Live Coverage</Badge>
                     </h1>
                     <p className="admin-description mt-0.5">Global view of seller service areas and delivery reach.</p>
@@ -429,8 +429,7 @@ const SellerLocations = () => {
                                             <HiOutlineBuildingOffice2 className="h-10 w-10" />
                                         </div>
                                         <h3 className="admin-h2">{selectedSeller.shopName}</h3>
-                                        <p className="admin-description">Logistics & Performance Report</p>
-
+                                        <p className="admin-description">Delivery & Performance Report</p>
                                         <div className="grid grid-cols-2 gap-4 pt-4">
                                             <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-center">Coverage Health</p>

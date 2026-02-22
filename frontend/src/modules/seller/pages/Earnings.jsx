@@ -86,7 +86,7 @@ const Earnings = () => {
               variant="outline"
               className="border-gray-200">
               <HiOutlineDownload className="mr-2 h-5 w-5" />
-              Export Report
+              Download Report
             </Button>
             <ShimmerButton
               onClick={() => setIsWithdrawModalOpen(true)}

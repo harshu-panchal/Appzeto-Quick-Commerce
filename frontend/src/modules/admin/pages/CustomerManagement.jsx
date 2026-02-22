@@ -32,7 +32,7 @@ const CustomerManagement = () => {
             phone: '+91 98765-43210',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anjali',
             totalOrders: 42,
-            ltv: 24500,
+            totalSpent: 24500,
             joinedDate: '12 Jan 2023',
             status: 'active',
             lastOrder: '2 hours ago'
@@ -44,7 +44,7 @@ const CustomerManagement = () => {
             phone: '+91 99887-76655',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rohan',
             totalOrders: 15,
-            ltv: 8200,
+            totalSpent: 8200,
             joinedDate: '05 Mar 2023',
             status: 'active',
             lastOrder: 'Yesterday'
@@ -56,7 +56,7 @@ const CustomerManagement = () => {
             phone: '+91 91234-56789',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
             totalOrders: 4,
-            ltv: 1500,
+            totalSpent: 1500,
             joinedDate: '20 Dec 2023',
             status: 'inactive',
             lastOrder: '1 month ago'
@@ -68,7 +68,7 @@ const CustomerManagement = () => {
             phone: '+91 98822-11004',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
             totalOrders: 88,
-            ltv: 112000,
+            totalSpent: 112000,
             joinedDate: '15 Oct 2022',
             status: 'active',
             lastOrder: '30 mins ago'
@@ -228,7 +228,7 @@ const CustomerManagement = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 font-black text-slate-900 text-sm">
-                                        ₹{cust.ltv.toLocaleString()}
+                                        ₹{cust.totalSpent ? cust.totalSpent.toLocaleString() : cust.ltv.toLocaleString()}
                                     </td>
                                     <td className="px-6 py-5">
                                         <Badge

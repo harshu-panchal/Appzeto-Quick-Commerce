@@ -55,7 +55,7 @@ const NotificationComposer = () => {
                         Growth Signal
                         <div className="px-3 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[8px] font-black uppercase tracking-widest">Push Engine</div>
                     </h1>
-                    <p className="admin-description mt-1">Compose and blast targeted notifications to drive conversion retention.</p>
+                    <p className="admin-description mt-1">Create and send targeted notifications to keep customers engaged.</p>
                 </div>
                 <div className="flex items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-5 py-3 rounded-2xl">
                     Remaining Quota: <span className="text-slate-900 ml-1">45,000 / 50k</span>

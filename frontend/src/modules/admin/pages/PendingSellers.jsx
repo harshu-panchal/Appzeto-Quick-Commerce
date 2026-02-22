@@ -111,7 +111,7 @@ const PendingSellers = () => {
                         Pending Approvals
                         <Badge variant="warning" className="admin-tiny px-1.5 py-0 font-bold animate-pulse">Action Required</Badge>
                     </h1>
-                    <p className="admin-description mt-0.5">Review and verify new seller registrations to maintain platform quality.</p>
+                    <p className="admin-description mt-0.5">Check new seller applications before they can start selling.</p>
                 </div>
                 <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-xl ring-1 ring-amber-100">
                     <HiOutlineClock className="h-4 w-4 text-amber-600" />
@@ -208,7 +208,7 @@ const PendingSellers = () => {
                                                 className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[10px] font-bold hover:bg-slate-800 transition-all shadow-lg hover:-translate-y-0.5 flex items-center gap-2"
                                             >
                                                 <HiOutlineEye className="h-3.5 w-3.5" />
-                                                REVIEW APPLICATION
+                                                VIEW APPLICATION
                                             </button>
                                         </div>
                                     </td>
@@ -313,7 +313,7 @@ const PendingSellers = () => {
                                                     <HiOutlineDocumentText className="h-5 w-5 text-indigo-500" />
                                                     <h4 className="text-sm font-bold text-slate-900">Submitted Verification Documents</h4>
                                                 </div>
-                                                <p className="text-xs text-slate-400 font-medium">Verify each document before final approval.</p>
+                                                <p className="text-xs text-slate-400 font-medium">Check each document before final approval.</p>
                                             </div>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -345,7 +345,7 @@ const PendingSellers = () => {
                                                     <div>
                                                         <h5 className="text-xs font-bold text-amber-900">Initial Review Passed</h5>
                                                         <p className="text-[10px] text-amber-700/80 font-medium mt-1 leading-relaxed">
-                                                            All basic identity checks and shop locations have been automatically verified by our system. Manual document verification is now required.
+                                                            Our system automatically checked all basic identity and shop locations. You need to check documents manually now.
                                                         </p>
                                                     </div>
                                                 </div>
@@ -373,7 +373,7 @@ const PendingSellers = () => {
                                                     ) : (
                                                         <>
                                                             <HiOutlineCheckCircle className="h-4 w-4" />
-                                                            <span>APPROVE & GO LIVE</span>
+                                                            <span>APPROVE SELLER</span>
                                                         </>
                                                     )}
                                                 </button>

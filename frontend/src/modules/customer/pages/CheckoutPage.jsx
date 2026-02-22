@@ -51,7 +51,7 @@ const CheckoutPage = () => {
 
     // State management
     const [selectedTimeSlot, setSelectedTimeSlot] = useState('now');
-    const [selectedPayment, setSelectedPayment] = useState('cod');
+    const [selectedPayment, setSelectedPayment] = useState('cash');
     const [selectedTip, setSelectedTip] = useState(0);
     const [showAllCartItems, setShowAllCartItems] = useState(false);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -111,7 +111,7 @@ const CheckoutPage = () => {
     ];
 
     const paymentMethods = [
-        { id: 'cod', label: 'Cash on Delivery', icon: Banknote, sublabel: 'Pay after delivery' },
+        { id: 'cash', label: 'Cash on Delivery', icon: Banknote, sublabel: 'Pay after delivery' },
         { id: 'online', label: 'Online Payment', icon: CreditCard, sublabel: 'UPI, Cards, Wallets' },
         { id: 'wallet', label: 'Wallet', icon: Wallet, sublabel: 'Balance: ₹450' }
     ];

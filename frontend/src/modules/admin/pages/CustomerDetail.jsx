@@ -57,7 +57,7 @@ const CustomerDetail = () => {
         phone: '+91 98765-43210',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anjali',
         totalOrders: 42,
-        ltv: 24500,
+        totalSpent: 24500,
         joinedDate: '12 Jan 2023',
         status: 'active',
         lastOrder: '2 hours ago',
@@ -88,7 +88,7 @@ const CustomerDetail = () => {
         if (!notifMessage.trim()) return;
         setIsNotifModalOpen(false);
         setNotifMessage('');
-        showToast('Strategic notification dispatched to user', 'success');
+        showToast('Notification sent to user', 'success');
     };
 
     const handleRestrictAccount = () => {
@@ -234,7 +234,7 @@ const CustomerDetail = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Logistics & Order History */}
+                {/* Delivery & Order History */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Delivery addresses */}
                     <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] p-8">
@@ -430,7 +430,7 @@ const CustomerDetail = () => {
                     <div className="p-4 bg-sky-50 rounded-2xl flex items-start gap-3">
                         <Bell className="h-5 w-5 text-sky-500 shrink-0 mt-0.5" />
                         <p className="text-xs font-bold text-sky-700 leading-relaxed">
-                            Notifications will be sent via app and SMS immediately.
+                            We will send notifications via app and SMS immediately.
                         </p>
                     </div>
                     <div>

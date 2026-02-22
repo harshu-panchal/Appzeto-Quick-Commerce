@@ -54,7 +54,7 @@ const TermsPage = () => {
 
                             <h3 className="text-slate-800 font-bold text-base mt-6">5. Termination</h3>
                             <p>
-                                We reserve the right to terminate or suspend your account at any time for violation of these terms.
+                                We reserve the right to end or suspend your account at any time for violation of these terms.
                             </p>
                         </div>
                     </div>

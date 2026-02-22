@@ -49,7 +49,7 @@ const FleetRadar = () => {
                             <span className="text-[10px] font-black uppercase tracking-widest">Live: {currentTime}</span>
                         </div>
                     </h1>
-                    <p className="admin-description mt-0.5">Real-time telemetry and dispatch reliability monitor.</p>
+                    <p className="admin-description mt-0.5">Real-time tracking and delivery reliability monitor.</p>
                 </div>
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-8">

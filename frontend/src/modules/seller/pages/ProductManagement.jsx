@@ -449,7 +449,7 @@ const ProductManagement = () => {
                     Reg. Price
                   </th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
-                    Sale Price
+                    Discounted Price
                   </th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
                     Variant
@@ -481,7 +481,7 @@ const ProductManagement = () => {
                             {p.name}
                           </p>
                           <p className="text-[9px] font-semibold text-slate-400">
-                            SKU: {p.sku}
+                            Product Code: {p.sku}
                           </p>
                         </div>
                       </div>
@@ -675,7 +675,7 @@ const ProductManagement = () => {
                         </div>
                         <div className="space-y-1.5 flex flex-col">
                           <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                            URL Slug
+                            Web Address
                           </label>
                           <div className="flex items-center bg-slate-50 rounded-xl px-4 py-2.5">
                             <span className="text-[10px] text-slate-400 font-bold mr-1">
@@ -730,7 +730,7 @@ const ProductManagement = () => {
                         </div>
                         <div className="space-y-1.5 flex flex-col">
                           <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                            SKU Identification
+                            Product Code
                           </label>
                           <input
                             value={formData.sku}
@@ -750,7 +750,7 @@ const ProductManagement = () => {
                       <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-1.5 flex flex-col">
                           <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                            Regular Price (₹)
+                            Price (₹)
                           </label>
                           <input
                             type="number"
@@ -766,7 +766,7 @@ const ProductManagement = () => {
                         </div>
                         <div className="space-y-1.5 flex flex-col">
                           <label className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest ml-1">
-                            Sale Price (₹)
+                            Discounted Price (₹)
                           </label>
                           <input
                             type="number"
@@ -785,7 +785,7 @@ const ProductManagement = () => {
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-1.5 flex flex-col">
                           <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                            Initial Stock Count
+                            How many in stock
                           </label>
                           <input
                             type="number"
@@ -801,7 +801,7 @@ const ProductManagement = () => {
                         </div>
                         <div className="space-y-1.5 flex flex-col">
                           <label className="text-[9px] font-bold text-rose-500 uppercase tracking-widest ml-1">
-                            Low Stock Alert at
+                            Alert me when stock is below
                           </label>
                           <input
                             type="number"
