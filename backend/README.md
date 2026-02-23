@@ -53,7 +53,7 @@ backend/
 │   │   ├── productRoutes.js
 │   │   └── categoryRoutes.js
 │   ├── middleware/          # Custom middleware
-│   │   ├── authmiddleware.js
+│   │   ├── authMiddleware.js
 │   │   └── uploadMiddleware.js
 │   ├── utils/               # Utility functions
 │   │   ├── helper.js

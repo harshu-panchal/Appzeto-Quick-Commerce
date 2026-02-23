@@ -5,7 +5,7 @@ import {
     updateCategory,
     deleteCategory
 } from "../controller/categoryController.js";
-import { verifyToken, allowRoles } from "../middleware/authmiddleware.js";
+import { verifyToken, allowRoles } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();

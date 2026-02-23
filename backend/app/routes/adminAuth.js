@@ -9,7 +9,7 @@ import {
     updateAdminPassword,
 } from "../controller/adminController.js";
 
-import { verifyToken, allowRoles } from "../middleware/authmiddleware.js";
+import { verifyToken, allowRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

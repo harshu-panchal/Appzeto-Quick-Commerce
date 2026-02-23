@@ -7,7 +7,7 @@ import {
     updateDeliveryProfile
 } from "../controller/deliveryAuthController.js";
 
-import { verifyToken } from "../middleware/authmiddleware.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

@@ -6,7 +6,7 @@ import {
     getCustomerProfile,
     updateCustomerProfile
 } from "../controller/customerAuthController.js";
-import { verifyToken } from "../middleware/authmiddleware.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 router.post("/signup", signupCustomer);

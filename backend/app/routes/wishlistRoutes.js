@@ -5,7 +5,7 @@ import {
     removeFromWishlist,
     toggleWishlist
 } from "../controller/wishlistController.js";
-import { verifyToken } from "../middleware/authmiddleware.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
