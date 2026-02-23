@@ -1,47 +1,50 @@
-import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import DashboardLayout from '../../../shared/layout/DashboardLayout';
-import {
-    LayoutDashboard,
-    ClipboardList,
-    Map as MapIcon,
-    CircleDollarSign,
-    User as UserIcon,
-    LocateFixed
-} from 'lucide-react';
-import Loader from '../../../shared/components/ui/Loader';
-
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const DeliveryLog = lazy(() => import('../pages/DeliveryLog'));
-const Profile = lazy(() => import('../pages/Profile'));
-
-console.log("Delivery Routes Module Loaded");
-
-const navItems = [
-    { label: 'Dashboard', path: '/delivery', icon: LayoutDashboard, end: true },
-    { label: 'Delivery Tracking', path: '/delivery/tracking', icon: LocateFixed },
-    { label: 'Assignments', path: '/delivery/tasks', icon: ClipboardList },
-    { label: 'Network Map', path: '/delivery/map', icon: MapIcon },
-    { label: 'Earnings', path: '/delivery/earnings', icon: CircleDollarSign },
-    { label: 'Profile', path: '/delivery/profile', icon: UserIcon },
-];
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import DeliveryLayout from "../layout/DeliveryLayout";
+import Splash from "../pages/Splash";
+import DeliveryAuth from "../pages/DeliveryAuth";
+import Dashboard from "../pages/Dashboard";
+import OrderDetails from "../pages/OrderDetails";
+import Navigation from "../pages/Navigation";
+import DeliveryConfirmation from "../pages/DeliveryConfirmation";
+import Earnings from "../pages/Earnings";
+import OrderHistory from "../pages/OrderHistory";
+import Profile from "../pages/Profile";
+import PersonalDetails from "../pages/profile/PersonalDetails";
+import VehicleInfo from "../pages/profile/VehicleInfo";
+import BankAccount from "../pages/profile/BankAccount";
+import Documents from "../pages/profile/Documents";
+import SafetyPrivacy from "../pages/profile/SafetyPrivacy";
+import Settings from "../pages/profile/Settings";
+import HelpSupport from "../pages/profile/HelpSupport";
+import Notifications from "../pages/Notifications";
 
 const DeliveryRoutes = () => {
-    return (
-        <DashboardLayout navItems={navItems} title="Partner Portal">
-            <Suspense fallback={<Loader fullScreen />}>
-                <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/tracking" element={<DeliveryLog />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/tasks" element={<div className="p-8 text-gray-400">My Delivery Assignments (WIP)</div>} />
-                    <Route path="/map" element={<div className="p-8 text-gray-400">Active Delivery Map (WIP)</div>} />
-                    <Route path="/earnings" element={<div className="p-8 text-gray-400">My Earnings & Payouts (WIP)</div>} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </Suspense>
-        </DashboardLayout>
-    );
+  return (
+    <Routes>
+      <Route element={<DeliveryLayout />}>
+        <Route path="splash" element={<Splash />} />
+        <Route path="login" element={<DeliveryAuth />} />
+        <Route path="auth" element={<DeliveryAuth />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="order-details/:orderId" element={<OrderDetails />} />
+        <Route path="navigation" element={<Navigation />} />
+        <Route path="confirm-delivery" element={<DeliveryConfirmation />} />
+        <Route path="earnings" element={<Earnings />} />
+        <Route path="history" element={<OrderHistory />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/personal-details" element={<PersonalDetails />} />
+        <Route path="profile/vehicle-info" element={<VehicleInfo />} />
+        <Route path="profile/bank-account" element={<BankAccount />} />
+        <Route path="profile/documents" element={<Documents />} />
+        <Route path="profile/safety-privacy" element={<SafetyPrivacy />} />
+        <Route path="profile/settings" element={<Settings />} />
+        <Route path="profile/help-support" element={<HelpSupport />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="/" element={<Navigate to="dashboard" replace />} />
+      </Route>
+    </Routes>
+  );
 };
 
 export default DeliveryRoutes;
