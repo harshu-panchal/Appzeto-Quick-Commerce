@@ -46,6 +46,17 @@ const deliverySchema = new mongoose.Schema(
             type: String,
             default: "delivery",
         },
+
+        otp: {
+            type: String,
+            select: false,
+        },
+
+        otpExpiry: {
+            type: Date,
+            select: false,
+        },
+
         lastLogin: Date,
     },
     {

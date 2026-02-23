@@ -81,6 +81,8 @@ export const getMyOrders = async (req, res) => {
 export const getOrderDetails = async (req, res) => {
     try {
         const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+
         const order = await Order.findOne({ orderId })
             .populate("customer")
             .populate("items.product")
@@ -89,6 +91,17 @@ export const getOrderDetails = async (req, res) => {
         if (!order) {
             return handleResponse(res, 404, "Order not found");
         }
+
+        // --- Data Isolation Check ---
+        const isOwnerCustomer = role === 'customer' && order.customer._id.toString() === userId;
+        const isOwnerSeller = role === 'seller' && order.seller?.toString() === userId;
+        const isAssignedDeliveryBoy = role === 'delivery' && order.deliveryBoy?._id.toString() === userId;
+        const isAdmin = role === 'admin';
+
+        if (!isOwnerCustomer && !isOwnerSeller && !isAssignedDeliveryBoy && !isAdmin) {
+            return handleResponse(res, 403, "Access denied. You are not authorized to view this order.");
+        }
+        // -----------------------------
 
         return handleResponse(res, 200, "Order details fetched", order);
     } catch (error) {
@@ -133,12 +146,23 @@ export const updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { status, deliveryBoyId } = req.body;
+        const { id: userId, role } = req.user;
 
         const order = await Order.findOne({ orderId });
 
         if (!order) {
             return handleResponse(res, 404, "Order not found");
         }
+
+        // --- Data Isolation Check ---
+        const isOwnerSeller = role === 'seller' && order.seller?.toString() === userId;
+        const isAssignedDeliveryBoy = role === 'delivery' && order.deliveryBoy?.toString() === userId;
+        const isAdmin = role === 'admin';
+
+        if (!isOwnerSeller && !isAssignedDeliveryBoy && !isAdmin) {
+            return handleResponse(res, 403, "Access denied. You are not authorized to update this order.");
+        }
+        // -----------------------------
 
         if (status) order.status = status;
         if (deliveryBoyId) order.deliveryBoy = deliveryBoyId;
@@ -156,13 +180,18 @@ export const updateOrderStatus = async (req, res) => {
 ================================ */
 export const getSellerOrders = async (req, res) => {
     try {
-        const sellerId = req.user.id;
-        const orders = await Order.find({ seller: sellerId })
+        const { id: userId, role } = req.user;
+
+        // If admin, fetch all orders. If seller, fetch only their orders.
+        const query = role === 'admin' ? {} : { seller: userId };
+
+        const orders = await Order.find(query)
             .sort({ createdAt: -1 })
             .populate("customer", "name phone")
-            .populate("items.product");
+            .populate("items.product")
+            .populate("seller", "shopName name"); // Populate seller info for admin convenience
 
-        return handleResponse(res, 200, "Seller orders fetched successfully", orders);
+        return handleResponse(res, 200, role === 'admin' ? "All orders fetched" : "Seller orders fetched", orders);
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

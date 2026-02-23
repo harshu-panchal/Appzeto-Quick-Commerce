@@ -32,4 +32,6 @@ export const adminApi = {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
     deleteProduct: (id) => axiosInstance.delete(`/products/${id}`),
+    getOrders: () => axiosInstance.get('/orders/seller-orders'),
+    getOrderDetails: (orderId) => axiosInstance.get(`/orders/details/${orderId}`),
 };

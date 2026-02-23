@@ -406,7 +406,7 @@ const ProductManagement = () => {
                                             </div>
                                         </div>
                                     </td>
-                                    
+
                                     {/* Seller Column */}
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
@@ -414,7 +414,7 @@ const ProductManagement = () => {
                                             <span className="text-xs font-bold text-slate-700">{p.sellerId?.shopName || 'Admin'}</span>
                                         </div>
                                     </td>
-                                    
+
                                     {/* Variant Column */}
                                     <td className="px-6 py-4">
                                         {p.variants && p.variants.length > 0 ? (
@@ -426,17 +426,17 @@ const ProductManagement = () => {
                                             <span className="text-xs font-semibold text-slate-400">No variants</span>
                                         )}
                                     </td>
-                                    
+
                                     {/* Category Column */}
                                     <td className="px-6 py-4">
                                         <span className="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">{p.categoryId?.name || 'N/A'}</span>
                                     </td>
-                                    
+
                                     {/* Subcategory Column */}
                                     <td className="px-6 py-4">
                                         <span className="text-xs font-bold text-slate-600">{p.subcategoryId?.name || 'N/A'}</span>
                                     </td>
-                                    
+
                                     {/* Price Column */}
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex flex-col items-center">
@@ -444,19 +444,19 @@ const ProductManagement = () => {
                                             {p.salePrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{p.salePrice}</span>}
                                         </div>
                                     </td>
-                                    
+
                                     {/* Stock Column */}
                                     <td className="px-6 py-4 text-center">
                                         <span className={cn("text-xs font-bold", p.stock === 0 ? "text-rose-500" : p.stock <= 10 ? "text-amber-500" : "text-emerald-500")}>
                                             {p.stock}
                                         </span>
                                     </td>
-                                    
+
                                     {/* Status Column */}
                                     <td className="px-6 py-4 text-center">
                                         <StatusBadge status={p.status} stock={p.stock} />
                                     </td>
-                                    
+
                                     {/* Actions Column */}
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end space-x-1.5">
@@ -703,7 +703,6 @@ const ProductManagement = () => {
                                         </div>
                                     )}
 
-                                    {modalTab === 'variants' && (
                                     {modalTab === 'variants' && (
                                         <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
                                             <div className="flex items-center justify-between">

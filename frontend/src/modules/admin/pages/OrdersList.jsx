@@ -1,8 +1,9 @@
 // Comprehensive Order Management System
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import { adminApi } from '../services/adminApi';
 import {
     Search,
     Filter,
@@ -31,87 +32,51 @@ const OrdersList = () => {
     const { showToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [dateRange, setDateRange] = useState('All Time');
+    const [orders, setOrders] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Mock Order Data
-    const [orders] = useState([
-        {
-            id: 'ORD-9921',
-            customer: 'John Doe',
-            items: 3,
-            amount: 1250,
-            status: 'delivered',
-            date: '15 Feb, 11:30 AM',
-            payment: 'Digital',
-            deliveryBoy: 'Rahul Sharma',
-            seller: 'Fresh Mart'
-        },
-        {
-            id: 'ORD-9882',
-            customer: 'Sarah Smith',
-            items: 1,
-            amount: 450,
-            status: 'pending',
-            date: '14 Feb, 04:20 PM',
-            payment: 'COD',
-            deliveryBoy: null,
-            seller: 'Daily Needs'
-        },
-        {
-            id: 'ORD-9812',
-            customer: 'Michael Brown',
-            items: 5,
-            amount: 3200,
-            status: 'processed',
-            date: '10 Feb, 02:10 PM',
-            payment: 'Digital',
-            deliveryBoy: 'Amit Patel',
-            seller: 'Grocery Hub'
-        },
-        {
-            id: 'ORD-9750',
-            customer: 'Emily Davis',
-            items: 2,
-            amount: 1800,
-            status: 'out-for-delivery',
-            date: '05 Feb, 09:15 AM',
-            payment: 'Digital',
-            deliveryBoy: 'Suresh Kumar',
-            seller: 'Fresh Mart'
-        },
-        {
-            id: 'ORD-9690',
-            customer: 'David Wilson',
-            items: 1,
-            amount: 250,
-            status: 'cancelled',
-            date: '01 Feb, 06:45 PM',
-            payment: 'Cancelled',
-            deliveryBoy: null,
-            seller: 'Quick Shop'
-        },
-        {
-            id: 'ORD-9650',
-            customer: 'Anna Taylor',
-            items: 4,
-            amount: 2100,
-            status: 'returned',
-            date: '28 Jan, 01:20 PM',
-            payment: 'Refunded',
-            deliveryBoy: 'Vikram Singh',
-            seller: 'Grocery Hub'
-        },
-        {
-            id: 'ORD-9600',
-            customer: 'Chris Evans',
-            items: 2,
-            amount: 950,
-            status: 'pending',
-            date: '27 Jan, 10:00 AM',
-            payment: 'COD',
-            deliveryBoy: null,
-            seller: 'Fresh Mart'
+    const fetchOrders = async () => {
+        setIsLoading(true);
+        try {
+            const response = await adminApi.getOrders();
+            if (response.data.success) {
+                const dbOrders = response.data.results || response.data.result || [];
+                const formatted = dbOrders.map(o => ({
+                    id: o.orderId,
+                    _id: o._id,
+                    customer: o.customer?.name || 'Unknown',
+                    seller: o.seller?.shopName || 'Unknown',
+                    items: o.items?.length || 0,
+                    amount: o.pricing?.total || 0,
+                    status: o.status,
+                    date: new Date(o.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }),
+                    payment: o.payment?.method === 'cod' ? 'COD' : 'Digital',
+                }));
+                setOrders(formatted);
+            }
+        } catch (error) {
+            console.error("Fetch orders error:", error);
+            showToast("Failed to load orders", "error");
+        } finally {
+            setIsLoading(false);
         }
-    ]);
+    };
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    const stats = useMemo(() => {
+        const totalEarnings = orders.reduce((sum, o) => sum + o.amount, 0);
+        const activeOrders = orders.filter(o => ['pending', 'processed', 'out-for-delivery'].includes(o.status)).length;
+
+        return [
+            { label: 'Total Earnings', value: `₹${totalEarnings.toLocaleString('en-IN')}`, trend: '+12.5%', icon: IndianRupee, color: 'emerald' },
+            { label: 'Active Orders', value: activeOrders, trend: '+5', icon: ShoppingBag, color: 'blue' },
+            { label: 'Average Prep Time', value: '18m', trend: '-2m', icon: Clock, color: 'amber' },
+            { label: 'Delivery Rate', value: '98.2%', trend: '+0.4%', icon: CheckCircle2, color: 'fuchsia' },
+        ];
+    }, [orders]);
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
@@ -235,14 +200,24 @@ const OrdersList = () => {
                         <thead>
                             <tr className="bg-slate-50/50">
                                 <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order Details</th>
-                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer & Shop</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Seller</th>
                                 <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
                                 <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Amount</th>
                                 <th className="px-4 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {filteredOrders.length > 0 ? filteredOrders.map((order) => (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="6" className="px-4 py-20 text-center">
+                                        <div className="flex justify-center flex-col items-center gap-2">
+                                            <div className="h-8 w-8 border-4 border-fuchsia-600 border-t-transparent rounded-full animate-spin"></div>
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading Orders...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredOrders.length > 0 ? filteredOrders.map((order) => (
                                 <tr key={order.id} className="group hover:bg-slate-50/30 transition-all cursor-pointer" onClick={() => navigate(`/admin/orders/view/${order.id}`)}>
                                     <td className="px-4 py-5">
                                         <div className="flex items-center gap-4">
@@ -265,15 +240,15 @@ const OrdersList = () => {
                                         </div>
                                     </td>
                                     <td className="px-4 py-5">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full bg-blue-500" />
-                                                <span className="text-xs font-black text-slate-700">{order.customer}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                                                <span className="text-[10px] font-bold text-slate-400">{order.seller}</span>
-                                            </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                            <span className="text-xs font-black text-slate-700">{order.customer}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-5">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                            <span className="text-xs font-black text-slate-700">{order.seller}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-5">
@@ -292,14 +267,20 @@ const OrdersList = () => {
                                         </div>
                                     </td>
                                     <td className="px-4 py-5 text-right">
-                                        <button className="p-2.5 bg-slate-50 text-slate-400 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-xl transition-all">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/admin/orders/view/${order.id}`);
+                                            }}
+                                            className="p-2.5 bg-slate-50 text-slate-400 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-xl transition-all"
+                                        >
                                             <Eye className="h-4 w-4" />
                                         </button>
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="5" className="px-4 py-20 text-center">
+                                    <td colSpan="6" className="px-4 py-20 text-center">
                                         <div className="flex flex-col items-center gap-4">
                                             <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center">
                                                 <Search className="h-10 w-10 text-slate-200" />

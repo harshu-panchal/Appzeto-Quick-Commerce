@@ -19,7 +19,8 @@ router.get("/details/:orderId", verifyToken, getOrderDetails);
 router.put("/cancel/:orderId", verifyToken, cancelOrder);
 
 // Admin/Seller routes (might need different auth middleware for role checks)
-router.get("/seller-orders", verifyToken, getSellerOrders);
+import { allowRoles } from "../middleware/authMiddleware.js";
+router.get("/seller-orders", verifyToken, allowRoles('admin', 'seller'), getSellerOrders);
 router.put("/status/:orderId", verifyToken, updateOrderStatus);
 
 export default router;

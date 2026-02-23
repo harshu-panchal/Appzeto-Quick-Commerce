@@ -8,15 +8,22 @@ import { slugify } from "../utils/slugify.js";
 ================================ */
 export const getProducts = async (req, res) => {
     try {
-        const { search, category, subcategory, header, status, sellerId, featured, limit } = req.query;
+        const { search, category, subcategory, header, status, sellerId, featured, limit, categoryId, subcategoryId, headerId } = req.query;
 
         const query = {};
         if (search) {
             query.name = { $regex: search, $options: "i" };
         }
-        if (header) query.headerId = header;
-        if (category) query.categoryId = category;
-        if (subcategory) query.subcategoryId = subcategory;
+
+        // Support both field names for flexibility (backward compatibility)
+        const finalHeaderId = header || headerId;
+        const finalCategoryId = category || categoryId;
+        const finalSubcategoryId = subcategory || subcategoryId;
+
+        if (finalHeaderId) query.headerId = finalHeaderId;
+        if (finalCategoryId) query.categoryId = finalCategoryId;
+        if (finalSubcategoryId) query.subcategoryId = finalSubcategoryId;
+
         if (status) query.status = status;
         if (sellerId) query.sellerId = sellerId;
         if (featured !== undefined) query.isFeatured = featured === 'true';
