@@ -10,17 +10,7 @@ const Topbar = () => {
     const location = useLocation();
 
     const handleLogout = () => {
-        const path = location.pathname;
         logout();
-        if (path.startsWith('/admin')) {
-            navigate('/admin/auth');
-        } else if (path.startsWith('/seller')) {
-            navigate('/seller/auth');
-        } else if (path.startsWith('/delivery')) {
-            navigate('/delivery/auth');
-        } else {
-            navigate('/login');
-        }
     };
 
     return (

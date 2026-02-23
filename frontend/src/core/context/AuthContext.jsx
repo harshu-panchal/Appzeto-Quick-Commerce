@@ -79,14 +79,32 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
-        const role = getCurrentRoleFromUrl();
-        const storageKey = ROLE_STORAGE_KEYS[role];
+        // Clear all role-specific tokens from localStorage
+        Object.values(ROLE_STORAGE_KEYS).forEach(key => {
+            localStorage.removeItem(key);
+        });
 
-        if (storageKey) {
-            localStorage.removeItem(storageKey);
-            setAuthData(prev => ({ ...prev, [role]: null }));
-            setUser(null);
-        }
+        // Also clear common 'token' key if implemented
+        localStorage.removeItem('token');
+
+        // Reset auth state for all roles to null
+        setAuthData({
+            customer: null,
+            seller: null,
+            admin: null,
+            delivery: null,
+        });
+
+        // Clear the current user profile from memory
+        setUser(null);
+
+        // Final fallback: redirect based on current path if needed
+        // (ProtectedRoute usually handles this, but explicit navigation is safer for some UI edge cases)
+        const path = window.location.pathname;
+        if (path.startsWith('/admin')) window.location.href = '/admin/auth';
+        else if (path.startsWith('/seller')) window.location.href = '/seller/auth';
+        else if (path.startsWith('/delivery')) window.location.href = '/delivery/auth';
+        else window.location.href = '/login';
     };
 
     return (

@@ -416,11 +416,18 @@ const ProductManagement = () => {
                                     </td>
 
                                     {/* Variant Column */}
-                                    <td className="px-6 py-4">
+                                    <td
+                                        className="px-6 py-4 cursor-pointer hover:bg-purple-50/50 transition-colors group/variant"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setViewingVariants(p);
+                                            setIsVariantsViewModalOpen(true);
+                                        }}
+                                    >
                                         {p.variants && p.variants.length > 0 ? (
                                             <div className="flex items-center gap-1.5">
-                                                <HiOutlineSwatch className="h-3.5 w-3.5 text-purple-500" />
-                                                <span className="text-xs font-bold text-purple-700">{p.variants.length} Variant{p.variants.length > 1 ? 's' : ''}</span>
+                                                <HiOutlineSwatch className="h-3.5 w-3.5 text-purple-500 group-hover/variant:scale-110 transition-transform" />
+                                                <span className="text-xs font-bold text-purple-700 underline underline-offset-4 decoration-purple-200 group-hover/variant:decoration-purple-500">{p.variants.length} Variant{p.variants.length > 1 ? 's' : ''}</span>
                                             </div>
                                         ) : (
                                             <span className="text-xs font-semibold text-slate-400">No variants</span>

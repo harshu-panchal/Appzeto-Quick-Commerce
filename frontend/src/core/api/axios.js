@@ -65,19 +65,12 @@ axiosInstance.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
-            // Determine which token was used or which module we are in
-            const pagePath = window.location.pathname;
-            let storageKey = null;
+            // Clear all possible auth tokens from localStorage
+            const storageKeys = ['auth_seller', 'auth_admin', 'auth_delivery', 'auth_customer', 'token'];
+            storageKeys.forEach(key => localStorage.removeItem(key));
 
-            if (pagePath.startsWith('/seller')) storageKey = 'auth_seller';
-            else if (pagePath.startsWith('/admin')) storageKey = 'auth_admin';
-            else if (pagePath.startsWith('/delivery')) storageKey = 'auth_delivery';
-            else if (pagePath.startsWith('/customer')) storageKey = 'auth_customer';
-
-            if (storageKey) {
-                localStorage.removeItem(storageKey);
-                window.location.reload();
-            }
+            // Reload will trigger ProtectedRoute to redirect to proper login page
+            window.location.reload();
         }
         return Promise.reject(error);
     }
