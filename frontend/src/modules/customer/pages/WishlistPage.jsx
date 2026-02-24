@@ -1,52 +1,61 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import CustomerLayout from '../components/layout/CustomerLayout';
+import { Link, useNavigate } from 'react-router-dom';
 import ProductCard from '../components/shared/ProductCard';
 import { useWishlist } from '../context/WishlistContext';
+import { ChevronLeft, Heart, Trash2 } from 'lucide-react';
 
 const WishlistPage = () => {
+    const navigate = useNavigate();
     const { wishlist, clearWishlist } = useWishlist();
 
     return (
-        <CustomerLayout showHeader={false}>
-            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 pt-10">
-                <div className="mb-8 flex flex-row items-end justify-between gap-4">
-                    <div className="text-left">
-                        <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#0c831f] mb-1">My Wishlist</h1>
-                        <p className="text-gray-500 text-sm md:text-lg font-medium">
-                            {wishlist.length} {wishlist.length === 1 ? 'item' : 'items'} saved
-                        </p>
+        <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 pt-10">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors"
+                    >
+                        <ChevronLeft size={24} className="text-slate-600" />
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-black text-slate-800">My Wishlist</h1>
+                        <p className="text-slate-500 font-medium">{wishlist.length} {wishlist.length === 1 ? 'item' : 'items'} saved</p>
                     </div>
-                    {wishlist.length > 0 && (
-                        <button
-                            onClick={clearWishlist}
-                            className="text-xs md:text-sm font-bold text-red-500 hover:text-red-600 bg-red-50 px-3 py-1.5 rounded-lg transition-colors"
-                        >
-                            Clear All
-                        </button>
-                    )}
                 </div>
-
-                {wishlist.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-                        {wishlist.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200 shadow-sm">
-                        <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-2">Your wishlist is empty</h3>
-                        <p className="text-muted-foreground mb-6">Save items you like to find them easily here later.</p>
-                        <Link to="/categories" className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#0c831f] text-white font-bold hover:bg-[#0b721b] transition-colors shadow-lg">
-                            Start Shopping
-                        </Link>
-                    </div>
+                {wishlist.length > 0 && (
+                    <button
+                        onClick={clearWishlist}
+                        className="flex items-center gap-2 text-red-500 font-bold hover:bg-red-50 px-4 py-2 rounded-xl transition-colors"
+                    >
+                        <Trash2 size={18} /> Clear All
+                    </button>
                 )}
             </div>
-        </CustomerLayout>
+
+            {wishlist.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {wishlist.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-slate-100">
+                    <div className="h-20 w-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Heart size={40} className="text-rose-500" strokeWidth={1.5} />
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-800 mb-2">No items in wishlist</h2>
+                    <p className="text-slate-500 mb-8 max-w-xs mx-auto">Start saving your favorite items to see them here later.</p>
+                    <Link
+                        to="/categories"
+                        className="px-8 py-3 bg-[#0c831f] text-white font-bold rounded-2xl hover:bg-[#0b721b] transition-all shadow-xl shadow-green-100"
+                    >
+                        Explore Products
+                    </Link>
+                </div>
+            )}
+        </div>
     );
 };
 

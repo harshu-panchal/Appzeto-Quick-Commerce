@@ -49,7 +49,11 @@ export const signupDelivery = async (req, res) => {
             await delivery.save();
         }
 
-        console.log("Delivery Signup OTP:", otp);
+        console.log("-------------------");
+        console.log("Delivery Signup Request Received");
+        console.log("Data:", { name, phone, vehicleType });
+        console.log("Generated OTP:", otp);
+        console.log("-------------------");
 
         return handleResponse(res, 200, "OTP sent successfully");
     } catch (error) {
@@ -80,7 +84,11 @@ export const loginDelivery = async (req, res) => {
         delivery.otpExpiry = Date.now() + 5 * 60 * 1000;
         await delivery.save();
 
-        console.log("Delivery Login OTP:", otp);
+        console.log("-------------------");
+        console.log("Delivery Login Request Received");
+        console.log("Phone:", phone);
+        console.log("Generated OTP:", otp);
+        console.log("-------------------");
 
         return handleResponse(res, 200, "OTP sent successfully");
     } catch (error) {
@@ -110,6 +118,7 @@ export const verifyDeliveryOTP = async (req, res) => {
         }
 
         delivery.isVerified = true;
+        delivery.isOnline = true; // Auto-activate delivery boy on login
         delivery.otp = undefined;
         delivery.otpExpiry = undefined;
         delivery.lastLogin = new Date();
