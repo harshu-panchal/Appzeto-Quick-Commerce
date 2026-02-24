@@ -12,9 +12,11 @@ const MiniCart = () => {
     // Show up to 2 product images
     const displayItems = cart.slice(0, 2);
 
+    const path = location.pathname.replace(/\/$/, '') || '/';
+
     // Hide MiniCart on checkout page and order details page
-    const isCheckoutPage = location.pathname === '/checkout';
-    const isOrderDetailsPage = location.pathname.startsWith('/orders/');
+    const isCheckoutPage = path === '/checkout' || path === '/cart';
+    const isOrderDetailsPage = path.startsWith('/orders');
 
     return (
         <AnimatePresence>
@@ -26,11 +28,11 @@ const MiniCart = () => {
                 >
 
                     <motion.div
-                        className="w-full max-w-[210px] pointer-events-auto"
+                        className="w-full max-w-[180px] pointer-events-auto"
                     >
                         <Link
                             to="/checkout"
-                            className="flex items-center gap-2 bg-gradient-to-r from-[#0c831f] via-[#149d29] to-[#0c831f] bg-[length:200%_auto] animate-gradient text-white py-1.5 px-2 pr-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-[#0b721b] transition-all hover:scale-[1.02] active:scale-95 group border border-white/20 relative overflow-hidden"
+                            className="flex items-center gap-2 bg-gradient-to-r from-[#0c831f] via-[#149d29] to-[#0c831f] bg-[length:200%_auto] animate-gradient text-white py-2.5 px-3 pr-2 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-[#0b721b] transition-all hover:scale-[1.02] active:scale-95 group border border-white/20 relative overflow-hidden"
                         >
                             {/* Shimmer Effect */}
                             <motion.div

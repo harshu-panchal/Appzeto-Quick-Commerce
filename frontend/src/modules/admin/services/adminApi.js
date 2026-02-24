@@ -34,4 +34,5 @@ export const adminApi = {
     deleteProduct: (id) => axiosInstance.delete(`/products/${id}`),
     getOrders: () => axiosInstance.get('/orders/seller-orders'),
     getOrderDetails: (orderId) => axiosInstance.get(`/orders/details/${orderId}`),
+    updateOrderStatus: (orderId, data) => axiosInstance.put(`/orders/status/${orderId}`, data),
 };

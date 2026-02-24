@@ -13,7 +13,10 @@ const navItems = [
 
 const BottomNav = () => {
     const location = useLocation();
-    const [activeIndex, setActiveIndex] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(() => {
+        const index = navItems.findIndex(item => item.path === location.pathname);
+        return index !== -1 ? index : 0;
+    });
 
     useEffect(() => {
         const index = navItems.findIndex(item => item.path === location.pathname);

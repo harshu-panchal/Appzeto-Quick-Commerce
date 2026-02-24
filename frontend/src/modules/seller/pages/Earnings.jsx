@@ -23,47 +23,48 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const monthlyData = [
-  { name: "Jan", revenue: 4000 },
-  { name: "Feb", revenue: 3000 },
-  { name: "Mar", revenue: 2000 },
-  { name: "Apr", revenue: 2780 },
-  { name: "May", revenue: 1890 },
-  { name: "Jun", revenue: 2390 },
-  { name: "Jul", revenue: 3490 },
-  { name: "Aug", revenue: 4000 },
-  { name: "Sep", revenue: 3000 },
-  { name: "Oct", revenue: 2000 },
-  { name: "Nov", revenue: 2780 },
-  { name: "Dec", revenue: 1890 },
-];
-
 import { MagicCard } from "@/components/ui/magic-card";
 import { BlurFade } from "@/components/ui/blur-fade";
 import ShimmerButton from "@/components/ui/shimmer-button";
+import { sellerApi } from "../services/sellerApi";
+import { toast } from "sonner";
+import { exportToCSV } from "@/lib/exportUtils";
 
-// ... (keep monthlyData constant)
 
 const Earnings = () => {
-  const totalBalance = 24850.0;
+  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = React.useState(null);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = React.useState(false);
   const [isWithdrawing, setIsWithdrawing] = React.useState(false);
-  const [withdrawAmount, setWithdrawAmount] = React.useState(
-    totalBalance.toString(),
-  );
+  const [withdrawAmount, setWithdrawAmount] = React.useState("");
 
-  const earningsData = {
-    totalWithdrawn: 12450,
-    lastPayoutDate: "Jan 15, 2024",
-    availableBalance: 24850,
+  const fetchEarnings = async () => {
+    try {
+      setLoading(true);
+      const response = await sellerApi.getEarnings();
+      if (response.data.success) {
+        setData(response.data.result);
+        setWithdrawAmount(response.data.result.balances.settledBalance.toString());
+      }
+    } catch (error) {
+      console.error("Earnings Fetch Error:", error);
+      toast.error("Failed to load earnings data");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  React.useEffect(() => {
+    fetchEarnings();
+  }, []);
+
   const handleWithdraw = () => {
+    const totalBalance = data?.balances?.settledBalance || 0;
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0 || amount > totalBalance) {
       alert(
-        "Please enter a valid amount between $0.01 and $" +
-          totalBalance.toLocaleString(),
+        "Please enter a valid amount between ₹0.01 and ₹" +
+        totalBalance.toLocaleString(),
       );
       return;
     }
@@ -73,15 +74,18 @@ const Earnings = () => {
       setIsWithdrawing(false);
       setIsWithdrawModalOpen(false);
       alert(
-        `Withdrawal request of $${amount.toLocaleString()} submitted successfully!`,
+        `Withdrawal request of ₹${amount.toLocaleString()} submitted successfully!`,
       );
     }, 1500);
   };
 
   const exportReport = () => {
-    console.log("Exporting earnings report...");
     alert("Exporting monthly earnings report as PDF (Simulation)");
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING EARNINGS...</div>;
+  }
   return (
     <div className="space-y-8 pb-16">
       <BlurFade delay={0.1}>
@@ -91,7 +95,29 @@ const Earnings = () => {
           </h2>
           <div className="flex space-x-3">
             <Button
-              onClick={exportReport}
+              onClick={() => {
+                if (!data?.ledger) return;
+                const exportData = data.ledger.map(txn => ({
+                  id: txn.id,
+                  type: txn.type,
+                  amount: `₹${(txn.amount || 0).toLocaleString()}`,
+                  status: txn.status,
+                  date: txn.date || new Date(txn.createdAt).toLocaleDateString(),
+                  customer: txn.customer,
+                  ref: txn.ref
+                }));
+
+                exportToCSV(exportData, "Seller_Earnings_Report", {
+                  id: "Transaction ID",
+                  type: "Type",
+                  amount: "Amount",
+                  status: "Status",
+                  date: "Date",
+                  customer: "Customer",
+                  ref: "Reference"
+                });
+                toast.success("Earnings report downloaded successfully!");
+              }}
               variant="outline"
               className="border-gray-200">
               <Download className="mr-2 h-5 w-5" />
@@ -112,7 +138,7 @@ const Earnings = () => {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-emerald-100 font-medium">Total Revenue</p>
-                <h3 className="text-4xl font-bold mt-2">$24,850.00</h3>
+                <h3 className="text-4xl font-bold mt-2">₹{(data?.balances?.totalRevenue || 0).toLocaleString()}</h3>
               </div>
               <div className="p-3 bg-white/20 rounded-xl">
                 <DollarSign className="h-8 w-8 text-white" />
@@ -120,7 +146,7 @@ const Earnings = () => {
             </div>
             <div className="mt-8 flex items-center text-emerald-100 bg-white/10 w-fit px-3 py-1 rounded-full text-sm">
               <TrendingUp className="mr-2" />
-              <span>+12.5% increase from last month</span>
+              <span>Real-time earnings data</span>
             </div>
           </Card>
         </BlurFade>
@@ -133,7 +159,7 @@ const Earnings = () => {
                   Total Withdrawn
                 </p>
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  ₹{earningsData.totalWithdrawn.toLocaleString()}
+                  ₹{(data?.balances?.totalWithdrawn || 0).toLocaleString()}
                 </h2>
               </div>
               <div className="p-3 bg-indigo-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
@@ -147,10 +173,10 @@ const Earnings = () => {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">
-                    Last Payout
+                    Available to Withdraw
                   </p>
                   <p className="text-xs font-black text-slate-900">
-                    ₹12,450 on {earningsData.lastPayoutDate}
+                    ₹{(data?.balances?.settledBalance || 0).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -158,6 +184,64 @@ const Earnings = () => {
           </Card>
         </BlurFade>
       </div>
+
+      <BlurFade delay={0.4}>
+        <Card className="p-6 border-none shadow-md bg-white">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-indigo-500" />
+              Monthly Revenue Performance
+            </h3>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data?.monthlyChart || []}>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#f1f5f9"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
+                  tickFormatter={(value) => `₹${value}`}
+                />
+                <Tooltip
+                  cursor={{ fill: "#f8fafc" }}
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+                    fontSize: "12px",
+                    fontWeight: "700",
+                  }}
+                  formatter={(value) => [`₹${value.toLocaleString()}`, "Revenue"]}
+                />
+                <Bar
+                  dataKey="revenue"
+                  fill="url(#colorRevenue)"
+                  radius={[6, 6, 0, 0]}
+                  barSize={40}
+                />
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={1} />
+                    <stop offset="95%" stopColor="#818cf8" stopOpacity={1} />
+                  </linearGradient>
+                </defs>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </BlurFade>
 
       {/* Withdrawal Modal */}
       <AnimatePresence>
@@ -178,7 +262,7 @@ const Earnings = () => {
               <p className="text-sm text-slate-500 font-medium mb-8">
                 Available Balance:{" "}
                 <span className="text-emerald-600 font-bold">
-                  ₹{earningsData.availableBalance.toLocaleString()}
+                  ₹{(data?.balances?.settledBalance || 0).toLocaleString()}
                 </span>
               </p>
 
@@ -195,7 +279,8 @@ const Earnings = () => {
                       type="number"
                       className="w-full pl-8 pr-4 py-3 rounded-lg border-slate-200 bg-slate-50 font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
                       placeholder="0.00"
-                      defaultValue={earningsData.availableBalance}
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
                     />
                   </div>
                 </div>

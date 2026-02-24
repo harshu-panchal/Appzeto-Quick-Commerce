@@ -59,9 +59,9 @@ const CustomerAuth = () => {
         setIsLoading(true);
         try {
             if (isLogin) {
-                await customerApi.login({ phone: formData.phone });
+                await customerApi.sendLoginOtp({ phone: formData.phone });
             } else {
-                await customerApi.signup({ name: formData.name, phone: formData.phone });
+                await customerApi.sendSignupOtp({ name: formData.name, phone: formData.phone });
             }
             setShowOtp(true);
             startTimer();

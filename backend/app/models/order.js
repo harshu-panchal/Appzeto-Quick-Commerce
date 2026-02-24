@@ -97,6 +97,16 @@ const orderSchema = new mongoose.Schema(
             enum: ["customer", "seller", "admin", "system"],
         },
         cancelReason: String,
+        deviceType: {
+            type: String,
+            enum: ["Mobile", "Desktop", "Tablet"],
+            default: "Mobile",
+        },
+        trafficSource: {
+            type: String,
+            enum: ["Direct", "Search", "Social", "Referral"],
+            default: "Direct",
+        },
     },
     { timestamps: true }
 );

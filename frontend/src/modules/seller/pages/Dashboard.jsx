@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "@shared/components/ui/Card";
 import PageHeader from "@shared/components/ui/PageHeader";
@@ -26,32 +26,45 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { cn } from "@/lib/utils";
-
-const revenueData = [
-  { date: "Jan 1", revenue: 4200, orders: 24 },
-  { date: "Jan 8", revenue: 5100, orders: 32 },
-  { date: "Jan 15", revenue: 4800, orders: 28 },
-  { date: "Jan 22", revenue: 6200, orders: 38 },
-  { date: "Jan 29", revenue: 7100, orders: 42 },
-  { date: "Feb 5", revenue: 6800, orders: 40 },
-  { date: "Feb 12", revenue: 8200, orders: 48 },
-];
-
-const productPerformance = [
-  { name: "Electronics", sales: 4200 },
-  { name: "Fashion", sales: 3800 },
-  { name: "Home", sales: 2900 },
-  { name: "Beauty", sales: 2400 },
-  { name: "Sports", sales: 1800 },
-];
+import { sellerApi } from "../services/sellerApi";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState(null);
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [statsRes, ordersRes] = await Promise.all([
+          sellerApi.getStats(),
+          sellerApi.getOrders()
+        ]);
+
+        if (statsRes.data.success) {
+          setStatsData(statsRes.data.result);
+        }
+        if (ordersRes.data.success) {
+          setOrders(ordersRes.data.results || ordersRes.data.result || []);
+        }
+      } catch (error) {
+        console.error("Dashboard Fetch Error:", error);
+        toast.error("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const stats = [
     {
       label: "Total Revenue",
-      value: "$12,450",
+      value: statsData?.overview?.totalSales || "₹0",
       change: "+12.5%",
       changeType: "increase",
       icon: DollarSign,
@@ -61,7 +74,7 @@ const Dashboard = () => {
     },
     {
       label: "Total Orders",
-      value: "156",
+      value: statsData?.overview?.totalOrders || "0",
       change: "+8.2%",
       changeType: "increase",
       icon: ShoppingBag,
@@ -70,18 +83,18 @@ const Dashboard = () => {
       description: "vs last month",
     },
     {
-      label: "Active Products",
-      value: "24",
+      label: "Avg Order Value",
+      value: statsData?.overview?.avgOrderValue || "₹0",
       change: "+2",
       changeType: "increase",
       icon: Package,
       iconBg: "bg-purple-50",
       iconColor: "text-purple-600",
-      description: "new this week",
+      description: "per order",
     },
     {
       label: "Pending Orders",
-      value: "8",
+      value: orders.filter(o => o.status === 'pending').length.toString(),
       change: "-3",
       changeType: "decrease",
       icon: Clock,
@@ -89,14 +102,6 @@ const Dashboard = () => {
       iconColor: "text-orange-600",
       description: "need attention",
     },
-  ];
-
-  const recentOrders = [
-    { id: "#ORD-2401", customer: "John Smith", date: "2 mins ago", amount: "$145.00", status: "pending" },
-    { id: "#ORD-2402", customer: "Sarah Johnson", date: "15 mins ago", amount: "$89.50", status: "processing" },
-    { id: "#ORD-2403", customer: "Mike Wilson", date: "1 hour ago", amount: "$234.00", status: "shipped" },
-    { id: "#ORD-2404", customer: "Emma Davis", date: "2 hours ago", amount: "$67.25", status: "delivered" },
-    { id: "#ORD-2405", customer: "David Brown", date: "3 hours ago", amount: "$198.00", status: "delivered" },
   ];
 
   const quickActions = [
@@ -124,12 +129,14 @@ const Dashboard = () => {
   ];
 
   const getStatusColor = (status) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "pending":
         return "warning";
       case "processing":
+      case "confirmed":
         return "info";
       case "shipped":
+      case "out_for_delivery":
         return "default";
       case "delivered":
         return "success";
@@ -137,6 +144,10 @@ const Dashboard = () => {
         return "default";
     }
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen font-bold text-gray-500">Updating Dashboard...</div>;
+  }
 
   return (
     <div className="ds-section-spacing">
@@ -215,10 +226,10 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Chart */}
-        <Card title="Revenue Overview" subtitle="Last 7 weeks performance" className="lg:col-span-2">
+        <Card title="Revenue Overview" subtitle="Last 7 days performance" className="lg:col-span-2">
           <div className="h-[300px] mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData}>
+              <AreaChart data={statsData?.salesTrend || []}>
                 <defs>
                   <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
@@ -227,7 +238,7 @@ const Dashboard = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis
-                  dataKey="date"
+                  dataKey="name"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
@@ -236,7 +247,7 @@ const Dashboard = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#94a3b8", fontSize: 12 }}
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => `₹${value}`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -248,7 +259,7 @@ const Dashboard = () => {
                 />
                 <Area
                   type="monotone"
-                  dataKey="revenue"
+                  dataKey="sales"
                   stroke="#4f46e5"
                   strokeWidth={2}
                   fill="url(#revenueGradient)"
@@ -262,12 +273,12 @@ const Dashboard = () => {
         <Card title="Top Categories" subtitle="Sales by category">
           <div className="h-[300px] mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={productPerformance} layout="vertical">
+              <BarChart data={statsData?.categoryMix || []} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                 <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
                 <YAxis
                   type="category"
-                  dataKey="name"
+                  dataKey="subject"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#64748b", fontSize: 12 }}
@@ -281,7 +292,7 @@ const Dashboard = () => {
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
                 />
-                <Bar dataKey="sales" fill="#4f46e5" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="A" fill="#4f46e5" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -327,24 +338,24 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {recentOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
+              {orders.slice(0, 5).map((order) => (
+                <tr key={order.orderId} className="hover:bg-gray-50/50 transition-colors">
                   <td className="py-4 px-4">
-                    <span className="text-sm font-semibold text-gray-900">{order.id}</span>
+                    <span className="text-sm font-semibold text-gray-900">{order.orderId}</span>
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
-                        {order.customer.split(" ").map(n => n[0]).join("")}
+                        {order.customer?.name?.split(" ").map(n => n[0]).join("") || "C"}
                       </div>
-                      <span className="text-sm font-medium text-gray-700">{order.customer}</span>
+                      <span className="text-sm font-medium text-gray-700">{order.customer?.name || "Customer"}</span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="text-sm text-gray-600">{order.date}</span>
+                    <span className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</span>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="text-sm font-semibold text-gray-900">{order.amount}</span>
+                    <span className="text-sm font-semibold text-gray-900">₹{order.pricing?.total || 0}</span>
                   </td>
                   <td className="py-4 px-4">
                     <Badge variant={getStatusColor(order.status)} className="capitalize">
@@ -353,7 +364,7 @@ const Dashboard = () => {
                   </td>
                   <td className="py-4 px-4 text-right">
                     <button
-                      onClick={() => navigate(`/seller/orders/${order.id}`)}
+                      onClick={() => navigate(`/seller/orders/${order.orderId}`)}
                       className="text-gray-400 hover:text-primary transition-colors p-1"
                     >
                       <Eye className="h-4 w-4" />

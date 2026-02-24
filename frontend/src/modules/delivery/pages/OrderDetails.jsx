@@ -20,13 +20,47 @@ import Card from "@/shared/components/ui/Card";
 
 import { toast } from "sonner";
 
+import { deliveryApi } from "../services/deliveryApi";
+import { Loader2 } from "lucide-react";
+
 const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1); // 1: Pickup, 2: At Store, 3: Delivering, 4: Delivered
   const [itemsExpanded, setItemsExpanded] = useState(false);
   const [isSlideComplete, setIsSlideComplete] = useState(false);
   const [dragX, setDragX] = useState(0);
+
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      try {
+        const response = await deliveryApi.getOrderDetails(orderId);
+        setOrder(response.data.result);
+
+        // Map backend status to UI step
+        const statusMap = {
+          "confirmed": 1,
+          "packed": 2,
+          "out_for_delivery": 3,
+          "delivered": 4
+        };
+        if (statusMap[response.data.result.status]) {
+          setStep(statusMap[response.data.result.status]);
+        }
+      } catch (error) {
+        toast.error("Failed to fetch order details");
+        navigate("/delivery/dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (orderId) {
+      fetchOrderDetails();
+    }
+  }, [orderId, navigate]);
 
   const steps = [
     {
@@ -87,6 +121,16 @@ const OrderDetails = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="animate-spin text-primary" size={48} />
+      </div>
+    );
+  }
+
+  if (!order) return null;
+
   return (
     <div className="bg-gray-50/50 min-h-screen pb-32">
       {/* Header */}
@@ -99,16 +143,15 @@ const OrderDetails = () => {
             className="mr-2">
             <ChevronDown className="rotate-90" size={24} />
           </Button>
-          <h1 className="ds-h3 text-gray-800">Order #{orderId || "2938"}</h1>
+          <h1 className="ds-h3 text-gray-800">Order #{order.orderId}</h1>
         </div>
         <span
-          className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide ${
-            step === 1
+          className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide ${step === 1
               ? "bg-blue-100 text-blue-700"
               : step === 2
                 ? "bg-orange-100 text-orange-700"
                 : "bg-green-100 text-green-700"
-          }`}>
+            }`}>
           {step === 1 ? "Pickup" : step === 2 ? "At Store" : "Delivery"}
         </span>
       </header>
@@ -155,7 +198,7 @@ const OrderDetails = () => {
         </div>
 
         <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] text-gray-500 font-bold border border-gray-200">
-          Google Maps View
+          Tracking View
         </div>
       </div>
 
@@ -214,23 +257,25 @@ const OrderDetails = () => {
                         Pickup Location
                       </h2>
                       <p className="text-xs text-orange-600 font-medium">
-                        1.2 km away
+                        Store Location
                       </p>
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => (window.location.href = "tel:9876543210")}>
-                    <Phone size={16} />
-                  </Button>
+                  {order.seller?.phone && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => (window.location.href = `tel:${order.seller.phone}`)}>
+                      <Phone size={16} />
+                    </Button>
+                  )}
                 </div>
                 <div className="p-4">
                   <h3 className="font-bold text-lg mb-1">
-                    Appzeto Mart, Indiranagar
+                    {order.seller?.shopName || "Seller Store"}
                   </h3>
                   <p className="text-gray-500 text-sm mb-4 leading-relaxed">
-                    Shop No. 4, 12th Main, 4th Cross, Indiranagar, Bangalore
+                    {order.seller?.address || "Address not available"}
                   </p>
 
                   <Button
@@ -264,7 +309,7 @@ const OrderDetails = () => {
                         Customer Details
                       </h2>
                       <p className="text-xs text-blue-600 font-medium">
-                        Payment: Prepaid
+                        Payment: {order.payment?.method?.toUpperCase() || "PENDING"}
                       </p>
                     </div>
                   </div>
@@ -272,18 +317,24 @@ const OrderDetails = () => {
                     <Button variant="outline" size="icon" className="h-9 w-9">
                       <MessageSquare size={18} />
                     </Button>
-                    <Button variant="outline" size="icon" className="h-9 w-9">
-                      <Phone size={18} />
-                    </Button>
+                    {order.address?.phone && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9"
+                        onClick={() => (window.location.href = `tel:${order.address.phone}`)}>
+                        <Phone size={18} />
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-bold text-lg mb-1">Priya Sharma</h3>
+                  <h3 className="font-bold text-lg mb-1">{order.address?.name || "Customer"}</h3>
                   <p className="text-gray-500 text-sm mb-1">
-                    Flat 302, Green Apartments
+                    {order.address?.address}
                   </p>
                   <p className="text-gray-500 text-sm mb-4">
-                    Indiranagar, Bangalore
+                    {order.address?.city}
                   </p>
 
                   <Button
@@ -310,7 +361,7 @@ const OrderDetails = () => {
               <div>
                 <span>Order Items</span>
                 <span className="ml-2 text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  4 items
+                  {order.items?.length || 0} items
                 </span>
               </div>
             </div>
@@ -330,31 +381,27 @@ const OrderDetails = () => {
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden">
                 <div className="p-4 border-t border-gray-100 bg-gray-50/50 space-y-3">
-                  {[
-                    { name: "Amul Milk (500ml)", qty: 2, price: 54 },
-                    { name: "Britannia Bread", qty: 1, price: 45 },
-                    { name: "Eggs (6 pcs)", qty: 1, price: 60 },
-                  ].map((item, i) => (
+                  {order.items?.map((item, i) => (
                     <div
                       key={i}
                       className="flex justify-between items-center text-sm">
                       <div className="flex items-center">
                         <span className="font-bold text-gray-500 mr-3 text-xs w-6 bg-white border border-gray-200 text-center rounded py-0.5">
-                          x{item.qty}
+                          x{item.quantity}
                         </span>
                         <span className="text-gray-800 font-medium">
                           {item.name}
                         </span>
                       </div>
                       <span className="font-bold text-gray-600">
-                        ₹{item.price}
+                        ₹{item.price * item.quantity}
                       </span>
                     </div>
                   ))}
                   <div className="pt-3 mt-2 border-t border-gray-200 flex justify-between items-center">
                     <span className="text-gray-500 text-sm">Total Bill</span>
                     <span className="text-lg font-bold text-gray-900">
-                      ₹159
+                      ₹{order.pricing?.total}
                     </span>
                   </div>
                 </div>
@@ -385,9 +432,8 @@ const OrderDetails = () => {
         <div className="relative h-16 bg-gray-100 rounded-full overflow-hidden select-none">
           {/* Background Text */}
           <motion.div
-            className={`absolute inset-0 flex items-center justify-center text-gray-400 font-bold text-lg pointer-events-none transition-opacity duration-300 ${
-              dragX > 50 ? "opacity-0" : "opacity-100"
-            }`}
+            className={`absolute inset-0 flex items-center justify-center text-gray-400 font-bold text-lg pointer-events-none transition-opacity duration-300 ${dragX > 50 ? "opacity-0" : "opacity-100"
+              }`}
             animate={{ x: [0, 5, 0] }}
             transition={{ repeat: Infinity, duration: 1.5 }}>
             Slide to {steps[step - 1].action} <ChevronRight className="ml-1" />
@@ -401,9 +447,8 @@ const OrderDetails = () => {
 
           {/* Slider Button */}
           <motion.div
-            className={`absolute top-1 bottom-1 left-1 w-14 rounded-full flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing z-20 ${
-              steps[step - 1].color || "bg-primary"
-            }`}
+            className={`absolute top-1 bottom-1 left-1 w-14 rounded-full flex items-center justify-center shadow-md cursor-grab active:cursor-grabbing z-20 ${steps[step - 1].color || "bg-primary"
+              }`}
             drag="x"
             dragConstraints={{ left: 0, right: 280 }}
             dragElastic={0.05}

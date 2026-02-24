@@ -24,7 +24,7 @@ const DeliveryRoutes = () => {
     <Routes>
       <Route element={<DeliveryLayout />}>
         <Route path="splash" element={<Splash />} />
-        <Route path="login" element={<DeliveryAuth />} />
+
         <Route path="auth" element={<DeliveryAuth />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="order-details/:orderId" element={<OrderDetails />} />

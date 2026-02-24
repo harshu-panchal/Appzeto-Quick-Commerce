@@ -1,6 +1,7 @@
 import express from "express";
 import { signupSeller, loginSeller } from "../controller/sellerAuthController.js";
 import { getSellerProfile, updateSellerProfile } from "../controller/sellerController.js";
+import { getSellerStats, getSellerEarnings } from "../controller/sellerStatsController.js";
 import { verifyToken, allowRoles } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -22,5 +23,9 @@ router.put(
     allowRoles("seller"),
     updateSellerProfile
 );
+
+// Analytics & Financials
+router.get("/stats", verifyToken, allowRoles("seller"), getSellerStats);
+router.get("/earnings", verifyToken, allowRoles("seller"), getSellerEarnings);
 
 export default router;

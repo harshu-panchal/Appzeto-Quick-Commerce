@@ -14,84 +14,14 @@ import {
     HiOutlineBanknotes,
     HiOutlineClock,
     HiOutlineArchiveBoxXMark,
-    HiOutlineChevronRight,
-    HiOutlineMapPin,
-    HiOutlinePhone,
     HiOutlineCalendarDays,
-    HiOutlineChartBar
+    HiOutlineChartBar,
+    HiOutlineChevronDown
 } from 'react-icons/hi2';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-// Mock Data
-const MOCK_ORDERS = [
-    {
-        id: 'ORD-2023-101',
-        customer: { name: 'John Doe', phone: '+1 (555) 123-4567', avatar: 'JD' },
-        items: [
-            { name: 'Organic Bananas', price: 4.99, qty: 2, image: 'https://images.unsplash.com/photo-1603833665858-e81b1c7e4660?w=100&h=100&fit=crop' },
-            { name: 'Pure Honey', price: 12.50, qty: 1, image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=100&h=100&fit=crop' }
-        ],
-        total: 145.00,
-        status: 'Pending',
-        date: 'Oct 24, 2023',
-        time: '10:30 AM',
-        address: '123 Maple Ave, Springfield, IL 62704',
-        payment: 'Paid via Credit Card'
-    },
-    {
-        id: 'ORD-2023-102',
-        customer: { name: 'Sarah Miller', phone: '+1 (555) 987-6543', avatar: 'SM' },
-        items: [
-            { name: 'Fresh Strawberries', price: 6.99, qty: 3, image: 'https://images.unsplash.com/photo-1464960710334-03f0c398dca0?w=100&h=100&fit=crop' }
-        ],
-        total: 210.50,
-        status: 'Processing',
-        date: 'Oct 23, 2023',
-        time: '02:15 PM',
-        address: '456 Oak Lane, Riverside, CA 92501',
-        payment: 'Cash on Delivery'
-    },
-    {
-        id: 'ORD-2023-103',
-        customer: { name: 'Mike Ross', phone: '+1 (555) 456-7890', avatar: 'MR' },
-        items: [
-            { name: 'Whole Wheat Bread', price: 3.50, qty: 2, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&h=100&fit=crop' }
-        ],
-        total: 89.20,
-        status: 'Shipped',
-        date: 'Oct 22, 2023',
-        time: '11:45 AM',
-        address: '789 Pine St, Boston, MA 02108',
-        payment: 'Paid via Wallet'
-    },
-    {
-        id: 'ORD-2023-104',
-        customer: { name: 'Emma Wilson', phone: '+1 (555) 222-3333', avatar: 'EW' },
-        items: [
-            { name: 'Almond Milk', price: 5.99, qty: 4, image: 'https://images.unsplash.com/photo-1550583794-72b7209cc2da?w=100&h=100&fit=crop' }
-        ],
-        total: 156.00,
-        status: 'Cancelled',
-        date: 'Oct 21, 2023',
-        time: '04:20 PM',
-        address: '321 Elm St, Seattle, WA 98101',
-        payment: 'Refunded'
-    },
-    {
-        id: 'ORD-2023-105',
-        customer: { name: 'David Chen', phone: '+1 (555) 444-5555', avatar: 'DC' },
-        items: [
-            { name: 'Apples (Red)', price: 2.99, qty: 5, image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bcd6?w=100&h=100&fit=crop' }
-        ],
-        total: 14.95,
-        status: 'Delivered',
-        date: 'Oct 20, 2023',
-        time: '09:00 AM',
-        address: '555 Cedar Rd, Miami, FL 33101',
-        payment: 'Paid via UPI'
-    }
-];
+// Orders Page
 
 import { MagicCard } from '@/components/ui/magic-card';
 import { BlurFade } from '@/components/ui/blur-fade';
@@ -134,7 +64,7 @@ const Orders = () => {
                     image: item.image
                 })),
                 total: order.pricing.total,
-                status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+                status: order.status, // Keep it raw for selection
                 date: new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
                 time: new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
                 address: `${order.address.address}, ${order.address.city}`,
@@ -149,13 +79,14 @@ const Orders = () => {
         }
     };
 
-    const tabs = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+    const tabs = ['All', 'Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'];
 
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
             const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesTab = activeTab === 'All' || order.status.toLowerCase() === activeTab.toLowerCase();
+            const statusToMatch = activeTab === 'Out for Delivery' ? 'out_for_delivery' : activeTab.toLowerCase();
+            const matchesTab = activeTab === 'All' || order.status.toLowerCase() === statusToMatch;
             return matchesSearch && matchesTab;
         });
     }, [orders, searchTerm, activeTab]);
@@ -170,21 +101,21 @@ const Orders = () => {
         },
         {
             label: 'Pending',
-            value: orders.filter(o => o.status === 'Pending').length,
+            value: orders.filter(o => o.status.toLowerCase() === 'pending').length,
             icon: HiOutlineClock,
             color: 'text-amber-600',
             bg: 'bg-amber-50'
         },
         {
-            label: 'Processing',
-            value: orders.filter(o => o.status === 'Processing').length,
-            icon: HiOutlineTruck,
+            label: 'Confirmed',
+            value: orders.filter(o => o.status.toLowerCase() === 'confirmed').length,
+            icon: HiOutlineCheck,
             color: 'text-blue-600',
             bg: 'bg-blue-50'
         },
         {
             label: 'Delivered',
-            value: orders.filter(o => o.status === 'Delivered').length,
+            value: orders.filter(o => o.status.toLowerCase() === 'delivered').length,
             icon: HiOutlineCheck,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50'
@@ -192,12 +123,14 @@ const Orders = () => {
     ], [orders]);
 
     const getStatusColor = (status) => {
-        switch (status) {
-            case 'Pending': return 'warning';
-            case 'Processing': return 'primary';
-            case 'Shipped': return 'info';
-            case 'Delivered': return 'success';
-            case 'Cancelled': return 'error';
+        const s = status.toLowerCase();
+        switch (s) {
+            case 'pending': return 'warning';
+            case 'confirmed': return 'info';
+            case 'packed': return 'primary';
+            case 'out_for_delivery': return 'secondary';
+            case 'delivered': return 'success';
+            case 'cancelled': return 'error';
             default: return 'secondary';
         }
     };
@@ -388,9 +321,30 @@ const Orders = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <Badge variant={getStatusColor(order.status)} className="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                                            {order.status}
-                                                        </Badge>
+                                                        <div className="relative inline-block w-36">
+                                                            <select
+                                                                value={order.status}
+                                                                onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                                                                className={cn(
+                                                                    "w-full text-[9px] pl-2.5 pr-8 py-1.5 rounded-full font-black uppercase tracking-widest cursor-pointer appearance-none focus:ring-2 focus:ring-offset-1 transition-all border-none outline-none shadow-sm",
+                                                                    order.status === 'pending' ? "bg-amber-100 text-amber-700 focus:ring-amber-200" :
+                                                                        order.status === 'confirmed' ? "bg-blue-100 text-blue-700 focus:ring-blue-200" :
+                                                                            order.status === 'packed' ? "bg-indigo-100 text-indigo-700 focus:ring-indigo-200" :
+                                                                                order.status === 'out_for_delivery' ? "bg-purple-100 text-purple-700 focus:ring-purple-200" :
+                                                                                    order.status === 'delivered' ? "bg-emerald-100 text-emerald-700 focus:ring-emerald-200" :
+                                                                                        order.status === 'cancelled' ? "bg-rose-100 text-rose-700 focus:ring-rose-200" :
+                                                                                            "bg-slate-100 text-slate-700 focus:ring-slate-200"
+                                                                )}
+                                                            >
+                                                                <option value="pending">Pending</option>
+                                                                <option value="confirmed">Confirmed</option>
+                                                                <option value="packed">Packed</option>
+                                                                <option value="out_for_delivery">Out for Delivery</option>
+                                                                <option value="delivered">Delivered</option>
+                                                                <option value="cancelled">Cancelled</option>
+                                                            </select>
+                                                            <HiOutlineChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none opacity-60" />
+                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex items-center justify-end space-x-1.5">
@@ -667,16 +621,32 @@ const Orders = () => {
                                             <HiOutlinePrinter className="h-4 w-4" />
                                             Print Invoice
                                         </button>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-2 items-center">
                                             <button onClick={() => setIsDetailsModalOpen(false)} className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100 transition-all">CLOSE</button>
-                                            {selectedOrder.status === 'Pending' && (
-                                                <button
-                                                    onClick={() => handleStatusUpdate(selectedOrder.id, 'Processing')}
-                                                    className="bg-slate-900 text-white px-8 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all"
+                                            <div className="relative inline-block w-40">
+                                                <select
+                                                    value={selectedOrder.status.toLowerCase()}
+                                                    onChange={(e) => handleStatusUpdate(selectedOrder.id, e.target.value)}
+                                                    className={cn(
+                                                        "w-full text-[10px] pl-3 pr-8 py-2 rounded-xl font-black uppercase tracking-wider border appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 transition-all outline-none shadow-sm",
+                                                        getStatusColor(selectedOrder.status) === 'warning' ? "bg-amber-100 text-amber-700 focus:ring-amber-200" :
+                                                            getStatusColor(selectedOrder.status) === 'info' ? "bg-blue-100 text-blue-700 focus:ring-blue-200" :
+                                                                getStatusColor(selectedOrder.status) === 'primary' ? "bg-indigo-100 text-indigo-700 focus:ring-indigo-200" :
+                                                                    getStatusColor(selectedOrder.status) === 'secondary' ? "bg-purple-100 text-purple-700 focus:ring-purple-200" :
+                                                                        getStatusColor(selectedOrder.status) === 'success' ? "bg-emerald-100 text-emerald-700 focus:ring-emerald-200" :
+                                                                            getStatusColor(selectedOrder.status) === 'error' ? "bg-rose-100 text-rose-700 focus:ring-rose-200" :
+                                                                                "bg-slate-100 text-slate-700 focus:ring-slate-200"
+                                                    )}
                                                 >
-                                                    ACCEPT ORDER
-                                                </button>
-                                            )}
+                                                    <option value="pending">Pending</option>
+                                                    <option value="confirmed">Confirmed</option>
+                                                    <option value="packed">Packed</option>
+                                                    <option value="out_for_delivery">Out for Delivery</option>
+                                                    <option value="delivered">Delivered</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                                <HiOutlineChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none opacity-60" />
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>

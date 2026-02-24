@@ -1,8 +1,7 @@
-
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
 import CategoriesPage from '../pages/CategoriesPage';
-
 import CategoryProductsPage from '../pages/CategoryProductsPage';
 import WishlistPage from '../pages/WishlistPage';
 import CartPage from '../pages/CartPage';
@@ -27,7 +26,7 @@ import { CartProvider } from '../context/CartContext';
 import { CartAnimationProvider } from '../context/CartAnimationContext';
 import { LocationProvider } from '../context/LocationContext';
 
-import ProtectedRoute from '@core/guards/ProtectedRoute';
+import ProtectedRoute from '../../../core/guards/ProtectedRoute';
 
 const CustomerRoutes = () => {
     return (
@@ -38,27 +37,26 @@ const CustomerRoutes = () => {
                         <ScrollToTop />
                         <Routes>
                             <Route path="/" element={<Home />} />
-                            <Route path="/categories" element={<CategoriesPage />} />
-
-                            <Route path="/category/:categoryName" element={<CategoryProductsPage />} />
-                            <Route path="/product/:id" element={<ProductDetailPage />} />
-                            <Route path="/terms" element={<TermsPage />} />
-                            <Route path="/privacy" element={<PrivacyPage />} />
-                            <Route path="/about" element={<AboutPage />} />
-                            <Route path="/offers" element={<OffersPage />} />
+                            <Route path="categories" element={<CategoriesPage />} />
+                            <Route path="category/:categoryName" element={<CategoryProductsPage />} />
+                            <Route path="product/:id" element={<ProductDetailPage />} />
+                            <Route path="terms" element={<TermsPage />} />
+                            <Route path="privacy" element={<PrivacyPage />} />
+                            <Route path="about" element={<AboutPage />} />
+                            <Route path="offers" element={<OffersPage />} />
 
                             {/* Protected Customer Routes */}
-                            <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
-                            <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
-                            <Route path="/orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
-                            <Route path="/addresses" element={<ProtectedRoute><AddressesPage /></ProtectedRoute>} />
-                            <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
-                            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-                            <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
-                            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-                            <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
-                            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                            <Route path="/profile/edit" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
+                            <Route path="wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
+                            <Route path="orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+                            <Route path="orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+                            <Route path="addresses" element={<ProtectedRoute><AddressesPage /></ProtectedRoute>} />
+                            <Route path="wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
+                            <Route path="settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                            <Route path="support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+                            <Route path="chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+                            <Route path="checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+                            <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                            <Route path="profile/edit" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
                         </Routes>
                     </CartAnimationProvider>
                 </CartProvider>

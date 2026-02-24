@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import CustomerLayout from '../components/layout/CustomerLayout';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
 import { customerApi } from '../services/customerApi';
 
@@ -41,44 +40,42 @@ const CategoriesPage = () => {
         fetchCategories();
     }, []);
     return (
-        <CustomerLayout showHeader={false}>
-            <div className="min-h-screen bg-white">
-                <MainLocationHeader />
-                <div className="max-w-[1280px] mx-auto px-4 pt-[140px] md:pt-[150px] pb-20">
-                    {groups.map((group, groupIdx) => (
-                        <div key={groupIdx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${groupIdx * 100}ms` }}>
-                            {/* Group Title */}
-                            <h2 className="text-xl md:text-2xl font-black text-[#1A1A1A] mb-6 px-1">
-                                {group.title}
-                            </h2>
+        <div className="min-h-screen bg-white">
+            <MainLocationHeader />
+            <div className="max-w-[1280px] mx-auto px-4 pt-[140px] md:pt-[150px] pb-20">
+                {groups.map((group, groupIdx) => (
+                    <div key={groupIdx} className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${groupIdx * 100}ms` }}>
+                        {/* Group Title */}
+                        <h2 className="text-xl md:text-2xl font-black text-[#1A1A1A] mb-6 px-1">
+                            {group.title}
+                        </h2>
 
-                            {/* Categories Grid */}
-                            <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-8">
-                                {group.categories.map((category, idx) => (
-                                    <div key={category.id} className="flex flex-col group cursor-pointer">
-                                        <Link
-                                            to={`/category/${category.id}`}
-                                            className="contents"
-                                        >
-                                            <div className={`aspect-square ${category.color} rounded-[24px] md:rounded-[32px] p-2.5 flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-105 shadow-sm group-hover:shadow-md`}>
-                                                <img
-                                                    src={category.image}
-                                                    alt={category.name}
-                                                    className="w-full h-full object-contain mix-blend-multiply"
-                                                />
-                                            </div>
-                                            <span className="text-[10px] md:text-[12px] font-bold text-[#333] leading-tight text-center px-1 group-hover:text-[#0c831f] transition-colors">
-                                                {category.name}
-                                            </span>
-                                        </Link>
-                                    </div>
-                                ))}
-                            </div>
+                        {/* Categories Grid */}
+                        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-3 gap-y-8">
+                            {group.categories.map((category, idx) => (
+                                <div key={category.id} className="flex flex-col group cursor-pointer">
+                                    <Link
+                                        to={`/category/${category.id}`}
+                                        className="contents"
+                                    >
+                                        <div className={`aspect-square ${category.color} rounded-[24px] md:rounded-[32px] p-2.5 flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-105 shadow-sm group-hover:shadow-md`}>
+                                            <img
+                                                src={category.image}
+                                                alt={category.name}
+                                                className="w-full h-full object-contain mix-blend-multiply"
+                                            />
+                                        </div>
+                                        <span className="text-[10px] md:text-[12px] font-bold text-[#333] leading-tight text-center px-1 group-hover:text-[#0c831f] transition-colors">
+                                            {category.name}
+                                        </span>
+                                    </Link>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
             </div>
-        </CustomerLayout>
+        </div>
     );
 };
 

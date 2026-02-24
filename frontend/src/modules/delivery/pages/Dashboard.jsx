@@ -18,54 +18,101 @@ import { toast } from "sonner";
 import Button from "@/shared/components/ui/Button";
 import Card from "@/shared/components/ui/Card";
 
+import { useAuth } from "@/core/context/AuthContext";
+import { deliveryApi } from "../services/deliveryApi";
+
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [isOnline, setIsOnline] = useState(false);
+  const { user } = useAuth();
+  const [isOnline, setIsOnline] = useState(user?.isOnline || false);
   const [activeOrder, setActiveOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [earnings, setEarnings] = useState({
-    today: 1250,
-    deliveries: 12,
-    incentives: 150,
-    cashCollected: 450,
+    today: 0,
+    deliveries: 0,
+    incentives: 0,
+    cashCollected: 0,
   });
 
-  // Simulate receiving an order after going online
+  // Sync isOnline with user profile from context
   useEffect(() => {
-    let timer;
-    if (isOnline && !activeOrder) {
-      timer = setTimeout(() => {
-        setActiveOrder({
-          id: "ORD-12345",
-          pickup: "Appzeto Mart, Indiranagar",
-          drop: "24/7, 100ft Road, Indiranagar",
-          distance: "2.4 km",
-          estTime: "15 min",
-          value: 450,
-          earnings: 45,
-          timeLeft: 30, // seconds to accept
-        });
-      }, 3000);
-    } else if (!isOnline) {
-      setActiveOrder(null);
+    if (user) {
+      setIsOnline(user.isOnline);
     }
-    return () => clearTimeout(timer);
+  }, [user]);
+
+  // Fetch available orders when online
+  useEffect(() => {
+    let pollInterval;
+
+    const fetchOrders = async () => {
+      if (!isOnline || activeOrder) return;
+
+      try {
+        const response = await deliveryApi.getAvailableOrders();
+        const availableOrders = response.data.result;
+
+        if (availableOrders && availableOrders.length > 0) {
+          const order = availableOrders[0]; // Take the first available order
+          setActiveOrder({
+            id: order.orderId,
+            mongoId: order._id,
+            pickup: order.seller?.shopName || "Seller",
+            drop: order.address?.address || "Customer Address",
+            distance: "Calculated...", // In a real app, distance would be calculated
+            estTime: "10-15 min",
+            value: order.pricing?.total || 0,
+            earnings: Math.round((order.pricing?.total || 0) * 0.1), // Example: 10% commission
+            timeLeft: 30,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch available orders:", error);
+      }
+    };
+
+    if (isOnline && !activeOrder) {
+      fetchOrders();
+      pollInterval = setInterval(fetchOrders, 5000); // Poll every 5 seconds
+    }
+
+    return () => clearInterval(pollInterval);
   }, [isOnline, activeOrder]);
 
-  const handleAcceptOrder = () => {
-    navigate("/delivery/order-details/ORD-12345");
+  const handleAcceptOrder = async () => {
+    if (!activeOrder) return;
+
+    try {
+      setLoading(true);
+      await deliveryApi.acceptOrder(activeOrder.id);
+      toast.success("Order accepted!");
+      navigate(`/delivery/order-details/${activeOrder.id}`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to accept order");
+      setActiveOrder(null); // Clear if failed (maybe already taken)
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRejectOrder = () => {
     setActiveOrder(null);
+    // In a real app, we might want to "snooze" this order for this specific rider
   };
 
-  const handleOnlineToggle = () => {
+  const handleOnlineToggle = async () => {
     const newStatus = !isOnline;
-    setIsOnline(newStatus);
-    if (newStatus) {
-      toast.success("You are now ONLINE. Finding orders...");
-    } else {
-      toast.info("You are now OFFLINE. No new orders.");
+    try {
+      await deliveryApi.updateProfile({ isOnline: newStatus });
+      setIsOnline(newStatus);
+      if (newStatus) {
+        toast.success("You are now ONLINE. Finding orders...");
+      } else {
+        toast.info("You are now OFFLINE. No new orders.");
+        setActiveOrder(null);
+      }
+    } catch (error) {
+      toast.error("Failed to update status");
     }
   };
 
@@ -86,7 +133,7 @@ const Dashboard = () => {
           <div
             onClick={() => navigate("/delivery/profile")}
             className="cursor-pointer">
-            <h2 className="ds-h2 leading-tight">Rahul Kumar</h2>
+            <h2 className="ds-h2 leading-tight">{user?.name || "Delivery Partner"}</h2>
             <div className="flex items-center text-sm font-medium">
               <span className="flex items-center bg-yellow-50 text-yellow-600 px-1.5 py-0.5 rounded border border-yellow-100">
                 <Star size={12} fill="currentColor" className="mr-1" />
@@ -112,11 +159,10 @@ const Dashboard = () => {
       <div className="px-6 py-6">
         <motion.div
           onClick={handleOnlineToggle}
-          className={`relative w-full h-16 rounded-full flex items-center p-1 cursor-pointer shadow-inner transition-colors duration-500 ${
-            isOnline
-              ? "bg-green-500/10 border border-green-200"
-              : "bg-red-500/10 border border-red-200"
-          }`}
+          className={`relative w-full h-16 rounded-full flex items-center p-1 cursor-pointer shadow-inner transition-colors duration-500 ${isOnline
+            ? "bg-green-500/10 border border-green-200"
+            : "bg-red-500/10 border border-red-200"
+            }`}
           whileTap={{ scale: 0.98 }}>
           <div
             className={`w-1/2 h-full flex items-center justify-center font-bold tracking-wide z-10 transition-all duration-300 ${isOnline ? "text-green-700" : "text-gray-400 opacity-50"}`}>
@@ -127,11 +173,10 @@ const Dashboard = () => {
             OFFLINE
           </div>
           <motion.div
-            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full shadow-lg flex items-center justify-center border transition-colors duration-300 ${
-              isOnline
-                ? "bg-green-500 border-green-400"
-                : "bg-red-500 border-red-400"
-            }`}
+            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full shadow-lg flex items-center justify-center border transition-colors duration-300 ${isOnline
+              ? "bg-green-500 border-green-400"
+              : "bg-red-500 border-red-400"
+              }`}
             animate={{ x: isOnline ? "100%" : "0%" }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             style={{ x: isOnline ? "2px" : "0" }} // Offset adjustment

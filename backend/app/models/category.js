@@ -40,6 +40,14 @@ const categorySchema = new mongoose.Schema(
             ref: "Category",
             default: null,
         },
+        adminCommission: {
+            type: Number,
+            default: 0, // Percentage
+        },
+        handlingFees: {
+            type: Number,
+            default: 0, // Flat amount
+        },
     },
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

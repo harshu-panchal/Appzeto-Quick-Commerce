@@ -7,6 +7,7 @@ import {
     deleteProduct,
     getProductById
 } from "../controller/productController.js";
+import { adjustStock, getStockHistory } from "../controller/stockController.js";
 import { verifyToken, allowRoles } from "../middleware/authMiddleware.js";
 import upload from "../middleware/uploadMiddleware.js";
 
@@ -48,5 +49,9 @@ router.delete(
     allowRoles("seller", "admin"),
     deleteProduct
 );
+
+// Stock Management
+router.post("/adjust-stock", verifyToken, allowRoles("seller"), adjustStock);
+router.get("/stock-history", verifyToken, allowRoles("seller"), getStockHistory);
 
 export default router;

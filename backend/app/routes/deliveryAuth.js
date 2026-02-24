@@ -11,8 +11,8 @@ import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/signup", signupDelivery);
-router.post("/login", loginDelivery);
+router.post("/send-signup-otp", signupDelivery);
+router.post("/send-login-otp", loginDelivery);
 router.post("/verify-otp", verifyDeliveryOTP);
 
 // Profile routes

@@ -7,7 +7,22 @@ import ProductDetailSheet from '../shared/ProductDetailSheet';
 import { ProductDetailProvider } from '../../context/ProductDetailContext';
 import { cn } from '@/lib/utils';
 
-const CustomerLayout = ({ children, showHeader = true, fullHeight = false, showCart = true, showBottomNav = true }) => {
+import { useLocation } from 'react-router-dom';
+
+const CustomerLayout = ({ children, showHeader: showHeaderProp, fullHeight = false, showCart: showCartProp, showBottomNav: showBottomNavProp }) => {
+    const location = useLocation();
+
+    // Route-based visibility logic
+    const path = location.pathname.replace(/\/$/, '') || '/';
+
+    const hideHeaderRoutes = ['/', '/categories', '/orders', '/profile', '/profile/edit', '/wishlist', '/addresses', '/wallet', '/support', '/privacy', '/about', '/terms', '/checkout'];
+    const hideBottomNavRoutes = ['/checkout'];
+    const hideCartRoutes = ['/checkout', '/cart'];
+
+    // If props are passed, use them. Otherwise, use route-based logic.
+    const showHeader = showHeaderProp !== undefined ? showHeaderProp : (!hideHeaderRoutes.includes(path) && !path.startsWith('/category') && !path.startsWith('/orders'));
+    const showBottomNav = showBottomNavProp !== undefined ? showBottomNavProp : !hideBottomNavRoutes.includes(path);
+    const showCart = showCartProp !== undefined ? showCartProp : (!hideCartRoutes.includes(path) && !path.startsWith('/orders'));
 
 
     return (

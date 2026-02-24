@@ -1,13 +1,82 @@
 import React from 'react';
 import { useAuth } from '@core/context/AuthContext';
-import { HiOutlineLogout, HiOutlineUserCircle, HiOutlineBell, HiOutlineSearch } from 'react-icons/hi';
+import {
+    HiOutlineLogout,
+    HiOutlineUserCircle,
+    HiOutlineBell,
+    HiOutlineSearch
+} from 'react-icons/hi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { sellerApi } from '@/modules/seller/services/sellerApi';
+import { AnimatePresence } from 'framer-motion';
+import NotificationPopup from './NotificationPopup';
+import { toast } from 'sonner';
 
 const Topbar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Notification State
+    const [notifications, setNotifications] = React.useState([]);
+    const [unreadCount, setUnreadCount] = React.useState(0);
+    const [showNotifications, setShowNotifications] = React.useState(false);
+    const notificationRef = React.useRef(null);
+
+    const isSeller = location.pathname.startsWith('/seller');
+
+    const fetchNotifications = async () => {
+        try {
+            // Only fetch for sellers for now as per request
+            if (!isSeller) return;
+
+            const response = await sellerApi.getNotifications();
+            if (response.data.success) {
+                setNotifications(response.data.result.notifications);
+                setUnreadCount(response.data.result.unreadCount);
+            }
+        } catch (error) {
+            console.error("Notif Fetch Error:", error);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchNotifications();
+        // Polling every 30 seconds
+        const interval = setInterval(fetchNotifications, 30000);
+        return () => clearInterval(interval);
+    }, [isSeller]);
+
+    // Handle Click Outside
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+                setShowNotifications(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleMarkAsRead = async (id) => {
+        try {
+            await sellerApi.markNotificationRead(id);
+            fetchNotifications();
+        } catch (error) {
+            toast.error("Failed to mark as read");
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            await sellerApi.markAllNotificationsRead();
+            fetchNotifications();
+            toast.success("All caught up!");
+        } catch (error) {
+            toast.error("Failed to mark all as read");
+        }
+    };
 
     const handleLogout = () => {
         logout();
@@ -27,10 +96,32 @@ const Topbar = () => {
             </div>
 
             <div className="flex items-center space-x-4">
-                <button className="p-2 hover:bg-primary/5 text-gray-500 hover:text-primary rounded-xl transition-all duration-300 relative group">
-                    <HiOutlineBell className="h-5 w-5" />
-                    <span className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full ring-2 ring-white shadow-sm"></span>
-                </button>
+                <div className="relative" ref={notificationRef}>
+                    <button
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className={cn(
+                            "p-2 hover:bg-primary/5 text-gray-500 hover:text-primary rounded-xl transition-all duration-300 relative group",
+                            showNotifications && "bg-primary/5 text-primary"
+                        )}
+                    >
+                        <HiOutlineBell className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-2 right-2 h-2 w-2 bg-rose-500 rounded-full ring-2 ring-white shadow-sm"></span>
+                        )}
+                    </button>
+
+                    <AnimatePresence>
+                        {showNotifications && (
+                            <NotificationPopup
+                                notifications={notifications}
+                                onMarkAsRead={handleMarkAsRead}
+                                onMarkAllAsRead={handleMarkAllAsRead}
+                                onClose={() => setShowNotifications(false)}
+                            />
+                        )}
+                    </AnimatePresence>
+                </div>
+
                 <div className="h-8 w-px bg-gray-100 mx-1"></div>
                 <button
                     onClick={() => {
