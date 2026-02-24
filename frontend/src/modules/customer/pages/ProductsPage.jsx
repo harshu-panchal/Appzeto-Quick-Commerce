@@ -1,5 +1,4 @@
 import React from 'react';
-import CustomerLayout from '../components/layout/CustomerLayout';
 import ProductCard from '../components/shared/ProductCard';
 
 const products = [
@@ -103,22 +102,20 @@ const products = [
 
 const ProductsPage = () => {
     return (
-        <CustomerLayout>
-            <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 mt-36 md:mt-24">
-                <div className="mb-8 text-left">
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#0c831f] mb-1">All Products</h1>
-                    <p className="text-gray-500 text-sm md:text-lg font-medium">
-                        Showing {products.length} fresh and organic items
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-                    {products.map((product) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))}
-                </div>
+        <div className="relative z-10 py-8 w-full max-w-[1920px] mx-auto px-4 md:px-[50px] animate-in fade-in slide-in-from-bottom-4 duration-700 mt-36 md:mt-24">
+            <div className="mb-8 text-left">
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[#0c831f] mb-1">All Products</h1>
+                <p className="text-gray-500 text-sm md:text-lg font-medium">
+                    Showing {products.length} fresh and organic items
+                </p>
             </div>
-        </CustomerLayout>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+                {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                ))}
+            </div>
+        </div>
     );
 };
 

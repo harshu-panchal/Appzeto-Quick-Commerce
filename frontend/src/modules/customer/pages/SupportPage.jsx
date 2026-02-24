@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import CustomerLayout from '../components/layout/CustomerLayout';
-import { MessageCircle, Phone, Mail, ChevronDown, ChevronUp, Search, FileText } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MessageCircle, Phone, Mail, ChevronDown, ChevronUp, FileText, ChevronLeft } from 'lucide-react';
 
 const SupportPage = () => {
+    const navigate = useNavigate();
     const faqs = [
         { q: 'How do I check my order status?', a: 'You can check your order status in the "My Orders" section of your profile.' },
         { q: 'What is the refund policy?', a: 'We offer a no-questions-asked refund policy for damaged or incorrect items within 24 hours of delivery.' },
@@ -12,51 +12,57 @@ const SupportPage = () => {
     ];
 
     return (
-        <CustomerLayout headerText="Help & Support" showHeader={false}>
-            <div className="min-h-screen bg-slate-50 pb-24 font-sans">
-                {/* Header */}
-                <div className="bg-gradient-to-br from-[#0c831f] to-[#149d29] px-5 pt-10 pb-20 relative z-10 rounded-b-[2.5rem] shadow-lg overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-32 pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
-                    <h1 className="text-3xl font-black text-white tracking-tight relative z-10">Help & Support</h1>
-                    <p className="text-green-50 text-sm font-medium mt-1 relative z-10">We are here to help you</p>
+        <div className="min-h-screen bg-slate-50 pb-24 font-sans">
+            {/* Header */}
+            <div className="bg-gradient-to-br from-[#0c831f] to-[#149d29] px-5 pt-8 pb-20 relative z-10 rounded-b-[2.5rem] shadow-lg overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-32 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
+                <div className="flex items-center gap-2 mb-2 relative z-10">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="w-10 h-10 flex items-center justify-center hover:bg-white/10 rounded-full transition-colors -ml-2"
+                    >
+                        <ChevronLeft size={28} className="text-white" />
+                    </button>
+                    <h1 className="text-3xl font-black text-white tracking-tight">Help & Support</h1>
                 </div>
-
-                <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-20 space-y-8">
-
-                    {/* Contact Channels */}
-                    <div className="grid grid-cols-3 gap-3">
-                        <ContactCard icon={MessageCircle} label="Chat Us" sub="Instant Support" to="/chat" />
-                        <ContactCard icon={Phone} label="Call Us" sub="+91 98765..." />
-                        <ContactCard icon={Mail} label="Email Us" sub="support@app..." />
-                    </div>
-
-                    {/* FAQ Section */}
-                    <div>
-                        <h2 className="text-xl font-black text-slate-800 mb-4 px-2">Frequently Asked Questions</h2>
-                        <div className="space-y-3">
-                            {faqs.map((faq, idx) => (
-                                <FAQItem key={idx} question={faq.q} answer={faq.a} />
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Legal Links */}
-                    <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
-                        <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Legal</h3>
-                        <div className="space-y-4">
-                            <Link to="/terms" className="flex items-center gap-3 text-slate-600 hover:text-[#0c831f] font-bold">
-                                <FileText size={18} /> Terms & Conditions
-                            </Link>
-                            <Link to="/privacy" className="flex items-center gap-3 text-slate-600 hover:text-[#0c831f] font-bold">
-                                <FileText size={18} /> Privacy Policy
-                            </Link>
-                        </div>
-                    </div>
-
-                </div>
+                <p className="text-green-50 text-sm font-medium mt-1 relative z-10">We are here to help you</p>
             </div>
-        </CustomerLayout>
+
+            <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-20 space-y-8">
+
+                {/* Contact Channels */}
+                <div className="grid grid-cols-3 gap-3">
+                    <ContactCard icon={MessageCircle} label="Chat Us" sub="Instant Support" to="/chat" />
+                    <ContactCard icon={Phone} label="Call Us" sub="+91 98765..." />
+                    <ContactCard icon={Mail} label="Email Us" sub="support@app..." />
+                </div>
+
+                {/* FAQ Section */}
+                <div>
+                    <h2 className="text-xl font-black text-slate-800 mb-4 px-2">Frequently Asked Questions</h2>
+                    <div className="space-y-3">
+                        {faqs.map((faq, idx) => (
+                            <FAQItem key={idx} question={faq.q} answer={faq.a} />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Legal Links */}
+                <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Legal</h3>
+                    <div className="space-y-4">
+                        <Link to="/terms" className="flex items-center gap-3 text-slate-600 hover:text-[#0c831f] font-bold">
+                            <FileText size={18} /> Terms & Conditions
+                        </Link>
+                        <Link to="/privacy" className="flex items-center gap-3 text-slate-600 hover:text-[#0c831f] font-bold">
+                            <FileText size={18} /> Privacy Policy
+                        </Link>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     );
 };
 

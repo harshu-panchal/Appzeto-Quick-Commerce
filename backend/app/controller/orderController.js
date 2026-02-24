@@ -196,3 +196,65 @@ export const getSellerOrders = async (req, res) => {
         return handleResponse(res, 500, error.message);
     }
 };
+
+/* ===============================
+   GET AVAILABLE ORDERS (Delivery Boy)
+================================ */
+export const getAvailableOrders = async (req, res) => {
+    try {
+        const { id: userId, role } = req.user;
+
+        if (role !== 'delivery' && role !== 'admin') {
+            return handleResponse(res, 403, "Access denied. Only delivery partners can view available orders.");
+        }
+
+        // Fetch orders that are pending/confirmed/packed and have no delivery boy assigned
+        const orders = await Order.find({
+            status: { $in: ["pending", "confirmed", "packed"] },
+            deliveryBoy: null
+        })
+            .sort({ createdAt: -1 })
+            .populate("customer", "name phone")
+            .populate("seller", "shopName address name");
+
+        return handleResponse(res, 200, "Available orders fetched", orders);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   ACCEPT ORDER (Delivery Boy)
+================================ */
+export const acceptOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+
+        if (role !== 'delivery' && role !== 'admin') {
+            return handleResponse(res, 403, "Access denied.");
+        }
+
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        if (order.deliveryBoy) {
+            return handleResponse(res, 400, "Order already assigned to another delivery partner");
+        }
+
+        order.deliveryBoy = userId;
+        // Optionally update status to confirmed if it was pending
+        if (order.status === "pending") {
+            order.status = "confirmed";
+        }
+
+        await order.save();
+
+        return handleResponse(res, 200, "Order accepted successfully", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};

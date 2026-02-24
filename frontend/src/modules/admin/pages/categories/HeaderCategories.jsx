@@ -39,6 +39,8 @@ const HeaderCategories = () => {
     type: "header",
     parentId: null,
     iconId: "",
+    adminCommission: 0,
+    handlingFees: 0,
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -167,6 +169,8 @@ const HeaderCategories = () => {
       type: "header",
       parentId: null,
       iconId: "",
+      adminCommission: 0,
+      handlingFees: 0,
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -183,6 +187,8 @@ const HeaderCategories = () => {
       type: "header",
       parentId: null,
       iconId: item.iconId || "",
+      adminCommission: item.adminCommission || 0,
+      handlingFees: item.handlingFees || 0,
     });
     setPreviewUrl(item.image?.url || null);
     setIsAddModalOpen(true);
@@ -252,6 +258,12 @@ const HeaderCategories = () => {
                   Slug
                 </th>
                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Comm (%)
+                </th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Fees (₹)
+                </th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -262,13 +274,13 @@ const HeaderCategories = () => {
             <tbody className="divide-y divide-gray-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-8 text-gray-500">
+                  <td colSpan="8" className="text-center py-8 text-gray-500">
                     Loading...
                   </td>
                 </tr>
               ) : filteredCategories.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-8 text-gray-500">
+                  <td colSpan="8" className="text-center py-8 text-gray-500">
                     No header categories found
                   </td>
                 </tr>
@@ -288,7 +300,7 @@ const HeaderCategories = () => {
                     <td className="py-3 px-4">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
                         {cat.iconId && getIconSvg(cat.iconId) ? (
-                          <div 
+                          <div
                             className="w-6 h-6 text-indigo-600"
                             dangerouslySetInnerHTML={{ __html: getIconSvg(cat.iconId) }}
                           />
@@ -307,6 +319,12 @@ const HeaderCategories = () => {
                       {cat.name}
                     </td>
                     <td className="py-3 px-4 text-gray-500">{cat.slug}</td>
+                    <td className="py-3 px-4 text-gray-500 font-medium">
+                      {cat.adminCommission ?? 0}%
+                    </td>
+                    <td className="py-3 px-4 text-gray-500 font-medium">
+                      ₹{cat.handlingFees ?? 0}
+                    </td>
                     <td className="py-3 px-4">
                       <Badge
                         variant={
@@ -366,7 +384,7 @@ const HeaderCategories = () => {
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 flex items-center justify-center">
                         {formData.iconId && getIconSvg(formData.iconId) ? (
-                          <div 
+                          <div
                             className="w-12 h-12 text-indigo-600"
                             dangerouslySetInnerHTML={{ __html: getIconSvg(formData.iconId) }}
                           />
@@ -465,6 +483,40 @@ const HeaderCategories = () => {
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                   </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Admin Commission (%)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.adminCommission}
+                      onChange={(e) =>
+                        setFormData({ ...formData, adminCommission: parseFloat(e.target.value) || 0 })
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      placeholder="0"
+                      min="0"
+                      max="100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Handling Fees (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.handlingFees}
+                      onChange={(e) =>
+                        setFormData({ ...formData, handlingFees: parseFloat(e.target.value) || 0 })
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
                 </div>
               </div>
 

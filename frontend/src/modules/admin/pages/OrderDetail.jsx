@@ -49,6 +49,17 @@ const OrderDetail = () => {
         }
     };
 
+    const handleStatusUpdate = async (newStatus) => {
+        try {
+            await adminApi.updateOrderStatus(orderId, { status: newStatus });
+            showToast(`Order status updated to ${newStatus}`, "success");
+            fetchDetail(); // Refresh data
+        } catch (error) {
+            console.error("Failed to update status:", error);
+            showToast("Failed to update status", "error");
+        }
+    };
+
     useEffect(() => {
         if (orderId) {
             fetchDetail();
@@ -56,11 +67,11 @@ const OrderDetail = () => {
     }, [orderId]);
 
     const getStatusStyles = (status) => {
-        switch (status) {
+        switch (status.toLowerCase()) {
             case 'pending': return 'bg-amber-100 text-amber-600 border-amber-200';
             case 'confirmed': return 'bg-blue-100 text-blue-600 border-blue-200';
-            case 'packed': return 'bg-purple-100 text-purple-600 border-purple-200';
-            case 'out_for_delivery': return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+            case 'packed': return 'bg-indigo-100 text-indigo-600 border-indigo-200';
+            case 'out_for_delivery': return 'bg-purple-100 text-purple-600 border-purple-200';
             case 'delivered': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
             case 'cancelled': return 'bg-rose-100 text-rose-600 border-rose-200';
             default: return 'bg-slate-100 text-slate-600 border-slate-200';
@@ -106,9 +117,24 @@ const OrderDetail = () => {
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Order #{order.orderId}</h1>
-                            <Badge className={cn("text-[10px] font-black uppercase tracking-widest px-3 py-1 border", getStatusStyles(order.status))}>
-                                {order.status.replace(/_/g, ' ')}
-                            </Badge>
+                            <div className="relative inline-block w-44">
+                                <select
+                                    value={order.status}
+                                    onChange={(e) => handleStatusUpdate(e.target.value)}
+                                    className={cn(
+                                        "w-full text-[10px] pl-3 pr-8 py-1.5 rounded-xl font-black uppercase tracking-widest border appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 transition-all outline-none shadow-sm",
+                                        getStatusStyles(order.status)
+                                    )}
+                                >
+                                    <option value="pending">Pending</option>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="packed">Packed</option>
+                                    <option value="out_for_delivery">Out for Delivery</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                                <Info className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 pointer-events-none opacity-60" />
+                            </div>
                         </div>
                         <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-2">
                             <Calendar className="h-3.5 w-3.5" />
