@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
@@ -44,83 +44,78 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { MagicCard } from "@/components/ui/magic-card";
 import ShimmerButton from "@/components/ui/shimmer-button";
 import Modal from "@shared/components/ui/Modal";
+import { sellerApi } from "../services/sellerApi";
+import { toast } from "sonner";
 
-const MOCK_SALES_DATA = [
-  { name: "Mon", sales: 4200, orders: 120, traffic: 3500 },
-  { name: "Tue", sales: 3800, orders: 110, traffic: 3200 },
-  { name: "Wed", sales: 5100, orders: 145, traffic: 4100 },
-  { name: "Thu", sales: 4600, orders: 130, traffic: 3800 },
-  { name: "Fri", sales: 6200, orders: 180, traffic: 4900 },
-  { name: "Sat", sales: 7500, orders: 210, traffic: 5800 },
-  { name: "Sun", sales: 8100, orders: 230, traffic: 6200 },
-];
-
-const MOCK_CATEGORY_DATA = [
-  { subject: "Fruits", A: 120, fullMark: 150 },
-  { subject: "Vegetables", A: 98, fullMark: 150 },
-  { subject: "Dairy", A: 86, fullMark: 150 },
-  { subject: "Bakery", A: 99, fullMark: 150 },
-  { subject: "Grocery", A: 130, fullMark: 150 },
-  { subject: "Beverages", A: 65, fullMark: 150 },
-];
-
-const MOCK_TRAFFIC_SOURCES = [
-  { name: "Direct", value: 400, color: "#3b82f6" },
-  { name: "Search", value: 300, color: "#10b981" },
-  { name: "Social", value: 200, color: "#f59e0b" },
-  { name: "Referral", value: 100, color: "#8b5cf6" },
-];
-
-const MOCK_TOP_PRODUCTS = [
-  { name: "Fresh Alfonso Mangoes", sales: 120, revenue: "₹45,000", trend: 15 },
-  { name: "Premium Basmati Rice", sales: 85, revenue: "₹32,500", trend: 8 },
-  { name: "Organic Bananas", sales: 150, revenue: "₹12,400", trend: -3 },
-  { name: "Amul Taaza Milk", sales: 450, revenue: "₹28,800", trend: 22 },
-];
 
 const Analytics = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [statsData, setStatsData] = useState(null);
   const [timeRange, setTimeRange] = useState("Last 7 Days");
   const [activeTab, setActiveTab] = useState("Overview");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [chartRange, setChartRange] = useState("Daily");
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        if (!statsData) setLoading(true); // Only show full screen loader for first load
+        const response = await sellerApi.getStats(chartRange.toLowerCase());
+        if (response.data.success) {
+          setStatsData(response.data.result);
+        }
+      } catch (error) {
+        console.error("Analytics Fetch Error:", error);
+        toast.error("Failed to load analytics data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAnalytics();
+  }, [chartRange]);
 
   const stats = [
     {
       label: "Total Sales",
-      value: "₹1,24,500",
-      trend: "+12.5%",
+      value: statsData?.overview?.totalSales || "₹0",
+      trend: statsData?.overview?.salesTrend || "0%",
       icon: HiOutlineArrowTrendingUp,
       color: "text-emerald-600",
       bg: "bg-emerald-50",
     },
     {
       label: "Total Orders",
-      value: "1,245",
-      trend: "+8.2%",
+      value: statsData?.overview?.totalOrders || "0",
+      trend: statsData?.overview?.ordersTrend || "0%",
       icon: HiOutlineShoppingBag,
       color: "text-indigo-600",
       bg: "bg-indigo-50",
     },
     {
       label: "Avg Order Value",
-      value: "₹850",
-      trend: "-2.4%",
+      value: statsData?.overview?.avgOrderValue || "₹0",
+      trend: "0%", // Trend for AOV can be added later
       icon: HiOutlineUsers,
       color: "text-amber-600",
       bg: "bg-amber-50",
     },
     {
       label: "Conversion Rate",
-      value: "3.8%",
-      trend: "+0.5%",
+      value: statsData?.overview?.conversionRate || "0%",
+      trend: "0%",
       icon: HiOutlineChartBar,
       color: "text-rose-600",
       bg: "bg-rose-50",
     },
   ];
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING ANALYTICS...</div>;
+  }
 
   return (
     <div className="space-y-8 pb-16">
@@ -251,9 +246,10 @@ const Analytics = () => {
                 {["Daily", "Weekly", "Monthly"].map((range) => (
                   <button
                     key={range}
+                    onClick={() => setChartRange(range)}
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                      range === "Daily"
+                      chartRange === range
                         ? "bg-white text-primary shadow-sm"
                         : "text-slate-400 hover:text-slate-600",
                     )}>
@@ -265,7 +261,7 @@ const Analytics = () => {
             <div className="h-[400px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={MOCK_SALES_DATA}
+                  data={statsData?.salesTrend || []}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
@@ -356,7 +352,7 @@ const Analytics = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius="70%"
-                  data={MOCK_CATEGORY_DATA}>
+                  data={statsData?.categoryMix || []}>
                   <PolarGrid stroke="#e2e8f0" />
                   <PolarAngleAxis
                     dataKey="subject"
@@ -380,7 +376,7 @@ const Analytics = () => {
               </ResponsiveContainer>
             </div>
             <div className="grid grid-cols-3 gap-2 w-full mt-4">
-              {MOCK_CATEGORY_DATA.slice(0, 3).map((cat, idx) => (
+              {(statsData?.categoryMix || []).slice(0, 3).map((cat, idx) => (
                 <div
                   key={idx}
                   className="bg-slate-50 p-3 rounded-lg flex flex-col items-center border border-slate-100/50">
@@ -410,7 +406,7 @@ const Analytics = () => {
               </p>
             </div>
             <div className="divide-y divide-slate-50">
-              {MOCK_TOP_PRODUCTS.map((product, i) => (
+              {(statsData?.topProducts || []).map((product, i) => (
                 <div
                   key={i}
                   onClick={() => {
@@ -480,14 +476,14 @@ const Analytics = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={MOCK_TRAFFIC_SOURCES}
+                      data={statsData?.trafficSources || []}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
                       outerRadius={80}
                       paddingAngle={8}
                       dataKey="value">
-                      {MOCK_TRAFFIC_SOURCES.map((entry, index) => (
+                      {(statsData?.trafficSources || []).map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={entry.color}
@@ -507,7 +503,7 @@ const Analytics = () => {
                 </ResponsiveContainer>
               </div>
               <div className="w-full md:w-1/2 space-y-4">
-                {MOCK_TRAFFIC_SOURCES.map((source, i) => (
+                {(statsData?.trafficSources || []).map((source, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div
@@ -519,7 +515,7 @@ const Analytics = () => {
                       </span>
                     </div>
                     <span className="text-xs font-black text-slate-900">
-                      {(source.value / 10).toFixed(0)}%
+                      {((source.value / (statsData?.trafficSources?.reduce((a, b) => a + b.value, 0) || 1)) * 100).toFixed(0)}%
                     </span>
                   </div>
                 ))}
@@ -532,7 +528,7 @@ const Analytics = () => {
                   <HiOutlineMapPin className="h-5 w-5" />
                 </div>
                 <p className="text-[10px] font-black text-slate-900 tracking-tight">
-                  Mumbai
+                  {statsData?.insights?.topCity || "N/A"}
                 </p>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                   Top City
@@ -543,7 +539,7 @@ const Analytics = () => {
                   <HiOutlineClock className="h-5 w-5" />
                 </div>
                 <p className="text-[10px] font-black text-slate-900 tracking-tight">
-                  8 PM - 10 PM
+                  {statsData?.insights?.peakTime || "N/A"}
                 </p>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                   Peak Time
@@ -554,7 +550,7 @@ const Analytics = () => {
                   <HiOutlineDevicePhoneMobile className="h-5 w-5" />
                 </div>
                 <p className="text-[10px] font-black text-slate-900 tracking-tight">
-                  82% Mobile
+                  {statsData?.insights?.topDevice || "N/A"}
                 </p>
                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                   Top Device
@@ -580,7 +576,7 @@ const Analytics = () => {
                   {selectedProduct.name}
                 </h3>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
-                  Product ID: 928374
+                  Product ID: {selectedProduct._id || "N/A"}
                 </p>
               </div>
             </div>
@@ -612,7 +608,7 @@ const Analytics = () => {
                 <div className="h-full bg-primary w-[75%]" />
               </div>
               <p className="text-[10px] text-slate-400 font-bold text-right pt-1">
-                +12% faster than last week
+                +{selectedProduct.trend}% faster than last week
               </p>
             </div>
 

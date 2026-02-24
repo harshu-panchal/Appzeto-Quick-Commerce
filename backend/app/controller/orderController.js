@@ -1,6 +1,8 @@
 import Order from "../models/order.js";
 import Cart from "../models/cart.js";
 import Product from "../models/product.js";
+import Transaction from "../models/transaction.js";
+import StockHistory from "../models/stockHistory.js";
 import handleResponse from "../utils/helper.js";
 
 /* ===============================
@@ -49,7 +51,37 @@ export const placeOrder = async (req, res) => {
 
         await newOrder.save();
 
-        // 4. Clear the customer's cart after order is placed
+        // 5. Create Transaction & Stock History (Simulating immediate sale for demo)
+        if (sellerId) {
+            // Create pending transaction
+            await Transaction.create({
+                seller: sellerId,
+                order: newOrder._id,
+                type: "Order Payment",
+                amount: pricing.total,
+                status: "Pending",
+                reference: orderId
+            });
+
+            // Log stock history for each item
+            for (const item of orderItems) {
+                await StockHistory.create({
+                    product: item.product,
+                    seller: sellerId,
+                    type: "Sale",
+                    quantity: -item.quantity,
+                    note: `Order #${orderId}`,
+                    order: newOrder._id
+                });
+
+                // Deduct actual stock
+                await Product.findByIdAndUpdate(item.product, {
+                    $inc: { stock: -item.quantity }
+                });
+            }
+        }
+
+        // 6. Clear the customer's cart after order is placed
         await Cart.findOneAndUpdate({ customerId }, { items: [] });
 
         return handleResponse(res, 201, "Order placed successfully", newOrder);
@@ -164,8 +196,36 @@ export const updateOrderStatus = async (req, res) => {
         }
         // -----------------------------
 
+        const oldStatus = order.status;
         if (status) order.status = status;
         if (deliveryBoyId) order.deliveryBoy = deliveryBoyId;
+
+        // Handle Cancellation (Stock Reversal & Transaction Update)
+        if (status === 'cancelled' && oldStatus !== 'cancelled') {
+            // 1. Reverse Stock
+            for (const item of order.items) {
+                await Product.findByIdAndUpdate(item.product, {
+                    $inc: { stock: item.quantity }
+                });
+
+                await StockHistory.create({
+                    product: item.product,
+                    seller: order.seller,
+                    type: "Correction",
+                    quantity: item.quantity,
+                    note: `Order #${orderId} Cancelled`,
+                    order: order._id
+                });
+            }
+
+            // 2. Update Transaction
+            await Transaction.findOneAndUpdate({ reference: orderId }, { status: 'Failed' });
+        }
+
+        // Handle Confirmation/Delivery (Settle Transaction for Demo)
+        if (status === 'delivered') {
+            await Transaction.findOneAndUpdate({ reference: orderId }, { status: 'Settled' });
+        }
 
         await order.save();
 
@@ -189,7 +249,8 @@ export const getSellerOrders = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate("customer", "name phone")
             .populate("items.product")
-            .populate("seller", "shopName name"); // Populate seller info for admin convenience
+            .populate("deliveryBoy")
+            .populate("seller", "shopName name");
 
         return handleResponse(res, 200, role === 'admin' ? "All orders fetched" : "Seller orders fetched", orders);
     } catch (error) {
