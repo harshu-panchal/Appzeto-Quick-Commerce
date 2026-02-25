@@ -21,75 +21,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-// Mock Data
-const MOCK_ORDERS = [
-    {
-        id: 'ORD-2023-101',
-        customer: { name: 'John Doe', phone: '+1 (555) 123-4567', avatar: 'JD' },
-        items: [
-            { name: 'Organic Bananas', price: 4.99, qty: 2, image: 'https://images.unsplash.com/photo-1603833665858-e81b1c7e4660?w=100&h=100&fit=crop' },
-            { name: 'Pure Honey', price: 12.50, qty: 1, image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=100&h=100&fit=crop' }
-        ],
-        total: 145.00,
-        status: 'Pending',
-        date: 'Oct 24, 2023',
-        time: '10:30 AM',
-        address: '123 Maple Ave, Springfield, IL 62704',
-        payment: 'Paid via Credit Card'
-    },
-    {
-        id: 'ORD-2023-102',
-        customer: { name: 'Sarah Miller', phone: '+1 (555) 987-6543', avatar: 'SM' },
-        items: [
-            { name: 'Fresh Strawberries', price: 6.99, qty: 3, image: 'https://images.unsplash.com/photo-1464960710334-03f0c398dca0?w=100&h=100&fit=crop' }
-        ],
-        total: 210.50,
-        status: 'Processing',
-        date: 'Oct 23, 2023',
-        time: '02:15 PM',
-        address: '456 Oak Lane, Riverside, CA 92501',
-        payment: 'Cash on Delivery'
-    },
-    {
-        id: 'ORD-2023-103',
-        customer: { name: 'Mike Ross', phone: '+1 (555) 456-7890', avatar: 'MR' },
-        items: [
-            { name: 'Whole Wheat Bread', price: 3.50, qty: 2, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&h=100&fit=crop' }
-        ],
-        total: 89.20,
-        status: 'Shipped',
-        date: 'Oct 22, 2023',
-        time: '11:45 AM',
-        address: '789 Pine St, Boston, MA 02108',
-        payment: 'Paid via Wallet'
-    },
-    {
-        id: 'ORD-2023-104',
-        customer: { name: 'Emma Wilson', phone: '+1 (555) 222-3333', avatar: 'EW' },
-        items: [
-            { name: 'Almond Milk', price: 5.99, qty: 4, image: 'https://images.unsplash.com/photo-1550583794-72b7209cc2da?w=100&h=100&fit=crop' }
-        ],
-        total: 156.00,
-        status: 'Cancelled',
-        date: 'Oct 21, 2023',
-        time: '04:20 PM',
-        address: '321 Elm St, Seattle, WA 98101',
-        payment: 'Refunded'
-    },
-    {
-        id: 'ORD-2023-105',
-        customer: { name: 'David Chen', phone: '+1 (555) 444-5555', avatar: 'DC' },
-        items: [
-            { name: 'Apples (Red)', price: 2.99, qty: 5, image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6bcd6?w=100&h=100&fit=crop' }
-        ],
-        total: 14.95,
-        status: 'Delivered',
-        date: 'Oct 20, 2023',
-        time: '09:00 AM',
-        address: '555 Cedar Rd, Miami, FL 33101',
-        payment: 'Paid via UPI'
-    }
-];
+// Orders Page
 
 import { MagicCard } from '@/components/ui/magic-card';
 import { BlurFade } from '@/components/ui/blur-fade';

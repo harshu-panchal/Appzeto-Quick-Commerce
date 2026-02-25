@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
 import Input from "@shared/components/ui/Input";
@@ -23,97 +23,58 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { MagicCard } from "@/components/ui/magic-card";
-
-const MOCK_TRANSACTIONS = [
-  {
-    id: "TXN-9842",
-    type: "Order Payment",
-    amount: 1540.0,
-    status: "Settled",
-    date: "2023-11-20",
-    time: "10:30 AM",
-    customer: "Rahul Sharma",
-    ref: "#ORD-5542",
-  },
-  {
-    id: "TXN-9841",
-    type: "Withdrawal",
-    amount: -5000.0,
-    status: "Processing",
-    date: "2023-11-20",
-    time: "09:15 AM",
-    customer: "Bank Transfer",
-    ref: "WDR-9921",
-  },
-  {
-    id: "TXN-9840",
-    type: "Refund",
-    amount: -450.0,
-    status: "Settled",
-    date: "2023-11-19",
-    time: "11:45 PM",
-    customer: "Anita Gupta",
-    ref: "#ORD-5539",
-  },
-  {
-    id: "TXN-9839",
-    type: "Order Payment",
-    amount: 2100.0,
-    status: "Settled",
-    date: "2023-11-19",
-    time: "08:20 PM",
-    customer: "Vikram Singh",
-    ref: "#ORD-5538",
-  },
-  {
-    id: "TXN-9838",
-    type: "Order Payment",
-    amount: 850.0,
-    status: "Pending",
-    date: "2023-11-19",
-    time: "07:10 PM",
-    customer: "Sushma Rao",
-    ref: "#ORD-5537",
-  },
-  {
-    id: "TXN-9837",
-    type: "Order Payment",
-    amount: 1200.0,
-    status: "Settled",
-    date: "2023-11-18",
-    time: "02:30 PM",
-    customer: "Amit Kumar",
-    ref: "#ORD-5536",
-  },
-];
+import { sellerApi } from "../services/sellerApi";
+import { toast } from "sonner";
+import { exportToCSV } from "@/lib/exportUtils";
 
 const Transactions = () => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({ balances: {}, ledger: [] });
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("All");
   const [activeTab, setActiveTab] = useState("All");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedTxn, setSelectedTxn] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const fetchTransactions = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      const response = await sellerApi.getEarnings();
+      if (response.data.success) {
+        setData(response.data.result);
+      }
+    } catch (error) {
+      console.error("Transactions Fetch Error:", error);
+      toast.error("Failed to load transactions");
+    } finally {
+      if (!silent) setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
   const stats = [
     {
       label: "Settled Balance",
-      value: "₹18,450.00",
+      value: `₹${(data?.balances?.settledBalance || 0).toLocaleString()}`,
       icon: HiOutlineBanknotes,
       color: "text-emerald-600",
       bg: "bg-emerald-50",
     },
     {
       label: "Pending Payouts",
-      value: "₹4,200.00",
+      value: `₹${(data?.balances?.pendingPayouts || 0).toLocaleString()}`,
       icon: HiOutlineClock,
       color: "text-amber-600",
       bg: "bg-amber-50",
     },
     {
       label: "Total Revenue",
-      value: "₹95,210.00",
+      value: `₹${(data?.balances?.totalRevenue || 0).toLocaleString()}`,
       icon: HiOutlineCreditCard,
       color: "text-indigo-600",
       bg: "bg-indigo-50",
@@ -121,7 +82,7 @@ const Transactions = () => {
   ];
 
   const filteredTransactions = useMemo(() => {
-    return MOCK_TRANSACTIONS.filter((txn) => {
+    return (data.ledger || []).filter((txn) => {
       const matchesSearch =
         txn.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         txn.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,7 +90,11 @@ const Transactions = () => {
       const matchesType = activeTab === "All" || txn.type === activeTab;
       return matchesSearch && matchesType;
     });
-  }, [searchTerm, activeTab]);
+  }, [searchTerm, activeTab, data.ledger]);
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING TRANSACTIONS...</div>;
+  }
 
   return (
     <div className="space-y-8 pb-16">
@@ -153,7 +118,7 @@ const Transactions = () => {
             <Button
               onClick={() => {
                 setIsRefreshing(true);
-                setTimeout(() => setIsRefreshing(false), 1000);
+                fetchTransactions(true);
               }}
               variant="outline"
               className="rounded-lg px-4 py-2 border-slate-200 text-slate-600 bg-white disabled:opacity-50"
@@ -166,13 +131,38 @@ const Transactions = () => {
             <Button
               onClick={() => {
                 setIsDownloading(true);
-                setTimeout(() => {
+                try {
+                  const exportData = filteredTransactions.map(txn => ({
+                    id: txn.id,
+                    type: txn.type,
+                    amount: `₹${(txn.amount || 0).toLocaleString()}`,
+                    status: txn.status,
+                    date: txn.date || new Date(txn.createdAt).toLocaleDateString(),
+                    time: txn.time || new Date(txn.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    customer: txn.customer,
+                    ref: txn.ref
+                  }));
+
+                  exportToCSV(exportData, "Seller_Transactions", {
+                    id: "Transaction ID",
+                    type: "Type",
+                    amount: "Amount",
+                    status: "Status",
+                    date: "Date",
+                    time: "Time",
+                    customer: "Customer",
+                    ref: "Reference"
+                  });
+                  toast.success("Statement downloaded successfully!");
+                } catch (error) {
+                  console.error("Download Error:", error);
+                  toast.error("Failed to download statement");
+                } finally {
                   setIsDownloading(false);
-                  alert("Statements downloaded successfully!");
-                }, 1500);
+                }
               }}
               className="rounded-lg px-4 py-2 shadow-lg shadow-primary/20 disabled:opacity-50"
-              disabled={isDownloading}>
+              disabled={isDownloading || filteredTransactions.length === 0}>
               <HiOutlineDocumentText className="h-4 w-4 mr-2" />
               {isDownloading ? "DOWNLOADING..." : "DOWNLOAD STATEMENTS"}
             </Button>
@@ -309,7 +299,7 @@ const Transactions = () => {
                             {txn.ref}
                           </Badge>
                           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
-                            {txn.date} • {txn.time}
+                            {new Date(txn.createdAt).toLocaleDateString()} • {new Date(txn.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                       </td>
@@ -325,7 +315,7 @@ const Transactions = () => {
                           {Math.abs(txn.amount).toLocaleString()}
                         </p>
                         <p className="text-[9px] font-bold text-slate-400 mt-0.5">
-                          Settlement: T+2
+                          Settlement: {txn.status === 'Settled' ? 'Complete' : 'T+2'}
                         </p>
                       </td>
                       <td className="px-6 py-5">
@@ -333,7 +323,7 @@ const Transactions = () => {
                           variant={
                             txn.status === "Settled"
                               ? "success"
-                              : txn.status === "Processing"
+                              : txn.status === "Pending" || txn.status === "Processing"
                                 ? "warning"
                                 : "default"
                           }
@@ -419,7 +409,7 @@ const Transactions = () => {
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-400 font-bold">Date & Time</span>
                 <span className="text-slate-900 font-black">
-                  {selectedTxn.date} at {selectedTxn.time}
+                  {new Date(selectedTxn.createdAt).toLocaleDateString()} at {new Date(selectedTxn.createdAt).toLocaleTimeString()}
                 </span>
               </div>
             </div>

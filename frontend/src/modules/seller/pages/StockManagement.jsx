@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@shared/components/ui/Card';
 import Button from '@shared/components/ui/Button';
@@ -26,26 +26,13 @@ import { MagicCard } from '@/components/ui/magic-card';
 import { sellerApi } from '../services/sellerApi';
 import { toast } from 'sonner';
 
-const MOCK_INVENTORY = [
-    { id: '1', name: 'Fresh Alfonso Mangoes', sku: 'MGO-001', stock: 124, threshold: 50, price: 450, category: 'Fruits', status: 'In Stock', lastRestock: '2023-10-15' },
-    { id: '2', name: 'Organic Bananas (Dozen)', sku: 'BAN-005', stock: 12, threshold: 30, price: 60, category: 'Fruits', status: 'Low Stock', lastRestock: '2023-10-12' },
-    { id: '3', name: 'Premium Basmati Rice 5kg', sku: 'RIC-102', stock: 0, threshold: 20, price: 850, category: 'Grocery', status: 'Out of Stock', lastRestock: '2023-10-01' },
-    { id: '4', name: 'Natural Honey 500g', sku: 'HNY-044', stock: 45, threshold: 15, price: 320, category: 'Grocery', status: 'In Stock', lastRestock: '2023-10-18' },
-    { id: '5', name: 'Red Apples (Washington)', sku: 'APL-009', stock: 8, threshold: 40, price: 180, category: 'Fruits', status: 'Low Stock', lastRestock: '2023-10-14' },
-];
-
-const MOCK_HISTORY = [
-    { id: 'H1', productName: 'Fresh Alfonso Mangoes', type: 'Restock', quantity: '+50', date: '2023-10-15', time: '10:30 AM', note: 'Bulk purchase from supplier' },
-    { id: 'H2', productName: 'Organic Bananas (Dozen)', type: 'Sale', quantity: '-5', date: '2023-10-19', time: '02:15 PM', note: 'Order #ORD-1022' },
-    { id: 'H3', productName: 'Red Apples (Washington)', type: 'Correction', quantity: '-2', date: '2023-10-18', time: '11:00 AM', note: 'Damaged inventory removal' },
-];
-
 const StockManagement = () => {
     const navigate = useNavigate();
     const [activeView, setActiveView] = useState('inventory'); // 'inventory' or 'history'
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [inventory, setInventory] = useState([]);
+    const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -53,8 +40,8 @@ const StockManagement = () => {
     const [adjustValue, setAdjustValue] = useState('');
     const [adjustNote, setAdjustNote] = useState('');
 
-    const fetchInventory = async () => {
-        setIsLoading(true);
+    const fetchInventory = async (silent = false) => {
+        if (!silent) setIsLoading(true);
         try {
             const res = await sellerApi.getProducts();
             if (res.data.success) {
@@ -62,20 +49,38 @@ const StockManagement = () => {
                 setInventory(products.map(p => ({
                     ...p,
                     id: p._id,
-                    threshold: p.lowStockAlert || 5, // Match our model
+                    threshold: p.lowStockAlert || 5,
                     status: p.stock === 0 ? 'Out of Stock' : (p.stock <= (p.lowStockAlert || 5) ? 'Low Stock' : 'In Stock')
                 })));
             }
         } catch (error) {
             toast.error("Failed to load inventory");
         } finally {
-            setIsLoading(false);
+            if (!silent) setIsLoading(false);
         }
     };
 
-    React.useEffect(() => {
-        fetchInventory();
-    }, []);
+    const fetchHistory = async (silent = false) => {
+        if (!silent) setIsLoading(true);
+        try {
+            const res = await sellerApi.getStockHistory();
+            if (res.data.success) {
+                setHistory(res.data.result || []);
+            }
+        } catch (error) {
+            toast.error("Failed to load stock history");
+        } finally {
+            if (!silent) setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeView === 'inventory') {
+            fetchInventory();
+        } else {
+            fetchHistory();
+        }
+    }, [activeView]);
 
     const stats = useMemo(() => [
         { label: 'Total Inventory', value: inventory.reduce((acc, item) => acc + item.stock, 0), icon: HiOutlineCube, color: 'text-indigo-600', bg: 'bg-indigo-50', status: 'All' },
@@ -93,20 +98,28 @@ const StockManagement = () => {
         });
     }, [inventory, searchTerm, filterStatus]);
 
-    const handleQuickAdjust = async (id, delta) => {
-        const item = inventory.find(i => i.id === id);
-        if (!item) return;
-
-        const newStock = Math.max(0, item.stock + delta);
+    const handleFullAdjustment = async () => {
+        const value = parseInt(adjustValue);
+        if (isNaN(value) || value <= 0) {
+            toast.error("Please enter a valid quantity");
+            return;
+        }
 
         try {
-            const res = await sellerApi.updateProduct(id, { stock: newStock });
+            const res = await sellerApi.adjustStock({
+                productId: selectedItem.id,
+                type: adjustType === 'Restock' ? 'Restock' : 'Correction',
+                quantity: adjustType === 'Restock' ? value : -value,
+                note: adjustNote
+            });
+
             if (res.data.success) {
-                toast.success("Stock updated");
-                fetchInventory();
+                toast.success("Stock adjusted successfully");
+                setIsAdjustModalOpen(false);
+                fetchInventory(true);
             }
         } catch (error) {
-            toast.error("Failed to update stock");
+            toast.error(error.response?.data?.message || "Failed to adjust stock");
         }
     };
 
@@ -117,14 +130,9 @@ const StockManagement = () => {
         setIsAdjustModalOpen(true);
     };
 
-    const handleFullAdjustment = () => {
-        const value = parseInt(adjustValue);
-        if (isNaN(value) || value <= 0) return;
-
-        const delta = adjustType === 'Restock' ? value : -value;
-        handleQuickAdjust(selectedItem.id, delta);
-        setIsAdjustModalOpen(false);
-    };
+    if (isLoading && inventory.length === 0 && history.length === 0) {
+        return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING STOCK DATA...</div>;
+    }
 
     return (
         <div className="space-y-6 pb-16">
@@ -201,9 +209,13 @@ const StockManagement = () => {
                                     />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Button variant="outline" className="rounded-xl px-4 py-2 text-[10px] font-bold border-slate-200 text-slate-600 bg-white hover:bg-slate-50 shadow-sm">
-                                        <HiOutlineFunnel className="h-4 w-4 mr-2" />
-                                        FILTERS
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => fetchInventory(true)}
+                                        className="rounded-xl px-4 py-2 text-[10px] font-bold border-slate-200 text-slate-600 bg-white hover:bg-slate-50 shadow-sm"
+                                    >
+                                        <HiOutlineArrowPath className="h-4 w-4 mr-2" />
+                                        REFRESH
                                     </Button>
                                     <Button
                                         onClick={() => navigate('/seller/products/add')}
@@ -223,7 +235,7 @@ const StockManagement = () => {
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Product Information</th>
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Inventory Capacity</th>
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock Health</th>
-                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quick Adjust</th>
+                                            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Price</th>
                                             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                                         </tr>
                                     </thead>
@@ -301,48 +313,53 @@ const StockManagement = () => {
                                 <h3 className="text-base font-black text-slate-900">Inventory Movement Log</h3>
                                 <p className="text-xs text-slate-500 font-medium">Audit trail for all stock adjustments and sales.</p>
                             </div>
-                            <Button variant="outline" className="rounded-xl text-xs font-bold bg-white">
+                            <Button
+                                variant="outline"
+                                onClick={() => fetchHistory(true)}
+                                className="rounded-xl text-xs font-bold bg-white"
+                            >
                                 <HiOutlineArrowPath className="h-4 w-4 mr-2" />
                                 REFRESH LOG
                             </Button>
                         </div>
                         <div className="divide-y divide-slate-50">
-                            {MOCK_HISTORY.map((log) => (
-                                <div key={log.id} className="p-6 hover:bg-slate-50/50 transition-colors flex items-center justify-between group">
+                            {history.length === 0 ? (
+                                <div className="p-10 text-center text-slate-400 font-black uppercase tracking-widest">No history found</div>
+                            ) : history.map((log) => (
+                                <div key={log._id} className="p-6 hover:bg-slate-50/50 transition-colors flex items-center justify-between group">
                                     <div className="flex items-center gap-5">
                                         <div className={cn(
                                             "h-12 w-12 rounded-2xl flex items-center justify-center shadow-sm",
                                             log.type === 'Restock' ? "bg-emerald-50 text-emerald-600" :
-                                                log.type === 'Sale' ? "bg-indigo-50 text-indigo-600" : "bg-amber-50 text-amber-600"
+                                                log.type === 'Sale' ? "bg-indigo-50 text-indigo-600" : "bg-rose-50 text-rose-600"
                                         )}>
                                             {log.type === 'Restock' ? <HiOutlinePlus className="h-6 w-6" /> :
-                                                log.type === 'Sale' ? <HiOutlineCube className="h-6 w-6" /> : <HiOutlineArrowPath className="h-6 w-6" />}
+                                                log.type === 'Sale' ? <HiOutlineCube className="h-6 w-6" /> : <HiOutlineMinus className="h-6 w-6" />}
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <h4 className="text-sm font-black text-slate-900">{log.productName}</h4>
+                                                <h4 className="text-sm font-black text-slate-900">{log.product?.name || 'Unknown Product'}</h4>
                                                 <Badge className={cn(
                                                     "text-[9px] font-bold px-1.5 py-0",
                                                     log.type === 'Restock' ? "bg-emerald-100 text-emerald-700" :
-                                                        log.type === 'Sale' ? "bg-indigo-100 text-indigo-700" : "bg-amber-100 text-amber-700"
+                                                        log.type === 'Sale' ? "bg-indigo-100 text-indigo-700" : "bg-rose-100 text-rose-700"
                                                 )}>
                                                     {log.type.toUpperCase()}
                                                 </Badge>
                                             </div>
-                                            <p className="text-[11px] text-slate-400 font-semibold mt-1">Note: {log.note}</p>
+                                            <p className="text-[11px] text-slate-400 font-semibold mt-1">Note: {log.note || 'N/A'}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         <div className={cn(
                                             "text-lg font-black tracking-tight mb-0.5",
-                                            log.quantity.startsWith('+') ? "text-emerald-600" :
-                                                log.quantity.startsWith('-') ? "text-rose-600" : "text-slate-900"
+                                            log.quantity > 0 ? "text-emerald-600" : "text-rose-600"
                                         )}>
-                                            {log.quantity}
+                                            {log.quantity > 0 ? `+${log.quantity}` : log.quantity}
                                         </div>
                                         <div className="flex items-center justify-end gap-1.5 text-[10px] font-bold text-slate-400">
                                             <HiOutlineCalendarDays className="h-3.5 w-3.5" />
-                                            {log.date} • {log.time}
+                                            {new Date(log.createdAt).toLocaleDateString()} • {new Date(log.createdAt).toLocaleTimeString()}
                                         </div>
                                     </div>
                                 </div>
@@ -386,8 +403,10 @@ const StockManagement = () => {
 
                             <div className="p-8 space-y-6">
                                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400">
-                                        <HiOutlineCube className="h-6 w-6" />
+                                    <div className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
+                                        {selectedItem.mainImage ? (
+                                            <img src={selectedItem.mainImage} alt="" className="h-full w-full object-cover" />
+                                        ) : <HiOutlineCube className="h-6 w-6" />}
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-black text-slate-900">{selectedItem.name}</h4>

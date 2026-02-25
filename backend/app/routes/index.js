@@ -8,6 +8,7 @@ import cartRoute from "./cartRoutes.js";
 import wishlistRoute from "./wishlistRoutes.js";
 import orderRoute from "./orderRoutes.js";
 import paymentRoute from "./paymentRoutes.js";
+import notificationRoute from "./notificationRoutes.js";
 
 import express from "express";
 
@@ -25,6 +26,7 @@ const setupRoutes = (app) => {
     router.use("/wishlist", wishlistRoute);
     router.use("/orders", orderRoute);
     router.use("/payments", paymentRoute);
+    router.use("/notifications", notificationRoute);
 
     app.use("/api", router);
 }
