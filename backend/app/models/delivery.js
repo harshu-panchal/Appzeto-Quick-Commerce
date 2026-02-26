@@ -20,6 +20,37 @@ const deliverySchema = new mongoose.Schema(
             default: "bike",
         },
 
+        email: {
+            type: String,
+            trim: true,
+        },
+
+        address: {
+            type: String,
+            trim: true,
+        },
+
+        accountHolder: {
+            type: String,
+            trim: true,
+        },
+
+        accountNumber: {
+            type: String,
+            trim: true,
+        },
+
+        ifsc: {
+            type: String,
+            trim: true,
+        },
+
+        documents: {
+            aadhar: { type: String },
+            pan: { type: String },
+            drivingLicense: { type: String },
+        },
+
         vehicleNumber: {
             type: String,
             trim: true,

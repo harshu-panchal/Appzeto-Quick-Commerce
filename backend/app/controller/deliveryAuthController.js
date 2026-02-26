@@ -1,6 +1,7 @@
 import Delivery from "../models/delivery.js";
 import jwt from "jsonwebtoken";
 import handleResponse from "../utils/helper.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 /* ===============================
    Utils
@@ -21,7 +22,11 @@ const generateToken = (delivery) =>
 ================================ */
 export const signupDelivery = async (req, res) => {
     try {
-        const { name, phone, vehicleType } = req.body;
+        const {
+            name, phone, vehicleType,
+            email, address, vehicleNumber,
+            accountHolder, accountNumber, ifsc
+        } = req.body;
 
         if (!name || !phone) {
             return handleResponse(res, 400, "Name and phone are required");
@@ -35,23 +40,51 @@ export const signupDelivery = async (req, res) => {
 
         const otp = generateOTP();
 
+        let aadharUrl = delivery?.documents?.aadhar || "";
+        let panUrl = delivery?.documents?.pan || "";
+        let dlUrl = delivery?.documents?.drivingLicense || "";
+
+        if (req.files) {
+            if (req.files.aadhar && req.files.aadhar[0]) {
+                aadharUrl = await uploadToCloudinary(req.files.aadhar[0].buffer, 'delivery_docs');
+            }
+            if (req.files.pan && req.files.pan[0]) {
+                panUrl = await uploadToCloudinary(req.files.pan[0].buffer, 'delivery_docs');
+            }
+            if (req.files.dl && req.files.dl[0]) {
+                dlUrl = await uploadToCloudinary(req.files.dl[0].buffer, 'delivery_docs');
+            }
+        }
+
+        const deliveryData = {
+            name,
+            phone,
+            vehicleType,
+            email,
+            address,
+            vehicleNumber,
+            accountHolder,
+            accountNumber,
+            ifsc,
+            documents: {
+                aadhar: aadharUrl,
+                pan: panUrl,
+                drivingLicense: dlUrl,
+            },
+            otp,
+            otpExpiry: Date.now() + 5 * 60 * 1000,
+        };
+
         if (!delivery) {
-            delivery = await Delivery.create({
-                name,
-                phone,
-                vehicleType,
-                otp,
-                otpExpiry: Date.now() + 5 * 60 * 1000,
-            });
+            delivery = await Delivery.create(deliveryData);
         } else {
-            delivery.otp = otp;
-            delivery.otpExpiry = Date.now() + 5 * 60 * 1000;
+            Object.assign(delivery, deliveryData);
             await delivery.save();
         }
 
         console.log("-------------------");
         console.log("Delivery Signup Request Received");
-        console.log("Data:", { name, phone, vehicleType });
+        console.log("Data:", { name, phone, vehicleType, email });
         console.log("Generated OTP:", otp);
         console.log("-------------------");
 
