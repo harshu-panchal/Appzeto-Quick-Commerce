@@ -35,4 +35,13 @@ export const adminApi = {
     getOrders: () => axiosInstance.get('/orders/seller-orders'),
     getOrderDetails: (orderId) => axiosInstance.get(`/orders/details/${orderId}`),
     updateOrderStatus: (orderId, data) => axiosInstance.put(`/orders/status/${orderId}`, data),
+
+    // Support Tickets
+    getTickets: () => axiosInstance.get('/tickets/admin/all'),
+    updateTicketStatus: (id, status) => axiosInstance.patch(`/tickets/admin/status/${id}`, { status }),
+    replyTicket: (id, text) => axiosInstance.post(`/tickets/reply/${id}`, { text, isAdmin: true }),
+
+    // Reviews
+    getPendingReviews: () => axiosInstance.get('/reviews/admin/pending'),
+    updateReviewStatus: (id, status) => axiosInstance.patch(`/reviews/admin/status/${id}`, { status }),
 };

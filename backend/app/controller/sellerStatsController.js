@@ -310,7 +310,7 @@ export const getSellerEarnings = async (req, res) => {
     try {
         const sellerId = req.user.id;
 
-        const transactions = await Transaction.find({ seller: sellerId })
+        const transactions = await Transaction.find({ user: sellerId, userModel: 'Seller' })
             .sort({ createdAt: -1 })
             .populate("order", "orderId");
 
@@ -337,7 +337,8 @@ export const getSellerEarnings = async (req, res) => {
         const monthlyAggregation = await Transaction.aggregate([
             {
                 $match: {
-                    seller: new mongoose.Types.ObjectId(sellerId),
+                    user: new mongoose.Types.ObjectId(sellerId),
+                    userModel: 'Seller',
                     type: 'Order Payment',
                     createdAt: { $gte: sixMonthsAgo }
                 }

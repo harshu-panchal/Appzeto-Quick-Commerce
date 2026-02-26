@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Heart, Plus, Minus, Star, ShieldCheck, Clock, ArrowLeft, ShoppingBag } from 'lucide-react';
+import { Heart, Plus, Minus, Star, ShieldCheck, Clock, ArrowLeft, ShoppingBag, MessageSquare, Send } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '@shared/components/ui/Toast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { customerApi } from '../services/customerApi';
 
 // Mock product data (In a real app, this would come from an API or central store)
 const allProducts = [
@@ -78,6 +79,49 @@ const ProductDetailPage = () => {
     const quantity = cartItem ? cartItem.quantity : 0;
     const isWishlisted = isInWishlist(product.id);
 
+    useEffect(() => {
+        if (id) {
+            fetchReviews();
+        }
+    }, [id]);
+
+    const fetchReviews = async () => {
+        try {
+            setReviewLoading(true);
+            const res = await customerApi.getProductReviews(id);
+            if (res.data.success) {
+                setReviews(res.data.results);
+            }
+        } catch (error) {
+            console.error("Fetch reviews error:", error);
+        } finally {
+            setReviewLoading(false);
+        }
+    };
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (!newReview.comment.trim()) return;
+
+        try {
+            setIsSubmittingReview(true);
+            const res = await customerApi.submitReview({
+                productId: id,
+                rating: newReview.rating,
+                comment: newReview.comment
+            });
+            if (res.data.success) {
+                showToast("Review submitted for moderation", "success");
+                setNewReview({ rating: 5, comment: '' });
+                // Note: Not adding to local reviews yet since it needs admin approval
+            }
+        } catch (error) {
+            showToast(error.response?.data?.message || "Failed to submit review", "error");
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
+
     const handleToggleWishlist = () => {
         toggleWishlistGlobal(product);
         showToast(
@@ -137,7 +181,7 @@ const ProductDetailPage = () => {
                                 {product.category}
                             </span>
                             <div className="flex items-center gap-1 text-orange-500 font-bold bg-orange-50 px-3 py-0.5 rounded-full text-xs">
-                                <Star size={12} fill="currentColor" /> 4.8 (120+ Reviews)
+                                <Star size={12} fill="currentColor" /> {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '4.8'} ({reviews.length > 0 ? reviews.length : '120+'})
                             </div>
                         </div>
 
@@ -205,6 +249,112 @@ const ProductDetailPage = () => {
                                 <p className="text-sm font-black text-slate-800">{detail.value}</p>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Reviews Section */}
+            <div className="mt-20 border-t border-slate-100 pt-16">
+                <div className="flex flex-col lg:flex-row gap-12">
+                    {/* Review Form */}
+                    <div className="lg:w-[40%]">
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm sticky top-24">
+                            <h3 className="text-2xl font-black text-slate-800 mb-2">Write a Review</h3>
+                            <p className="text-slate-500 font-medium mb-6 text-sm">Share your experience with this product</p>
+
+                            <form onSubmit={handleReviewSubmit} className="space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Your Rating</label>
+                                    <div className="flex gap-2">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <button
+                                                key={star}
+                                                type="button"
+                                                onClick={() => setNewReview({ ...newReview, rating: star })}
+                                                className={cn(
+                                                    "h-12 w-12 rounded-xl flex items-center justify-center transition-all",
+                                                    newReview.rating >= star ? "bg-orange-50 text-orange-500" : "bg-slate-50 text-slate-300"
+                                                )}
+                                            >
+                                                <Star className={cn("h-6 w-6", newReview.rating >= star && "fill-current")} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Comment</label>
+                                    <textarea
+                                        value={newReview.comment}
+                                        onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                        placeholder="What did you like or dislike?"
+                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold min-h-[120px] outline-none ring-1 ring-transparent focus:ring-[#0c831f]/20 transition-all"
+                                    />
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmittingReview}
+                                    className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-2xl shadow-xl shadow-slate-100 transition-all active:scale-95"
+                                >
+                                    {isSubmittingReview ? "SUBMITTING..." : "SUBMIT REVIEW"}
+                                </Button>
+                                <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest">
+                                    Reviews are moderated before publishing
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+
+                    {/* Reviews List */}
+                    <div className="lg:w-[60%] space-y-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-3xl font-black text-slate-800">Customer Reviews</h3>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-[#0c831f]/5 rounded-xl border border-[#0c831f]/10">
+                                <MessageSquare size={18} className="text-[#0c831f]" />
+                                <span className="font-black text-[#0c831f]">{reviews.length} Verified</span>
+                            </div>
+                        </div>
+
+                        {reviewLoading ? (
+                            <div className="flex justify-center p-20">
+                                <Loader2 className="animate-spin text-[#0c831f]" size={32} />
+                            </div>
+                        ) : reviews.length > 0 ? (
+                            <div className="space-y-6">
+                                {reviews.map((review) => (
+                                    <div key={review._id} className="p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-slate-400 ds-h2 overflow-hidden">
+                                                    {review.userId?.image ? (
+                                                        <img src={review.userId.image} className="w-full h-full object-cover" />
+                                                    ) : review.userId?.name?.[0] || "?"}
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-black text-slate-800">{review.userId?.name || "Anonymous"}</h4>
+                                                    <div className="flex items-center gap-1">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                size={12}
+                                                                className={cn(i < review.rating ? "text-orange-400 fill-orange-400" : "text-slate-200")}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <p className="text-slate-600 font-medium leading-relaxed">{review.comment}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-20 text-center rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200">
+                                <p className="text-slate-400 font-black uppercase text-sm">No reviews yet. Be the first!</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

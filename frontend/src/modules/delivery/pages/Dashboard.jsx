@@ -23,10 +23,9 @@ import { deliveryApi } from "../services/deliveryApi";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [isOnline, setIsOnline] = useState(user?.isOnline || false);
-  const [activeOrder, setActiveOrder] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [earnings, setEarnings] = useState({
     today: 0,
     deliveries: 0,
@@ -41,75 +40,45 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  // Fetch available orders when online
-  useEffect(() => {
-    let pollInterval;
-
-    const fetchOrders = async () => {
-      if (!isOnline || activeOrder) return;
-
-      try {
-        const response = await deliveryApi.getAvailableOrders();
-        const availableOrders = response.data.result;
-
-        if (availableOrders && availableOrders.length > 0) {
-          const order = availableOrders[0]; // Take the first available order
-          setActiveOrder({
-            id: order.orderId,
-            mongoId: order._id,
-            pickup: order.seller?.shopName || "Seller",
-            drop: order.address?.address || "Customer Address",
-            distance: "Calculated...", // In a real app, distance would be calculated
-            estTime: "10-15 min",
-            value: order.pricing?.total || 0,
-            earnings: Math.round((order.pricing?.total || 0) * 0.1), // Example: 10% commission
-            timeLeft: 30,
-          });
-        }
-      } catch (error) {
-        console.error("Failed to fetch available orders:", error);
-      }
-    };
-
-    if (isOnline && !activeOrder) {
-      fetchOrders();
-      pollInterval = setInterval(fetchOrders, 5000); // Poll every 5 seconds
-    }
-
-    return () => clearInterval(pollInterval);
-  }, [isOnline, activeOrder]);
-
-  const handleAcceptOrder = async () => {
-    if (!activeOrder) return;
-
+  const fetchStats = async () => {
     try {
-      setLoading(true);
-      await deliveryApi.acceptOrder(activeOrder.id);
-      toast.success("Order accepted!");
-      navigate(`/delivery/order-details/${activeOrder.id}`);
+      const response = await deliveryApi.getStats();
+      if (response.data.success) {
+        setEarnings(response.data.result);
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to accept order");
-      setActiveOrder(null); // Clear if failed (maybe already taken)
-    } finally {
-      setLoading(false);
+      console.error("Failed to fetch statistics");
     }
   };
 
-  const handleRejectOrder = () => {
-    setActiveOrder(null);
-    // In a real app, we might want to "snooze" this order for this specific rider
+  const fetchNotifications = async () => {
+    try {
+      const response = await deliveryApi.getNotifications();
+      if (response.data.success) {
+        setUnreadCount(response.data.result.unreadCount);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications");
+    }
   };
+
+  useEffect(() => {
+    fetchStats();
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleOnlineToggle = async () => {
     const newStatus = !isOnline;
     try {
       await deliveryApi.updateProfile({ isOnline: newStatus });
+      await refreshUser(); // Refresh global auth state
       setIsOnline(newStatus);
       if (newStatus) {
         toast.success("You are now ONLINE. Finding orders...");
       } else {
         toast.info("You are now OFFLINE. No new orders.");
-        setActiveOrder(null);
       }
     } catch (error) {
       toast.error("Failed to update status");
@@ -151,7 +120,9 @@ const Dashboard = () => {
             size={20}
             className="text-gray-600 group-hover:text-primary transition-colors"
           />
-          <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full animate-pulse"></span>
+          {unreadCount > 0 && (
+            <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full animate-pulse"></span>
+          )}
         </div>
       </header>
 
@@ -250,167 +221,35 @@ const Dashboard = () => {
         {/* Active Order / Status */}
         <AnimatePresence mode="wait">
           {isOnline ? (
-            activeOrder ? (
-              <motion.div
-                key="active-order"
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}>
-                <Card className="border-l-4 border-l-primary overflow-hidden relative shadow-lg shadow-primary/5">
-                  <div className="absolute top-0 right-0 bg-red-50 text-red-600 border-b border-l border-red-100 px-3 py-1.5 text-xs font-bold rounded-bl-xl flex items-center">
-                    <Clock size={12} className="mr-1.5" />
-                    <span className="tabular-nums">
-                      00:{activeOrder.timeLeft}
-                    </span>
-                  </div>
-
-                  <div className="">
-                    <div className="flex justify-between items-start mb-5">
-                      <div>
-                        <h3 className="ds-h3 text-primary mb-0.5">
-                          New Order Request
-                        </h3>
-                        <p className="text-xs text-gray-400 font-medium">
-                          #{activeOrder.id}
-                        </p>
-                      </div>
-                      <div className="text-right mt-7">
-                        <p className="ds-caption font-bold text-gray-400">
-                          Earnings
-                        </p>
-                        <p className="text-2xl font-extrabold text-green-600">
-                          ₹{activeOrder.earnings}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 mb-6 relative">
-                      {/* Connecting Line */}
-                      <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-gray-100 -z-10"></div>
-
-                      <div className="flex items-start group">
-                        <div className="mt-1 mr-3 flex-shrink-0 relative">
-                          <div className="w-6 h-6 rounded-full bg-green-100 border-2 border-green-500 flex items-center justify-center z-10 bg-white">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          </div>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg flex-1 group-hover:bg-gray-100 transition-colors">
-                          <p className="ds-caption font-bold text-gray-500 mb-0.5">
-                            Pickup
-                          </p>
-                          <p className="font-semibold text-gray-900 line-clamp-1 text-sm">
-                            {activeOrder.pickup}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start group">
-                        <div className="mt-1 mr-3 flex-shrink-0 relative">
-                          <div className="w-6 h-6 rounded-full bg-red-100 border-2 border-red-500 flex items-center justify-center z-10 bg-white">
-                            <MapPin
-                              size={12}
-                              className="text-red-500"
-                              fill="currentColor"
-                            />
-                          </div>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg flex-1 group-hover:bg-gray-100 transition-colors">
-                          <p className="ds-caption font-bold text-gray-500 mb-0.5">
-                            Drop
-                          </p>
-                          <p className="font-semibold text-gray-900 line-clamp-1 text-sm">
-                            {activeOrder.drop}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between bg-gray-50 border border-gray-100 p-3 rounded-xl mb-6 text-sm">
-                      <div className="flex flex-col items-center flex-1 border-r border-gray-200">
-                        <Navigation size={18} className="mb-1 text-blue-500" />
-                        <span className="font-bold text-gray-700">
-                          {activeOrder.distance}
-                        </span>
-                        <span className="text-[10px] text-gray-400 uppercase font-bold">
-                          Distance
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-center flex-1 border-r border-gray-200">
-                        <Clock size={18} className="mb-1 text-orange-500" />
-                        <span className="font-bold text-gray-700">
-                          {activeOrder.estTime}
-                        </span>
-                        <span className="text-[10px] text-gray-400 uppercase font-bold">
-                          Est. Time
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-center flex-1">
-                        <Package size={18} className="mb-1 text-purple-500" />
-                        <span className="font-bold text-gray-700">COD</span>
-                        <span className="text-[10px] text-gray-400 uppercase font-bold">
-                          Type
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        onClick={handleRejectOrder}
-                        variant="danger"
-                        className="w-full bg-white text-red-600 border border-red-200 hover:bg-red-50">
-                        REJECT
-                      </Button>
-                      <Button
-                        onClick={handleAcceptOrder}
-                        className="w-full shadow-lg shadow-primary/20">
-                        ACCEPT ORDER
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Progress bar for timer */}
-                  <div className="absolute bottom-0 left-0 h-1 bg-gray-100 w-full">
-                    <motion.div
-                      className="h-full bg-primary"
-                      initial={{ width: "100%" }}
-                      animate={{ width: "0%" }}
-                      transition={{ duration: 30, ease: "linear" }}
-                    />
-                  </div>
-                </Card>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="searching"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="bg-white rounded-2xl p-8 text-center border-2 border-dashed border-gray-200 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/50 to-purple-50/50 opacity-50"></div>
-                <div className="relative z-10">
-                  <div className="relative w-24 h-24 mx-auto mb-6">
-                    <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-20"></div>
-                    <div className="absolute inset-2 bg-blue-100 rounded-full animate-ping opacity-40 delay-150"></div>
-                    <div className="relative w-full h-full bg-blue-50 rounded-full flex items-center justify-center border border-blue-100 shadow-sm">
-                      <MapPin size={36} className="text-blue-600" />
-                    </div>
-                  </div>
-                  <h3 className="ds-h3 mb-2 text-gray-800">
-                    Finding Orders Nearby...
-                  </h3>
-                  <p className="text-sm text-gray-500 max-w-[220px] mx-auto mb-6">
-                    We're looking for delivery requests in your area. Stay
-                    online!
-                  </p>
-                  <div className="flex justify-center space-x-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></span>
-                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100"></span>
-                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-200"></span>
+            <motion.div
+              key="searching"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-white rounded-2xl p-8 text-center border-2 border-dashed border-gray-200 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/50 to-purple-50/50 opacity-50"></div>
+              <div className="relative z-10">
+                <div className="relative w-24 h-24 mx-auto mb-6">
+                  <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-20"></div>
+                  <div className="absolute inset-2 bg-blue-100 rounded-full animate-ping opacity-40 delay-150"></div>
+                  <div className="relative w-full h-full bg-blue-50 rounded-full flex items-center justify-center border border-blue-100 shadow-sm">
+                    <MapPin size={36} className="text-blue-600" />
                   </div>
                 </div>
-              </motion.div>
-            )
+                <h3 className="ds-h3 mb-2 text-gray-800">
+                  Finding Orders Nearby...
+                </h3>
+                <p className="text-sm text-gray-500 max-w-[220px] mx-auto mb-6">
+                  We're looking for delivery requests in your area. Stay
+                  online!
+                </p>
+                <div className="flex justify-center space-x-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100"></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-200"></span>
+                </div>
+              </div>
+            </motion.div>
           ) : (
             <motion.div
               key="offline"

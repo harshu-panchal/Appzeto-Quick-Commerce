@@ -107,6 +107,19 @@ export const AuthProvider = ({ children }) => {
         else window.location.href = '/login';
     };
 
+    const refreshUser = async () => {
+        if (token) {
+            try {
+                const endpoint = `/${currentRole}/profile`;
+                const response = await axiosInstance.get(endpoint);
+                setUser(response.data.result);
+                return response.data.result;
+            } catch (error) {
+                console.error('Failed to refresh profile:', error);
+            }
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -115,7 +128,8 @@ export const AuthProvider = ({ children }) => {
             isAuthenticated,
             authData,
             login,
-            logout
+            logout,
+            refreshUser
         }}>
             {children}
         </AuthContext.Provider>

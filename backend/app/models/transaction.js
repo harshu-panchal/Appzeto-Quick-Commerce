@@ -2,10 +2,15 @@ import mongoose from "mongoose";
 
 const transactionSchema = new mongoose.Schema(
     {
-        seller: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Seller",
             required: true,
+            refPath: "userModel",
+        },
+        userModel: {
+            type: String,
+            required: true,
+            enum: ["Seller", "Delivery", "Admin"],
         },
         order: {
             type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +18,7 @@ const transactionSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["Order Payment", "Withdrawal", "Refund"],
+            enum: ["Order Payment", "Delivery Earning", "Withdrawal", "Refund", "Incentive", "Bonus"],
             required: true,
         },
         amount: {

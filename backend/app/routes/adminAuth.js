@@ -7,6 +7,7 @@ import {
     getAdminProfile,
     updateAdminProfile,
     updateAdminPassword,
+    getAdminStats,
 } from "../controller/adminController.js";
 
 import { verifyToken, allowRoles } from "../middleware/authMiddleware.js";
@@ -36,6 +37,13 @@ router.put(
     verifyToken,
     allowRoles("admin"),
     updateAdminPassword
+);
+
+router.get(
+    "/stats",
+    verifyToken,
+    allowRoles("admin"),
+    getAdminStats
 );
 
 // Protected admin route example

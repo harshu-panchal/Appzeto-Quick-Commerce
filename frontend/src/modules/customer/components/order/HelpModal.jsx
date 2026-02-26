@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, MessageCircle, Phone, ChevronRight, AlertCircle, PackageX, Truck } from 'lucide-react';
+import { X, MessageCircle, Phone, ChevronRight, AlertCircle, PackageX, Truck, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -59,11 +59,14 @@ const HelpModal = ({ isOpen, onClose }) => {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <Link to="/chat" className="py-3.5 rounded-xl bg-[#0c831f] text-white font-bold flex items-center justify-center gap-2 hover:bg-[#0a701a] transition-colors shadow-lg shadow-green-200">
-                                        <MessageCircle size={18} /> Chat with Us
+                                    <Link to="/support" className="col-span-2 py-3.5 rounded-xl border-2 border-[#0c831f] text-[#0c831f] font-bold flex items-center justify-center gap-2 hover:bg-green-50 transition-colors shadow-lg shadow-green-50">
+                                        <PlusCircle size={18} /> Raise a Ticket
+                                    </Link>
+                                    <Link to="/chat" className="py-3.5 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors">
+                                        <MessageCircle size={18} /> Chat Us
                                     </Link>
                                     <button className="py-3.5 rounded-xl border border-slate-200 text-slate-700 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
-                                        <Phone size={18} /> Call Support
+                                        <Phone size={18} /> Call Us
                                     </button>
                                 </div>
                             </div>

@@ -49,11 +49,23 @@ const sellerSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
-
+        location: {
+            type: {
+                type: String,
+                enum: ["Point"],
+                default: "Point",
+            },
+            coordinates: {
+                type: [Number],
+                default: [0, 0],
+            },
+        },
         lastLogin: Date,
     },
     { timestamps: true }
 );
+
+sellerSchema.index({ location: "2dsphere" });
 
 // Hash password before saving
 sellerSchema.pre("save", async function (next) {

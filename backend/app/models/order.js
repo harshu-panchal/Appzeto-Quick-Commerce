@@ -107,6 +107,12 @@ const orderSchema = new mongoose.Schema(
             enum: ["Direct", "Search", "Social", "Referral"],
             default: "Direct",
         },
+        expiresAt: {
+            type: Date,
+        },
+        acceptedAt: {
+            type: Date,
+        },
     },
     { timestamps: true }
 );

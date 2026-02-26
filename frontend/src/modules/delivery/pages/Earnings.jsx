@@ -19,19 +19,38 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import Button from "@/shared/components/ui/Button";
 import Card from "@/shared/components/ui/Card";
+import { deliveryApi } from "../services/deliveryApi";
 
 const Earnings = () => {
   const [activeTab, setActiveTab] = useState("weekly");
+  const [loading, setLoading] = useState(true);
+  const [earningsData, setEarningsData] = useState({
+    totalEarnings: 0,
+    incentives: 0,
+    bonuses: 0,
+    onlinePay: 0,
+    cashCollected: 0,
+    chartData: [],
+    recentTransactions: []
+  });
 
-  const data = [
-    { name: "Mon", earnings: 1200, incentives: 200 },
-    { name: "Tue", earnings: 1450, incentives: 250 },
-    { name: "Wed", earnings: 1100, incentives: 150 },
-    { name: "Thu", earnings: 1600, incentives: 300 },
-    { name: "Fri", earnings: 1900, incentives: 400 },
-    { name: "Sat", earnings: 2200, incentives: 500 },
-    { name: "Sun", earnings: 2100, incentives: 450 },
-  ];
+  const fetchEarnings = async () => {
+    try {
+      setLoading(true);
+      const response = await deliveryApi.getEarnings();
+      if (response.data.success) {
+        setEarningsData(response.data.result);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch earnings data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchEarnings();
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -45,6 +64,14 @@ const Earnings = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50/50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50/50 min-h-screen pb-24">
@@ -63,11 +90,10 @@ const Earnings = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all capitalize ${
-                activeTab === tab
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}>
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all capitalize ${activeTab === tab
+                ? "bg-white text-primary shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}>
               {tab}
             </button>
           ))}
@@ -92,18 +118,18 @@ const Earnings = () => {
             <div className="flex items-baseline mb-6 relative z-10">
               <span className="text-3xl font-bold mr-1">₹</span>
               <span className="text-5xl font-extrabold tracking-tight">
-                12,450
+                {earningsData.totalEarnings.toLocaleString()}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/20 relative z-10">
               <div>
                 <p className="text-blue-100 text-xs mb-1">Incentives</p>
-                <p className="font-bold text-lg">+₹1,250</p>
+                <p className="font-bold text-lg">+₹{earningsData.incentives}</p>
               </div>
               <div>
                 <p className="text-blue-100 text-xs mb-1">Bonuses</p>
-                <p className="font-bold text-lg">+₹450</p>
+                <p className="font-bold text-lg">+₹{earningsData.bonuses}</p>
               </div>
             </div>
           </div>
@@ -122,7 +148,7 @@ const Earnings = () => {
               </Button>
             </div>
             <ResponsiveContainer width="100%" height="85%">
-              <BarChart data={data} barSize={20}>
+              <BarChart data={earningsData.chartData} barSize={20}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -174,21 +200,21 @@ const Earnings = () => {
             <p className="text-gray-500 text-xs font-medium uppercase">
               Online Pay
             </p>
-            <p className="text-xl font-bold text-gray-900">₹8,240</p>
+            <p className="text-xl font-bold text-gray-900">₹{earningsData.onlinePay.toLocaleString()}</p>
           </Card>
           <Card className="p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
                 <IndianRupee size={20} />
               </div>
-              <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded">
-                -2%
+              <span className="text-xs font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded">
+                0%
               </span>
             </div>
             <p className="text-gray-500 text-xs font-medium uppercase">
               Cash (COD)
             </p>
-            <p className="text-xl font-bold text-gray-900">₹4,210</p>
+            <p className="text-xl font-bold text-gray-900">₹{earningsData.cashCollected.toLocaleString()}</p>
           </Card>
         </motion.div>
 
@@ -204,50 +230,35 @@ const Earnings = () => {
               </Button>
             </div>
             <div className="divide-y divide-gray-100">
-              {[
-                {
-                  id: "TXN-8902",
-                  date: "22 Feb",
-                  amount: 4500,
-                  status: "Completed",
-                },
-                {
-                  id: "TXN-8812",
-                  date: "15 Feb",
-                  amount: 3200,
-                  status: "Completed",
-                },
-                {
-                  id: "TXN-8745",
-                  date: "08 Feb",
-                  amount: 2800,
-                  status: "Processing",
-                },
-              ].map((txn) => (
+              {earningsData.recentTransactions.length > 0 ? earningsData.recentTransactions.map((txn) => (
                 <div
                   key={txn.id}
                   className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors cursor-pointer">
                   <div className="flex items-center">
                     <div
-                      className={`p-2 rounded-full mr-3 ${txn.status === "Completed" ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}>
+                      className={`p-2 rounded-full mr-3 ${txn.status === "Settled" || txn.status === "Completed" ? "bg-green-100 text-green-600" : "bg-yellow-100 text-yellow-600"}`}>
                       <ArrowUpRight size={16} />
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900">Withdrawal</p>
+                      <p className="font-bold text-gray-900">{txn.type}</p>
                       <p className="text-xs text-gray-500">
                         {txn.date} • {txn.id}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-900">-₹{txn.amount}</p>
+                    <p className="font-bold text-gray-900">{txn.type.includes('Withdrawal') ? '-' : '+'}₹{txn.amount}</p>
                     <p
-                      className={`text-xs font-bold ${txn.status === "Completed" ? "text-green-500" : "text-yellow-500"}`}>
+                      className={`text-xs font-bold ${txn.status === "Settled" || txn.status === "Completed" ? "text-green-500" : "text-yellow-500"}`}>
                       {txn.status}
                     </p>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="p-12 text-center text-gray-400 text-sm italic">
+                  No recent earnings or withdrawals.
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>

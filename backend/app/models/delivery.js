@@ -41,7 +41,17 @@ const deliverySchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
-
+        location: {
+            type: {
+                type: String,
+                enum: ["Point"],
+                default: "Point",
+            },
+            coordinates: {
+                type: [Number],
+                default: [0, 0],
+            },
+        },
         role: {
             type: String,
             default: "delivery",
@@ -65,6 +75,8 @@ const deliverySchema = new mongoose.Schema(
         toObject: { virtuals: true }
     }
 );
+
+deliverySchema.index({ location: "2dsphere" });
 
 deliverySchema.virtual('id').get(function () {
     return this._id.toHexString();

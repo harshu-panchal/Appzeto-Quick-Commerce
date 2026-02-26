@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import { adminApi } from '../services/adminApi';
 import {
     HiOutlineChatBubbleLeftRight,
     HiOutlineMagnifyingGlass,
@@ -18,91 +19,102 @@ import {
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@shared/components/ui/Toast';
+import { Loader2 } from 'lucide-react';
 
 const SupportTickets = () => {
     const { showToast } = useToast();
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [reply, setReply] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [tickets, setTickets] = useState([]);
 
-    const [tickets, setTickets] = useState([
-        {
-            id: 'TK-1002',
-            user: 'Rahul Varma',
-            userType: 'Customer',
-            subject: 'Refund not received for Order #9921',
-            status: 'open',
-            priority: 'high',
-            date: '10 mins ago',
-            messages: [
-                { id: 1, sender: 'Rahul Varma', text: 'I cancelled my order 2 hours ago but the refund is not showing in my wallet.', time: '10 mins ago', isAdmin: false }
-            ]
-        },
-        {
-            id: 'TK-1001',
-            user: 'Fresh Mart',
-            userType: 'Seller',
-            subject: 'Rider delayed for pickup',
-            status: 'processing',
-            priority: 'medium',
-            date: '1 hour ago',
-            messages: [
-                { id: 1, sender: 'Fresh Mart', text: 'Order #8832 is ready but no rider has arrived yet.', time: '1 hour ago', isAdmin: false },
-                { id: 2, sender: 'Admin', text: 'Checking the nearest available rider for you.', time: '45 mins ago', isAdmin: true }
-            ]
-        },
-        {
-            id: 'TK-998',
-            user: 'Sanjay Kumar',
-            userType: 'Rider',
-            subject: 'App crashing on address load',
-            status: 'closed',
-            priority: 'low',
-            date: 'Yesterday',
-            messages: [
-                { id: 1, sender: 'Sanjay Kumar', text: 'My app closes whenever I try to view the delivery route.', time: 'Yesterday', isAdmin: false },
-                { id: 2, sender: 'Admin', text: 'Please update to version 1.2.4. We have fixed this.', time: 'Yesterday', isAdmin: true }
-            ]
+    useEffect(() => {
+        fetchTickets();
+    }, []);
+
+    const fetchTickets = async () => {
+        try {
+            setLoading(true);
+            const res = await adminApi.getTickets();
+            if (res.data.success) {
+                setTickets(res.data.results.map(t => ({
+                    ...t,
+                    id: t._id,
+                    ticketCode: t._id.slice(-6).toUpperCase(),
+                    user: t.userId?.name || "Unknown",
+                    date: new Date(t.createdAt).toLocaleString(),
+                    messages: t.messages.map(m => ({
+                        ...m,
+                        time: new Date(m.createdAt).toLocaleTimeString()
+                    }))
+                })));
+            }
+        } catch (error) {
+            console.error("Fetch Tickets Error:", error);
+            showToast("Failed to load tickets", "error");
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
+
+    const handleSendReply = async () => {
+        if (!reply.trim() || !selectedTicket) return;
+
+        try {
+            const res = await adminApi.replyTicket(selectedTicket.id, reply);
+            if (res.data.success) {
+                const updatedTicketData = res.data.result;
+                const newMessage = {
+                    ...updatedTicketData.messages[updatedTicketData.messages.length - 1],
+                    time: "Just now"
+                };
+
+                const updatedTickets = tickets.map(t => {
+                    if (t.id === selectedTicket.id) {
+                        return {
+                            ...t,
+                            messages: [...t.messages, newMessage],
+                            status: 'processing'
+                        };
+                    }
+                    return t;
+                });
+
+                setTickets(updatedTickets);
+                setSelectedTicket({
+                    ...selectedTicket,
+                    messages: [...selectedTicket.messages, newMessage],
+                    status: 'processing'
+                });
+                setReply('');
+                showToast('Reply sent successfully', 'success');
+            }
+        } catch (error) {
+            showToast("Failed to send reply", "error");
+        }
+    };
+
+    const handleResolve = async (id) => {
+        try {
+            const res = await adminApi.updateTicketStatus(id, 'closed');
+            if (res.data.success) {
+                setTickets(tickets.map(t => t.id === id ? { ...t, status: 'closed' } : t));
+                if (selectedTicket?.id === id) {
+                    setSelectedTicket({ ...selectedTicket, status: 'closed' });
+                }
+                showToast(`Ticket marked as resolved`, 'success');
+            }
+        } catch (error) {
+            showToast("Failed to update status", "error");
+        }
+    };
 
     const filteredTickets = tickets.filter(t =>
-        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.subject.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const handleSendReply = () => {
-        if (!reply.trim() || !selectedTicket) return;
-
-        const newMessage = {
-            id: Date.now(),
-            sender: 'Admin',
-            text: reply,
-            time: 'Just now',
-            isAdmin: true
-        };
-
-        const updatedTickets = tickets.map(t => {
-            if (t.id === selectedTicket.id) {
-                return { ...t, messages: [...t.messages, newMessage], status: 'processing' };
-            }
-            return t;
-        });
-
-        setTickets(updatedTickets);
-        setSelectedTicket({ ...selectedTicket, messages: [...selectedTicket.messages, newMessage], status: 'processing' });
-        setReply('');
-        showToast('Reply sent successfully', 'success');
-    };
-
-    const handleResolve = (id) => {
-        setTickets(tickets.map(t => t.id === id ? { ...t, status: 'closed' } : t));
-        if (selectedTicket?.id === id) {
-            setSelectedTicket({ ...selectedTicket, status: 'closed' });
-        }
-        showToast(`Ticket ${id} marked as resolved`, 'success');
-    };
 
     return (
         <div className="h-[calc(100vh-140px)] flex flex-col lg:flex-row gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
