@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Send, Phone, Paperclip, Smile } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const emojis = ['😀', '😂', '😍', '🥺', '😎', '😭', '😡', '👍', '👎', '🎉', '❤️', '🔥', '✅', '❌', '👋', '🙏', '👀', '💯', '💩', '🤡'];
 
 const ChatPage = () => {
+    const navigate = useNavigate();
     const [messages, setMessages] = useState([
         { id: 1, text: 'Hi there! 👋 Welcome to Appzeto Support.', sender: 'support', time: '10:00 AM' },
         { id: 2, text: 'How can we help you today?', sender: 'support', time: '10:00 AM' },
@@ -73,23 +74,28 @@ const ChatPage = () => {
     };
 
     return (
-        <div className="fixed inset-0 bottom-0 md:bottom-0 bg-slate-50 flex flex-col z-40 overflow-hidden">
+        <div className="fixed inset-0 bg-white flex flex-col z-[999] overflow-hidden">
             {/* Chat Header */}
-            <div className="bg-white px-4 py-3 flex items-center justify-between shadow-sm z-30 shrink-0">
+            <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-slate-100 z-30 shrink-0">
                 <div className="flex items-center gap-3">
-                    <Link to="/support" className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors">
-                        <ChevronLeft size={24} className="text-slate-600" />
-                    </Link>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-2 -ml-2 rounded-full hover:bg-slate-50 transition-colors text-slate-600"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <div className="h-10 w-10 bg-[#0c831f] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm ring-2 ring-white">
+                            <div className="h-10 w-10 bg-[#0c831f] rounded-full flex items-center justify-center text-white font-black text-sm shadow-sm ring-2 ring-white">
                                 AS
                             </div>
-                            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
+                            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
                         </div>
                         <div>
-                            <h1 className="text-base font-bold text-slate-800 leading-none">Appzeto Support</h1>
-                            <p className="text-xs text-green-600 font-medium mt-0.5">Online</p>
+                            <h1 className="text-base font-black text-slate-800 leading-none">Support Chat</h1>
+                            <p className="text-[10px] text-green-600 font-bold mt-1 uppercase tracking-wider flex items-center gap-1">
+                                <span className="h-1 w-1 bg-green-500 rounded-full"></span> Online
+                            </p>
                         </div>
                     </div>
                 </div>

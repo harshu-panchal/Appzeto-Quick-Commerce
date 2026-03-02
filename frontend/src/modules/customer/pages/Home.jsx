@@ -1,30 +1,42 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Search,
-  Mic,
-  MapPin,
-  ChevronDown,
   Star,
-  Home as HomeIcon,
+  ChevronDown,
+  Sparkles,
+  ChevronRight,
+  ChevronLeft,
   Heart,
   Snowflake,
-  Laptop,
-  Sparkles,
-  Clock,
-  Apple,
-  Baby,
   Dog,
-  Coffee,
-  Gift,
-  Shirt,
 } from "lucide-react";
+
+// MUI Icons
+import HomeIcon from '@mui/icons-material/Home';
+import DevicesIcon from '@mui/icons-material/Devices';
+import LocalGroceryStoreIcon from '@mui/icons-material/LocalGroceryStore';
+import KitchenIcon from '@mui/icons-material/Kitchen';
+import ChildCareIcon from '@mui/icons-material/ChildCare';
+import PetsIcon from '@mui/icons-material/Pets';
+import SportsSoccerIcon from '@mui/icons-material/SportsSoccer';
+import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
+import SearchIcon from '@mui/icons-material/Search';
+import MicIcon from '@mui/icons-material/Mic';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ArrowRightIcon from '@mui/icons-material/ArrowForwardIos';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import FlashOnIcon from '@mui/icons-material/FlashOn';
+import SavingsIcon from '@mui/icons-material/Savings';
+
 import { getIconSvg } from "@/shared/constants/categoryIcons";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { customerApi } from "../services/customerApi";
 import { toast } from "sonner";
 import ProductCard from "../components/shared/ProductCard";
 import MainLocationHeader from "../components/shared/MainLocationHeader";
+import CardBanner from "@/assets/CardBanner.jpg";
 
 const DEFAULT_CATEGORY_THEME = {
   gradient: "linear-gradient(to bottom, #25D366, #4ADE80)",
@@ -42,8 +54,8 @@ const CATEGORY_METADATA = {
       floatingElements: "sparkles",
     },
   },
-  Groceries: {
-    icon: Apple,
+  Grocery: {
+    icon: LocalGroceryStoreIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #FF9F1C, #FFBF69)",
       shadow: "shadow-orange-500/20",
@@ -56,7 +68,7 @@ const CATEGORY_METADATA = {
     },
   },
   Wedding: {
-    icon: Heart,
+    icon: CardGiftcardIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #FF4D6D, #FF8FA3)",
       shadow: "shadow-rose-500/20",
@@ -64,17 +76,17 @@ const CATEGORY_METADATA = {
     },
     banner: { title: "WEDDING", subtitle: "BLISS", floatingElements: "hearts" },
   },
-  Winter: {
-    icon: Snowflake,
+  "Home & Kitchen": {
+    icon: KitchenIcon,
     theme: {
-      gradient: "linear-gradient(to bottom, #00B4D8, #90E0EF)",
-      shadow: "shadow-cyan-500/20",
-      accent: "text-cyan-900",
+      gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)",
+      shadow: "shadow-amber-500/20",
+      accent: "text-amber-900",
     },
-    banner: { title: "WINTER", subtitle: "CHILLS", floatingElements: "snow" },
+    banner: { title: "HOME", subtitle: "KITCHEN", floatingElements: "smoke" },
   },
   Electronics: {
-    icon: Laptop,
+    icon: DevicesIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #7209B7, #B5179E)",
       shadow: "shadow-purple-500/20",
@@ -86,17 +98,8 @@ const CATEGORY_METADATA = {
       floatingElements: "tech",
     },
   },
-  Beauty: {
-    icon: Sparkles,
-    theme: {
-      gradient: "linear-gradient(to bottom, #F72585, #FF70A6)",
-      shadow: "shadow-pink-500/20",
-      accent: "text-pink-900",
-    },
-    banner: { title: "GLOW UP", subtitle: "BEAUTY", floatingElements: "stars" },
-  },
-  "Baby Care": {
-    icon: Baby,
+  Kids: {
+    icon: ChildCareIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #4CC9F0, #A0E7E5)",
       shadow: "shadow-blue-500/20",
@@ -108,8 +111,8 @@ const CATEGORY_METADATA = {
       floatingElements: "bubbles",
     },
   },
-  "Pet Care": {
-    icon: Dog,
+  "Pet Supplies": {
+    icon: PetsIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #FB8500, #FFB703)",
       shadow: "shadow-yellow-500/20",
@@ -117,36 +120,14 @@ const CATEGORY_METADATA = {
     },
     banner: { title: "PAWSOME", subtitle: "DEALS", floatingElements: "bones" },
   },
-  Bakery: {
-    icon: Coffee,
-    theme: {
-      gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)",
-      shadow: "shadow-amber-500/20",
-      accent: "text-amber-900",
-    },
-    banner: { title: "FRESHLY", subtitle: "BAKED", floatingElements: "smoke" },
-  },
-  Fashion: {
-    icon: Shirt,
+  Sports: {
+    icon: SportsSoccerIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #4361EE, #4895EF)",
       shadow: "shadow-indigo-500/20",
       accent: "text-indigo-900",
     },
-    banner: { title: "STYLE", subtitle: "ICON", floatingElements: "confetti" },
-  },
-  Gifts: {
-    icon: Gift,
-    theme: {
-      gradient: "linear-gradient(to bottom, #EF233C, #D90429)",
-      shadow: "shadow-red-500/20",
-      accent: "text-red-900",
-    },
-    banner: {
-      title: "JOY OF",
-      subtitle: "GIVING",
-      floatingElements: "ribbons",
-    },
+    banner: { title: "SPORTS", subtitle: "GEAR", floatingElements: "confetti" },
   },
 };
 
@@ -169,11 +150,7 @@ const categories = [
     id: 1,
     name: "All",
     icon: HomeIcon,
-    theme: {
-      gradient: "linear-gradient(to bottom, #25D366, #4ADE80)",
-      shadow: "shadow-green-500/20",
-      accent: "text-[#1A1A1A]",
-    },
+    theme: DEFAULT_CATEGORY_THEME,
     banner: {
       title: "HOUSEFULL",
       subtitle: "SALE",
@@ -182,57 +159,9 @@ const categories = [
     },
   },
   {
-    id: 2,
-    name: "Groceries",
-    icon: Apple,
-    theme: {
-      gradient: "linear-gradient(to bottom, #FF9F1C, #FFBF69)",
-      shadow: "shadow-orange-500/20",
-      accent: "text-orange-900",
-    },
-    banner: {
-      title: "SUPERSAVER",
-      subtitle: "FRESH & FAST",
-      floatingElements: "leaves",
-      textColor: "text-white",
-    },
-  },
-  {
-    id: 3,
-    name: "Wedding",
-    icon: Heart,
-    theme: {
-      gradient: "linear-gradient(to bottom, #FF4D6D, #FF8FA3)",
-      shadow: "shadow-rose-500/20",
-      accent: "text-rose-900",
-    },
-    banner: {
-      title: "WEDDING",
-      subtitle: "BLISS",
-      floatingElements: "hearts",
-      textColor: "text-white",
-    },
-  },
-  {
-    id: 4,
-    name: "Winter",
-    icon: Snowflake,
-    theme: {
-      gradient: "linear-gradient(to bottom, #00B4D8, #90E0EF)",
-      shadow: "shadow-cyan-500/20",
-      accent: "text-cyan-900",
-    },
-    banner: {
-      title: "WINTER",
-      subtitle: "CHILLS",
-      floatingElements: "snow",
-      textColor: "text-white",
-    },
-  },
-  {
     id: 5,
     name: "Electronics",
-    icon: Laptop,
+    icon: DevicesIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #7209B7, #B5179E)",
       shadow: "shadow-purple-500/20",
@@ -246,25 +175,36 @@ const categories = [
     },
   },
   {
-    id: 6,
-    name: "Beauty",
-    icon: Sparkles,
+    id: 2,
+    name: "Grocery",
+    icon: LocalGroceryStoreIcon,
     theme: {
-      gradient: "linear-gradient(to bottom, #F72585, #FF70A6)",
-      shadow: "shadow-pink-500/20",
-      accent: "text-pink-900",
+      gradient: "linear-gradient(to bottom, #FF9F1C, #FFBF69)",
+      shadow: "shadow-orange-500/20",
+      accent: "text-orange-900",
     },
     banner: {
-      title: "GLOW UP",
-      subtitle: "BEAUTY",
-      floatingElements: "stars",
+      title: "SUPERSAVER",
+      subtitle: "FRESH & FAST",
+      floatingElements: "leaves",
       textColor: "text-white",
     },
   },
   {
+    id: 10,
+    name: "Home & Kitchen",
+    icon: KitchenIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)",
+      shadow: "shadow-amber-500/20",
+      accent: "text-amber-900",
+    },
+    banner: { title: "HOME", subtitle: "KITCHEN", floatingElements: "smoke", textColor: "text-white" },
+  },
+  {
     id: 7,
-    name: "Baby Care",
-    icon: Baby,
+    name: "Kids",
+    icon: ChildCareIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #4CC9F0, #A0E7E5)",
       shadow: "shadow-blue-500/20",
@@ -279,65 +219,39 @@ const categories = [
   },
   {
     id: 8,
-    name: "Pet Care",
-    icon: Dog,
+    name: "Pet Supplies",
+    icon: PetsIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #FB8500, #FFB703)",
       shadow: "shadow-yellow-500/20",
       accent: "text-yellow-900",
     },
-    banner: {
-      title: "PAWSOME",
-      subtitle: "DEALS",
-      floatingElements: "bones",
-      textColor: "text-white",
-    },
+    banner: { title: "PAWSOME", subtitle: "DEALS", floatingElements: "bones", textColor: "text-white" },
   },
   {
-    id: 9,
-    name: "Bakery",
-    icon: Coffee,
-    theme: {
-      gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)",
-      shadow: "shadow-amber-500/20",
-      accent: "text-amber-900",
-    },
-    banner: {
-      title: "FRESHLY",
-      subtitle: "BAKED",
-      floatingElements: "smoke",
-      textColor: "text-white",
-    },
-  },
-  {
-    id: 10,
-    name: "Fashion",
-    icon: Shirt,
+    id: 11,
+    name: "Sports",
+    icon: SportsSoccerIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #4361EE, #4895EF)",
       shadow: "shadow-indigo-500/20",
       accent: "text-indigo-900",
     },
-    banner: {
-      title: "STYLE",
-      subtitle: "ICON",
-      floatingElements: "confetti",
-      textColor: "text-white",
-    },
+    banner: { title: "SPORTS", subtitle: "GEAR", floatingElements: "confetti", textColor: "text-white" },
   },
   {
-    id: 11,
-    name: "Gifts",
-    icon: Gift,
+    id: 3,
+    name: "Wedding",
+    icon: CardGiftcardIcon,
     theme: {
-      gradient: "linear-gradient(to bottom, #EF233C, #D90429)",
-      shadow: "shadow-red-500/20",
-      accent: "text-red-900",
+      gradient: "linear-gradient(to bottom, #FF4D6D, #FF8FA3)",
+      shadow: "shadow-rose-500/20",
+      accent: "text-rose-900",
     },
     banner: {
-      title: "JOY OF",
-      subtitle: "GIVING",
-      floatingElements: "ribbons",
+      title: "WEDDING",
+      subtitle: "BLISS",
+      floatingElements: "hearts",
       textColor: "text-white",
     },
   },
@@ -409,11 +323,20 @@ const bestsellerCategories = [
 const Home = () => {
   const { scrollY } = useScroll();
   const navigate = useNavigate();
+  const quickCatsRef = useRef(null);
 
   const [categories, setCategories] = useState([ALL_CATEGORY]);
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY);
   const [products, setProducts] = useState([]);
+  const [quickCategories, setQuickCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const scrollQuickCats = (direction) => {
+    if (quickCatsRef.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      quickCatsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -425,40 +348,40 @@ const Home = () => {
 
       if (catRes.data.success) {
         const dbCats = catRes.data.results || catRes.data.result || [];
-        const formattedCats = dbCats
-          .filter((cat) => cat.type === "header") // Show only header types as requested
+
+        // 1. Process Header Categories (Main Navigation)
+        const formattedHeaders = dbCats
+          .filter((cat) => cat.type === "header")
           .map((cat) => {
-            const meta = CATEGORY_METADATA[cat.name] || {
+            const catName = cat.name;
+            const meta = CATEGORY_METADATA[catName] ||
+              CATEGORY_METADATA[catName.charAt(0).toUpperCase() + catName.slice(1).toLowerCase()] ||
+              CATEGORY_METADATA[catName.toUpperCase()] ||
+            {
               icon: Sparkles,
               theme: DEFAULT_CATEGORY_THEME,
-              banner: {
-                title: cat.name.toUpperCase(),
-                subtitle: "TOP PICKS",
-                floatingElements: "sparkles",
-              },
+              banner: { title: catName.toUpperCase(), subtitle: "TOP PICKS", floatingElements: "sparkles" },
             };
-
-            // Resolve icon logic
-            let displayIcon = meta.icon;
-
-            if (cat.iconId) {
-              const svg = getIconSvg(cat.iconId);
-              if (svg) {
-                displayIcon = svg;
-              }
-            } else if (cat.image) {
-              displayIcon = cat.image;
-            }
 
             return {
               ...cat,
               id: cat._id,
-              icon: displayIcon,
+              icon: meta.icon,
               theme: meta.theme,
               banner: { ...meta.banner, textColor: "text-white" },
             };
           });
-        setCategories([ALL_CATEGORY, ...formattedCats]);
+        setCategories([ALL_CATEGORY, ...formattedHeaders]);
+
+        // 2. Process Quick Navigation Categories (Horizontal Scroll)
+        const formattedQuickCats = dbCats
+          .filter(cat => cat.type === "category")
+          .map(cat => ({
+            id: cat._id,
+            name: cat.name,
+            image: cat.image || 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png'
+          }));
+        setQuickCategories(formattedQuickCats);
       }
 
       if (prodRes.data.success) {
@@ -514,85 +437,66 @@ const Home = () => {
 
   // Helper to render dynamic floating elements
   const renderFloatingElements = (type) => {
-    const count = 12; // Number of particles
+    const count = 10; // Optimized count for performance
 
     const getParticleContent = (index) => {
       switch (type) {
         case "hearts":
-          return index % 2 === 0 ? (
-            <Heart fill="white" size={16} />
-          ) : (
-            <div className="h-2 w-2 bg-white rounded-full" />
-          );
+          return <Heart fill="white" size={12 + (index % 5) * 2} className="drop-shadow-sm" />;
         case "snow":
-          return <Snowflake fill="white" size={index % 2 === 0 ? 14 : 10} />;
-        case "tech":
-          return (
-            <div
-              className={`border border-white/50 ${index % 2 === 0 ? "h-3 w-3 rounded-none" : "h-2 w-6 rounded-sm"}`}
-            />
-          );
-        case "leaves":
-          return (
-            <div className="bg-white/80 h-3 w-3 rounded-tr-[10px] rounded-bl-[10px]" />
-          );
+          return <Snowflake fill="white" size={10 + (index % 4) * 3} className="drop-shadow-sm" />;
         case "stars":
-          return <Star fill="white" size={14} className="text-white" />;
-        case "bubbles":
+        case "sparkles":
           return (
-            <div
-              className="rounded-full border border-white/60"
-              style={{
-                width: index % 2 === 0 ? 12 : 8,
-                height: index % 2 === 0 ? 12 : 8,
-              }}
-            />
-          );
-        case "bones":
-          return index % 2 === 0 ? (
-            <Dog size={14} className="text-white" />
-          ) : (
-            <div className="h-2 w-2 bg-white rounded-full" />
-          );
-        case "confetti":
-          return (
-            <div
-              className={`bg-white/90 ${index % 2 === 0 ? "h-3 w-1" : "h-2 w-2 rounded-full"}`}
-            />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white" className="drop-shadow-md">
+              <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+            </svg>
           );
         default:
           return (
             <div
-              className={`rounded-full blur-[0.5px] ${index % 3 === 0 ? "bg-white/80 h-2 w-2" : "bg-white/40 h-1 w-1"}`}
+              className="bg-white/40 rounded-full blur-[1px]"
+              style={{ width: 4 + (index % 3) * 3, height: 4 + (index % 3) * 3 }}
             />
           );
       }
     };
 
-    return [...Array(count)].map((_, i) => (
-      <motion.div
-        key={i}
-        className="absolute"
-        style={{
-          top: `${Math.random() * 100}%`,
-          left: `${Math.random() * 100}%`,
-        }}
-        animate={{
-          x: [0, Math.random() * 40 - 20, 0],
-          y: [0, Math.random() * -60, 0],
-          opacity: [0.3, 1, 0.3],
-          scale: [0.5, 1.5, 0.5],
-          rotate: [0, 180, 360],
-        }}
-        transition={{
-          duration: 3 + Math.random() * 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: Math.random() * 5,
-        }}>
-        {getParticleContent(i)}
-      </motion.div>
-    ));
+    return [...Array(count)].map((_, i) => {
+      const duration = 15 + Math.random() * 20;
+      const delay = Math.random() * -20;
+      const startX = Math.random() * 100;
+      const startY = Math.random() * 100;
+      const depth = 0.5 + Math.random() * 0.5; // Parallax depth
+
+      return (
+        <motion.div
+          key={i}
+          className="absolute pointer-events-none"
+          style={{
+            left: `${startX}%`,
+            top: `${startY}%`,
+            opacity: 0.1 * depth,
+            zIndex: Math.floor(depth * 10),
+          }}
+          animate={{
+            x: [0, 50, -50, 0],
+            y: [0, -100, -50, 0],
+            rotate: [0, 360],
+            scale: [depth, depth * 1.2, depth],
+          }}
+          transition={{
+            duration: duration / depth,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: delay,
+          }}>
+          <div className="transform-gpu">
+            {getParticleContent(i)}
+          </div>
+        </motion.div>
+      );
+    });
   };
 
   return (
@@ -604,259 +508,223 @@ const Home = () => {
         onCategorySelect={setActiveCategory}
       />
 
-      {/* Promotional Banner Section - Now with higher z-index and scroll-fade */}
-      <motion.div
-        style={{ opacity, y, scale, pointerEvents }}
-        className="px-5 -mt-[21px] relative z-[301]">
-        <motion.div
-          whileHover={{
-            scale: 1.02,
-            rotate: [0, -1, 1, 0],
-            transition: { duration: 0.3 },
-          }}
-          whileTap={{ scale: 0.98 }}
-          // Dynamic Background based on theme
-          style={{ background: activeCategory.theme.gradient }}
-          className="rounded-2xl p-6 shadow-2xl relative overflow-hidden border-4 border-white group cursor-pointer transition-colors duration-500">
-          {/* Shimmer Effect Overlay */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full"
-            animate={{ x: ["100%", "-100%"] }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "linear",
-              repeatDelay: 0.5,
-            }}
-          />
-
-          <div className="relative z-10 flex flex-col items-center text-center">
-            <motion.div className="flex gap-4 mb-2 items-center">
-              <motion.div
-                className="text-yellow-400"
-                animate={{
-                  rotate: [0, 45, -45, 0],
-                  scale: [1, 1.5, 0.8, 1.3, 1],
-                }}
-                transition={{ duration: 2, repeat: Infinity }}>
-                <Sparkles
-                  size={32}
-                  fill="currentColor"
-                  className="drop-shadow-lg"
-                />
-              </motion.div>
-
-              <h2 className="text-4xl md:text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] select-none uppercase transform -rotate-1 flex">
-                {activeCategory.banner.title}
-              </h2>
-
-              <motion.div
-                className="text-yellow-400"
-                animate={{
-                  rotate: [0, -45, 45, 0],
-                  scale: [1, 1.3, 1.5, 0.7, 1],
-                }}
-                transition={{ duration: 2.5, repeat: Infinity }}>
-                <Sparkles
-                  size={32}
-                  fill="currentColor"
-                  className="drop-shadow-lg"
-                />
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              whileHover={{
-                scale: 1.1,
-                rotate: 2,
-                boxShadow: "0px 15px 30px rgba(0,0,0,0.4)",
-              }}
-              className="z-[50] cursor-popout">
-              <h3 className="text-2xl md:text-3xl font-black text-white italic tracking-tighter drop-shadow-[0_8px_12px_rgba(0,0,0,0.6)] bg-[#1A1A1A] px-6 py-2 -mt-2 transform relative overflow-hidden flex items-center gap-2 rounded-lg border-t-2 border-white/20">
-                <motion.span
-                  animate={{
-                    scale: [1, 1.05, 1],
-                    filter: [
-                      "brightness(1)",
-                      "brightness(1.5)",
-                      "brightness(1)",
-                    ],
-                  }}
-                  transition={{ duration: 0.5, repeat: Infinity }}>
-                  {activeCategory.banner.subtitle}
-                </motion.span>
-              </h3>
-            </motion.div>
-
-            {/* Dynamic Playful Floating Elements */}
-            {renderFloatingElements(activeCategory.banner.floatingElements)}
+      {/* Quick Navigation Category Slider */}
+      {quickCategories.length > 0 && (
+        <div className="container mx-auto px-4 md:px-8 lg:px-[50px] mb-8 mt-4 overflow-hidden relative group">
+          {/* Left Scroll Button */}
+          <div className="absolute left-4 lg:left-10 top-1/2 -translate-y-[45px] z-20 hidden md:flex">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => scrollQuickCats('left')}
+              className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#0c831f] transition-all"
+            >
+              <ChevronLeft size={22} strokeWidth={3} />
+            </motion.button>
           </div>
 
-          {/* Energetic highlight stars */}
-          <motion.div
-            className="absolute top-2 right-4 text-yellow-300 pointer-events-none"
-            animate={{
-              scale: [1, 2, 1, 1.5, 1],
-              rotate: [0, 90, 180, 270, 360],
-              filter: ["brightness(1)", "brightness(1.5)", "brightness(1)"],
-            }}
-            transition={{ duration: 3, repeat: Infinity }}>
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="currentColor">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-            </svg>
-          </motion.div>
+          <div
+            ref={quickCatsRef}
+            className="flex items-start gap-4 lg:gap-6 overflow-x-auto no-scrollbar py-2 px-1 snap-x scroll-smooth"
+          >
+            {quickCategories.map((cat) => (
+              <motion.div
+                key={cat.id}
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => navigate(`/category/${cat.id}`)}
+                className="flex flex-col items-center gap-2 min-w-[90px] md:min-w-[110px] lg:min-w-[120px] cursor-pointer group/item snap-start"
+              >
+                <div className="w-[85px] h-[85px] lg:w-[105px] lg:h-[105px] rounded-2xl bg-[#F8F9FA] shadow-sm border border-gray-100 flex items-center justify-center p-2.5 transition-all group-hover/item:shadow-md group-hover/item:bg-white overflow-hidden">
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-contain mix-blend-multiply group-hover/item:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <span className="text-[11px] lg:text-[12px] font-bold text-gray-700 text-center leading-[1.3] line-clamp-2 max-w-[90px] md:max-w-full group-hover/item:text-[#0c831f] transition-colors">
+                  {cat.name}
+                </span>
+              </motion.div>
+            ))}
+          </div>
 
-          <motion.div
-            className="absolute bottom-2 left-4 text-yellow-300 pointer-events-none"
-            animate={{
-              x: [0, 20, -10, 0],
-              y: [0, -30, 10, 0],
-              rotate: [0, -45, 45, 0],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="currentColor">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-            </svg>
-          </motion.div>
-
-          {/* Playful background blobs */}
-          <motion.div
-            className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl"
-            animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.3, 0.1] }}
-            transition={{ duration: 4, repeat: Infinity }}
-          />
-        </motion.div>
-      </motion.div>
-
-      {/* Bestsellers Section */}
-      <div className="p-5">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-[22px] font-black text-[#1A1A1A] tracking-tight">
-            Bestsellers
-          </h3>
-          <span className="text-[#0c831f] font-extrabold text-sm hover:underline cursor-pointer">
-            View All
-          </span>
+          {/* Right Scroll Button */}
+          <div className="absolute right-4 lg:right-10 top-1/2 -translate-y-[45px] z-20 hidden md:flex">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => scrollQuickCats('right')}
+              className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#0c831f] transition-all"
+            >
+              <ChevronRight size={22} strokeWidth={3} />
+            </motion.button>
+          </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-3 gap-x-3 gap-y-3">
-          {bestsellerCategories.map((cat, idx) => (
-            <motion.div
-              key={cat.id}
-              whileHover={{ y: -4 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/category/${cat.id}`)}
-              className="flex flex-col group cursor-pointer">
-              <div className="bg-white rounded-xl shadow-[0_12px_24px_-10px_rgba(0,0,0,0.12)] border border-gray-50 flex flex-col relative overflow-hidden h-[180px]">
-                {/* Image Grid Area */}
-                <div className="p-2 gap-1.5 grid grid-cols-2 flex-1">
-                  {cat.images.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-[#F8F9FA] rounded-lg overflow-hidden flex items-center justify-center p-1.5 border border-gray-50">
-                      <img
-                        src={img}
-                        alt=""
-                        className="w-full h-full object-contain mix-blend-multiply"
-                      />
-                    </div>
-                  ))}
+
+
+      {/* Promotional Banners Grid - Desktop Optimized */}
+      <div className="hidden md:flex md:items-stretch md:gap-6 container mx-auto px-4 md:px-8 lg:px-[50px] mb-12 md:h-[240px]">
+        {/* Left Banner: Order Now (Green Style) */}
+        <motion.div
+          onClick={() => navigate('/category/all')}
+          whileHover={{ y: -5 }}
+          className="flex-1 bg-[#E6F5EC] rounded-3xl p-8 lg:p-10 relative overflow-hidden flex items-center group cursor-pointer border border-[#0c831f]/10 shadow-sm"
+        >
+          <div className="relative z-10 w-1/2 flex flex-col items-start gap-4">
+            <div className="flex flex-col gap-1">
+              <h4 className="text-3xl lg:text-4xl font-[1000] text-[#1A1A1A] tracking-tighter leading-none">
+                Get <span className="text-[#0c831f]">Products</span>
+              </h4>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-2xl font-black text-gray-700">at</span>
+                <div className="bg-[#0c831f] text-white px-3 py-1 rounded-xl flex items-center gap-1 shadow-lg shadow-green-200">
+                  <VerifiedIcon sx={{ fontSize: 24 }} />
+                  <span className="text-2xl font-[1000]">₹0</span>
                 </div>
+                <span className="text-xl font-[1000] text-gray-700">Fee</span>
+              </div>
+            </div>
+            <p className="text-sm font-bold text-gray-500 max-w-[200px] leading-tight">
+              Get groceries & more delivered in minutes
+            </p>
+            <button className="bg-[#FF1E56] text-white px-8 py-3.5 rounded-2xl font-black text-sm tracking-wide shadow-[0_10px_25px_-5px_rgba(255,30,86,0.35)] hover:bg-[#E61A4D] transition-all transform active:scale-95">
+              Order now
+            </button>
+          </div>
 
-                {/* Glassy Overlay for Badge (Shifted downwards) */}
-                <div className="absolute bottom-[42px] left-0 right-0 flex justify-center pointer-events-none">
-                  <div className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/60 shadow-sm transform scale-90 translate-y-2">
-                    <span className="text-[8px] font-black text-[#1A1A1A] uppercase tracking-wider">
-                      4+ ITEMS
-                    </span>
-                  </div>
-                </div>
+          <div className="absolute right-0 bottom-0 top-0 w-1/2 flex items-center justify-center p-4">
+            <img
+              src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400"
+              alt="Promo"
+              className="w-full h-full object-contain transform translate-x-4 lg:translate-x-8 group-hover:scale-105 transition-transform duration-500 rotate-2"
+            />
+          </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#0c831f]/5 rounded-full blur-3xl -mt-16 -mr-16" />
+        </motion.div>
 
-                {/* Integrated Label Area */}
-                <div className="bg-[#F8F9FA]/50 border-t border-gray-50 px-2 py-3 mt-auto">
-                  <span className="text-[10px] font-black text-center block leading-tight text-[#1A1A1A] group-hover:text-[#0c831f] transition-colors line-clamp-2">
-                    {cat.name}
+        {/* Right Banner: Hero Card (Assets image) */}
+        <motion.div
+          onClick={() => navigate('/categories')}
+          whileHover={{ y: -5 }}
+          className="flex-1 bg-white rounded-3xl relative overflow-hidden flex flex-col border border-gray-100 cursor-pointer shadow-sm group"
+        >
+          {/* Main Visual Image Area */}
+          <div className="relative flex-1 overflow-hidden">
+            <img
+              src={CardBanner}
+              alt="Promotion"
+              className="w-full h-full object-fill group-hover:scale-105 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+          </div>
+
+          {/* Fee Benefits Footer Row */}
+          {/* <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-50 relative z-10 h-[60px]">
+            <div className="flex items-center gap-1.5 font-bold text-[#1A1A1A] text-[10px] uppercase tracking-wider">
+              <CheckCircleOutlineIcon className="text-[#0c831f]" sx={{ fontSize: 16 }} />
+              ₹0 Handling Fee
+            </div>
+            <div className="flex items-center gap-1.5 font-bold text-[#1A1A1A] text-[10px] uppercase tracking-wider">
+              <CheckCircleOutlineIcon className="text-[#0c831f]" sx={{ fontSize: 16 }} />
+              ₹0 Delivery Fee*
+            </div>
+            <div className="flex items-center gap-1.5 font-bold text-[#1A1A1A] text-[10px] uppercase tracking-wider">
+              <CheckCircleOutlineIcon className="text-[#0c831f]" sx={{ fontSize: 16 }} />
+              ₹0 Surge Fee
+            </div>
+          </div> */}
+        </motion.div>
+      </div>
+
+
+
+
+
+
+
+      {/* Lowest Price ever Section  */}
+      <div className="mt-8 mb-4 md:mt-12 md:mb-8">
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#0c831f]/10 via-[#0c831f]/5 to-transparent py-7 md:py-16 border-y border-[#0c831f]/10 shadow-sm md:shadow-[inset_0_-10px_40px_rgba(0,0,0,0.02)]">
+          {/* Background Decoration */}
+          <div className="absolute -top-10 -right-10 h-40 w-40 md:h-80 md:w-80 bg-[#0c831f]/10 rounded-full blur-3xl opacity-60" />
+          <div className="absolute -bottom-10 -left-10 h-40 w-40 md:h-80 md:w-80 bg-yellow-400/10 rounded-full blur-3xl opacity-60" />
+
+          <div className="container mx-auto px-4 md:px-8 lg:px-[50px] relative z-10">
+            <div className="flex justify-between items-center mb-6 md:mb-10 px-1">
+              <div className="flex flex-col">
+                <h3 className="text-xl md:text-4xl font-[1000] text-[#1A1A1A] tracking-tighter uppercase leading-none">
+                  Lowest Price <span className="text-[#0c831f]">ever</span>
+                </h3>
+                <div className="flex items-center gap-1.5 md:gap-2 mt-1.5 md:mt-3">
+                  <div className="h-1 w-1 md:h-2 md:w-2 bg-[#0c831f] rounded-full animate-pulse shadow-[0_0_8px_rgba(12,131,31,0.5)]" />
+                  <span className="text-[10px] md:text-xs font-black text-[#0c831f] uppercase tracking-wider md:tracking-[0.2em] opacity-80">
+                    Unbeatable Savings • Updated hourly
                   </span>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Lowest Price ever Section */}
-      <div className="mt-6 mb-2">
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#0c831f]/10 via-[#0c831f]/5 to-transparent p-5 py-7 border-y border-[#0c831f]/10 shadow-sm">
-          {/* Background Decoration */}
-          <div className="absolute -top-10 -right-10 h-40 w-40 bg-[#0c831f]/10 rounded-full blur-3xl opacity-60" />
-          <div className="absolute -bottom-10 -left-10 h-40 w-40 bg-yellow-400/10 rounded-full blur-3xl opacity-60" />
-
-          <div className="relative z-10 flex justify-between items-center mb-6 px-1">
-            <div className="flex flex-col">
-              <h3 className="text-2xl font-black text-[#1A1A1A] tracking-tight leading-none">
-                Lowest Price ever
-              </h3>
-              <div className="flex items-center gap-1.5 mt-2">
-                <div className="h-1 w-1 bg-[#0c831f] rounded-full animate-pulse" />
-                <span className="text-[11px] font-extrabold text-[#0c831f] uppercase tracking-wider">
-                  Best deals in town
-                </span>
-              </div>
+              <motion.div
+                onClick={() => navigate('/category/all')}
+                whileHover={{ x: 5, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-1 md:gap-2 bg-white px-3 py-1.5 md:px-6 md:py-3 rounded-full text-[#0c831f] font-bold text-[10px] md:text-sm cursor-pointer shadow-sm md:shadow-lg border border-[#0c831f]/5 transition-all">
+                See all <ArrowRightIcon sx={{ fontSize: 12, ml: { xs: 0.2, md: 0.5 } }} />
+              </motion.div>
             </div>
-            <motion.div
-              whileHover={{ x: 3 }}
-              className="flex items-center gap-1.5 bg-white px-4 py-2 rounded-full text-[#0c831f] font-bold text-xs cursor-pointer shadow-md border border-[#0c831f]/5">
-              See all <ChevronDown size={14} className="-rotate-90" />
-            </motion.div>
-          </div>
 
-          <div className="relative z-10 flex overflow-x-auto gap-4 pb-2 no-scrollbar -mx-5 px-5 snap-x">
-            {products.slice(0, 8).map((product) => (
-              <div
-                key={product.id}
-                className="w-[135px] flex-shrink-0 snap-start">
-                <ProductCard
-                  product={product}
-                  className="bg-white/80 shadow-md border-green-50/30 hover:bg-white transition-colors"
-                  compact={true}
-                />
-              </div>
-            ))}
-            {products.length === 0 && !isLoading && (
-              <div className="w-full py-10 text-center text-slate-400 font-bold italic">
-                No bestsellers available
-              </div>
-            )}
+            <div className="relative z-10 flex overflow-x-auto gap-3 md:gap-6 pb-6 md:pb-8 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
+              {products.slice(0, 12).map((product) => (
+                <div
+                  key={product.id}
+                  className="w-[165px] md:w-[200px] flex-shrink-0 snap-start">
+                  <ProductCard
+                    product={product}
+                    className="bg-white shadow-[0_8px_20px_-8px_rgba(0,0,0,0.1)] md:shadow-[0_15px_30px_rgba(0,0,0,0.05)] border-green-50/50 md:border-slate-100 transition-all"
+                    compact={true}
+                  />
+                </div>
+              ))}
+              {products.length === 0 && !isLoading && (
+                <div className="w-full py-10 md:py-20 text-center text-slate-400 font-black italic md:text-xl">
+                  Curating the best deals for you...
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area (Scrollable Daily Essentials) */}
-      <div className="p-5 mt-2">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-black text-[#1A1A1A]">
-            Daily Essentials
-          </h3>
-          <span className="text-[#0c831f] font-bold text-sm">See all</span>
+
+      {/* Main Content Area (Scrollable Daily Essentials)  */}
+      <div className="container mx-auto px-4 md:px-8 lg:px-[50px] py-10 md:py-16">
+        <div className="flex justify-between items-center mb-8 md:mb-10">
+          <div className="flex flex-col">
+            <h3 className="text-xl md:text-3xl font-black text-[#1A1A1A] tracking-tight">
+              Daily Essentials
+            </h3>
+            <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Freshly picked items for your daily needs</p>
+          </div>
+          <motion.span
+            whileHover={{ x: 5 }}
+            onClick={() => navigate('/category/all')}
+            className="text-[#0c831f] font-bold text-sm md:text-base cursor-pointer hover:underline flex items-center gap-1"
+          >
+            See all <ArrowRightIcon sx={{ fontSize: 16 }} />
+          </motion.span>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {products.slice(4, 10).map((product) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4 md:gap-6">
+          {products.slice(4, 16).map((product) => (
             <div key={product.id} className="h-full">
-              <ProductCard product={product} compact={true} />
+              <ProductCard product={product} compact={false} />
             </div>
           ))}
         </div>
       </div>
-    </div>
+
+    </div >
   );
 };
 

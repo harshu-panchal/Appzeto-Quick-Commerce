@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Search, Mic, MapPin, ChevronDown, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import LocationDrawer from "./LocationDrawer";
 import { useLocation } from "../../context/LocationContext";
+import LogoImage from "../../../../assets/Logo.png";
+
+// MUI Icons
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import SearchIcon from '@mui/icons-material/Search';
+import MicIcon from '@mui/icons-material/Mic';
+import ChevronDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
 const MainLocationHeader = ({
   categories = [],
@@ -12,6 +23,18 @@ const MainLocationHeader = ({
   const { scrollY } = useScroll();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const { currentLocation } = useLocation();
+  const navigate = useNavigate();
+
+  // Search Logic
+  const handleSearchClick = () => {
+    navigate('/search');
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      navigate('/search', { state: { query: e.target.value } });
+    }
+  };
 
   // Search placeholder animation
   const [searchPlaceholder, setSearchPlaceholder] = useState("Search ");
@@ -89,16 +112,16 @@ const MainLocationHeader = ({
   }, [typingState]);
 
   // Smooth scroll interpolations
-  const headerPadding = useTransform(scrollY, [0, 160], [12, 8]);
-  const headerRoundness = useTransform(scrollY, [0, 160], [40, 24]);
+  const headerPadding = useTransform(scrollY, [0, 160], [16, 12]);
+  const headerRoundness = useTransform(scrollY, [0, 160], [0, 24]);
   const bgOpacity = useTransform(scrollY, [0, 160], [1, 0.98]);
 
   // Content animations
-  const contentHeight = useTransform(scrollY, [0, 160], ["50px", "0px"]);
+  const contentHeight = useTransform(scrollY, [0, 160], ["40px", "0px"]);
   const contentOpacity = useTransform(scrollY, [0, 160], [1, 0]);
-  const navHeight = useTransform(scrollY, [0, 200], ["88px", "0px"]);
+  const navHeight = useTransform(scrollY, [0, 200], ["85px", "0px"]);
   const navOpacity = useTransform(scrollY, [0, 200], [1, 0]);
-  const navMargin = useTransform(scrollY, [0, 200], [6, 0]);
+  const navMargin = useTransform(scrollY, [0, 200], [4, 0]);
   const categorySpacing = useTransform(scrollY, [0, 200], [12, 0]);
 
   // Helper to hide elements completely when collapsed to prevent clicks
@@ -113,60 +136,161 @@ const MainLocationHeader = ({
     <>
       <div className="fixed top-0 left-0 right-0 z-[200]">
         <motion.div
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           style={{
             paddingTop: headerPadding,
             paddingBottom: headerPadding,
             borderBottomLeftRadius: headerRoundness,
             borderBottomRightRadius: headerRoundness,
             opacity: bgOpacity,
-            background:
-              activeCategory?.theme?.gradient ||
-              "linear-gradient(to bottom, #25D366, #4ADE80)",
           }}
-          className="px-5 shadow-lg relative overflow-hidden transition-colors duration-500">
-          {/* Collapsible Delivery Info & Location */}
-          <motion.div
-            style={{
-              height: contentHeight,
-              opacity: contentOpacity,
-              marginBottom: navMargin,
-              display: displayContent,
-              overflow: "hidden",
-            }}
-            className="flex justify-between items-start relative z-10">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-2xl font-black text-[#1A1A1A] tracking-tighter leading-none">
-                  {currentLocation.time}
-                </span>
-              </div>
+          className="px-4 shadow-[0_4px_20px_rgba(0,0,0,0.15)] relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-emerald-700 via-green-800 to-emerald-900 border-b border-white/5 sticky top-0">
+
+          {/* Subtle Glow Overlay */}
+          <div className="absolute inset-0 bg-white/5 pointer-events-none" />
+
+          {/* Desktop/Tablet Header Layout (md and above) */}
+          <div className="hidden md:flex items-center justify-between relative z-20 px-2 lg:px-6 mb-4 mt-1">
+            {/* Left Section: Logo + Location row */}
+            <div className="flex items-center gap-4 lg:gap-8">
               <div
-                onClick={() => setIsLocationOpen(true)}
-                className="flex items-center gap-1.5 text-[#1A1A1A] cursor-pointer group scale-100 active:scale-95 transition-transform">
-                <MapPin size={14} className="fill-current" />
-                <div className="text-[10px] font-bold leading-[1.2] max-w-[240px] bg-white/10 px-1.5 py-0.5 rounded-md group-hover:bg-white/20 transition-colors truncate">
-                  {currentLocation.name}
+                onClick={() => navigate('/')}
+                className="flex items-center gap-3 cursor-pointer group shrink-0"
+              >
+                <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                  <img
+                    src={LogoImage}
+                    alt="Appzeto Logo"
+                    className="h-10 w-auto object-contain"
+                  />
                 </div>
-                <ChevronDown size={12} className="opacity-60" />
+              </div>
+
+              {/* Location Block (Desktop inline row) */}
+              <div className="flex flex-col border-l border-white/10 pl-4 lg:pl-8 h-10 justify-center">
+                <div className="flex items-center gap-1.5 opacity-70">
+                  <AccessTimeIcon sx={{ fontSize: 13, color: 'white' }} />
+                  <span className="text-[11px] font-black text-white uppercase tracking-widest leading-none">
+                    {currentLocation.time}
+                  </span>
+                </div>
+                <div
+                  onClick={() => setIsLocationOpen(true)}
+                  className="flex items-center gap-1 text-white hover:text-yellow-300 cursor-pointer group active:scale-95 transition-all">
+                  <LocationOnIcon sx={{ fontSize: 14, color: 'inherit' }} />
+                  <div className="text-[13px] font-bold leading-tight max-w-[150px] lg:max-w-[180px] truncate">
+                    {currentLocation.name}
+                  </div>
+                  <ChevronDownIcon sx={{ fontSize: 12, opacity: 0.5 }} />
+                </div>
               </div>
             </div>
-          </motion.div>
 
-          {/* Search Bar - Always Visible */}
-          <div className="relative z-10">
-            <div className="bg-white rounded-xl px-1.5 py-0.5 shadow-xl flex items-center border border-black/5">
-              <div className="pl-3 pr-2">
-                <Search size={20} className="text-[#1A1A1A]" />
+            {/* Center Section: Search Bar */}
+            <div className="flex-1 max-w-[450px] lg:max-w-2xl px-6">
+              <motion.div
+                onClick={handleSearchClick}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="bg-white rounded-full px-4 h-11 shadow-md flex items-center border border-transparent transition-all duration-200 focus-within:ring-2 focus-within:ring-emerald-400 cursor-pointer"
+              >
+                <SearchIcon sx={{ color: '#64748b', fontSize: 20 }} />
+                <input
+                  type="text"
+                  placeholder={searchPlaceholder || "Search Products..."}
+                  readOnly
+                  className="flex-1 bg-transparent border-none outline-none pl-2 text-slate-800 font-semibold placeholder:text-slate-300 text-[15px] cursor-pointer"
+                />
+                <div className="flex items-center gap-2 border-l border-slate-100 pl-3">
+                  <MicIcon sx={{ color: '#0c831f', fontSize: 20 }} />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right Section: Action Icons */}
+            <div className="flex items-center gap-5 lg:gap-8 shrink-0">
+              <motion.button
+                whileHover={{ scale: 1.15, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate('/wishlist')}
+                className="text-white hover:text-red-400 transition-all"
+              >
+                <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.15, rotate: -5 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate('/cart')}
+                className="text-white hover:text-yellow-300 transition-all relative group"
+              >
+                <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
+                <span className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-emerald-900 text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-green-800 shadow-sm transition-transform group-hover:-translate-y-0.5">
+                  0
+                </span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate('/profile')}
+                className="text-white lg:bg-white/10 p-1.5 lg:rounded-full hover:bg-white hover:text-emerald-900 transition-all"
+              >
+                <AccountCircleOutlinedIcon sx={{ fontSize: 28 }} />
+              </motion.button>
+            </div>
+          </div>
+
+          {/* Collapsible Delivery Info & Location (MOBILE ONLY) */}
+          <div className="md:hidden">
+            <motion.div
+              style={{
+                height: contentHeight,
+                opacity: contentOpacity,
+                marginBottom: navMargin,
+                overflow: "hidden",
+              }}
+              className="flex justify-between items-start relative z-10">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <AccessTimeIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.7)' }} />
+                  <span className="text-base font-bold text-white tracking-tight leading-none">
+                    {currentLocation.time}
+                  </span>
+                </div>
+                <div
+                  onClick={() => setIsLocationOpen(true)}
+                  className="flex items-center gap-1 text-white/80 cursor-pointer group active:scale-95 transition-transform">
+                  <LocationOnIcon sx={{ fontSize: 14, color: 'white' }} />
+                  <div className="text-[10px] font-medium leading-tight max-w-[200px] truncate">
+                    {currentLocation.name}
+                  </div>
+                  <ChevronDownIcon sx={{ fontSize: 12, opacity: 0.5 }} />
+                </div>
               </div>
+            </motion.div>
+          </div>
+
+          {/* Search Bar (MOBILE ONLY) */}
+          <div className="relative z-10 mt-1.5 flex items-center gap-2 md:hidden">
+            <motion.div
+              onClick={handleSearchClick}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 bg-white rounded-full px-4 h-11 shadow-md flex items-center border border-transparent transition-all duration-200 focus-within:ring-2 focus-within:ring-emerald-400 cursor-pointer"
+            >
+              <SearchIcon sx={{ color: '#64748b', fontSize: 20 }} />
               <input
                 type="text"
-                placeholder={searchPlaceholder}
-                className="flex-1 bg-transparent border-none outline-none py-2.5 text-[#1A1A1A] font-medium placeholder:text-[#1A1A1A]/40 text-base transition-all duration-300"
+                placeholder={searchPlaceholder || "Search Products..."}
+                readOnly
+                className="flex-1 bg-transparent border-none outline-none pl-2 text-slate-800 font-semibold placeholder:text-slate-300 text-[15px] cursor-pointer"
               />
-              <div className="flex items-center gap-3 px-4 border-l border-gray-100">
-                <Mic size={20} className="text-[#1A1A1A]/60" />
+              <div className="flex items-center gap-2 border-l border-slate-100 pl-3">
+                <MicIcon sx={{ color: '#0c831f', fontSize: 20 }} />
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Categories Navigation - Smooth Collapse */}
@@ -179,49 +303,46 @@ const MainLocationHeader = ({
                 display: displayNav,
                 overflowY: "hidden",
               }}
-              className="flex items-center gap-6 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2 relative z-10 snap-x">
-              {categories.map((cat, idx) => {
+              className="flex items-center md:justify-center gap-4 lg:gap-8 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 md:-mx-0 md:px-0 relative z-10 snap-x">
+              {categories.slice(0, 10).map((cat, idx) => {
                 const isActive = activeCategory?.id === cat.id;
                 return (
-                  <div
+                  <motion.div
                     key={cat.id}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => onCategorySelect && onCategorySelect(cat)}
-                    className="flex flex-col items-center gap-1 group cursor-pointer flex-shrink-0 snap-start min-w-[60px]">
+                    className="flex flex-col items-center gap-1.5 group cursor-pointer flex-shrink-0 snap-start min-w-[65px] transition-all duration-200">
                     <div
-                      className={`h-11 w-11 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? "bg-[#1A1A1A] shadow-lg scale-105" : "bg-white/10 hover:bg-white/20"}`}>
+                      className={`h-11 w-11 md:h-12 md:w-12 rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md ${isActive
+                        ? "bg-white text-emerald-800 shadow-lg scale-105"
+                        : "bg-white/10 text-white shadow-inner border border-white/10 group-hover:bg-white/20"
+                        }`}>
                       {typeof cat.icon === "function" ||
-                      (typeof cat.icon === "object" && cat.icon.$$typeof) ? (
+                        (typeof cat.icon === "object" && cat.icon.$$typeof) ? (
                         <cat.icon
-                          size={22}
-                          className={`${isActive ? "text-white" : "text-[#1A1A1A]"}`}
-                        />
-                      ) : typeof cat.icon === "string" &&
-                        cat.icon.trim().startsWith("<svg") ? (
-                        <div
-                          className={`w-[22px] h-[22px] ${isActive ? "text-white" : "text-[#1A1A1A]"}`}
-                          dangerouslySetInnerHTML={{ __html: cat.icon }}
+                          sx={{ fontSize: { xs: 20, md: 24 }, transition: 'color 0.2s', color: 'inherit' }}
                         />
                       ) : (
                         <img
                           src={cat.icon}
                           alt={cat.name}
-                          className="w-[22px] h-[22px] object-contain"
+                          className="w-5 h-5 md:w-6 md:h-6 object-contain"
                         />
                       )}
                     </div>
                     <span
-                      className={`text-[11px] font-bold whitespace-nowrap transition-colors ${isActive ? "text-[#1A1A1A] scale-105" : "text-[#1A1A1A]/60"}`}>
+                      className={`text-[9px] md:text-[10px] font-bold uppercase tracking-tight whitespace-nowrap transition-colors duration-200 ${isActive ? "text-white" : "text-white/60 group-hover:text-white"}`}>
                       {cat.name}
                     </span>
-                  </div>
+                  </motion.div>
                 );
               })}
             </motion.div>
           )}
 
           {/* Background Decorative patterns */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full blur-2xl -ml-24 -mb-24" />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
         </motion.div>
       </div>
 
