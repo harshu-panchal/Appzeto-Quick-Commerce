@@ -115,7 +115,7 @@ const Navigation = () => {
             Order Details
           </button>
           <button
-            onClick={() => navigate("/delivery/confirm-delivery")}
+            onClick={() => navigate("/delivery/confirm-delivery/TEST12345")}
             className="flex-1 bg-primary text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary/30 hover:bg-primary/90 transition-colors">
             Arrived
           </button>

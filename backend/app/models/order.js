@@ -113,6 +113,12 @@ const orderSchema = new mongoose.Schema(
         acceptedAt: {
             type: Date,
         },
+        skippedBy: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Delivery",
+            },
+        ],
     },
     { timestamps: true }
 );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -12,13 +12,33 @@ import {
   Shield,
   Bell,
   Settings,
+  IndianRupee,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Button from "@/shared/components/ui/Button";
 import Card from "@/shared/components/ui/Card";
+import { useAuth } from "@core/context/AuthContext";
+import axiosInstance from '@core/api/axios';
+import { useEffect } from 'react';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+  const [faqs, setFaqs] = useState([]);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const response = await axiosInstance.get('/public/faqs', { params: { category: 'Delivery', status: 'published' } });
+        setFaqs(response.data.results || []);
+      } catch (error) {
+        console.error("Error fetching FAQs:", error);
+      }
+    };
+    fetchFaqs();
+  }, []);
 
   const menuItems = [
     {
@@ -41,6 +61,13 @@ const Profile = () => {
       sub: "HDFC Bank **** 8921",
       color: "text-green-600 bg-green-50",
       path: "/delivery/profile/bank-account",
+    },
+    {
+      icon: IndianRupee,
+      label: "Money Request",
+      sub: "Withdraw your earnings",
+      color: "text-emerald-600 bg-emerald-50",
+      path: "/delivery/profile/withdrawals",
     },
     {
       icon: FileText,
@@ -190,9 +217,27 @@ const Profile = () => {
           </motion.button>
         ))}
 
+        {/* FAQ Section */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 overflow-hidden">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2">Delivery Partner FAQs</p>
+          <div className="divide-y divide-gray-50">
+            {faqs.length > 0 ? (
+              faqs.map((faq) => (
+                <DeliveryFAQItem
+                  key={faq._id}
+                  question={faq.question}
+                  answer={faq.answer}
+                />
+              ))
+            ) : (
+              <div className="py-4 text-center text-xs text-gray-400">No FAQs available</div>
+            )}
+          </div>
+        </div>
+
         <motion.div variants={itemVariants} className="pt-4">
           <Button
-            onClick={() => navigate("/delivery/login")}
+            onClick={logout}
             variant="outline"
             className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 py-6">
             <LogOut size={20} className="mr-2" /> Logout
@@ -205,6 +250,27 @@ const Profile = () => {
         <br />
         Version 1.2.0 (Build 450)
       </div>
+    </div>
+  );
+};
+
+const DeliveryFAQItem = ({ question, answer }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="py-4 px-2 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setIsOpen(!isOpen)}>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-gray-700">{question}</h3>
+        {isOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+      </div>
+      {isOpen && (
+        <motion.p
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mt-2 text-xs text-gray-500 font-medium leading-relaxed"
+        >
+          {answer}
+        </motion.p>
+      )}
     </div>
   );
 };

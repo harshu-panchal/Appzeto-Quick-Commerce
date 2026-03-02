@@ -1,5 +1,4 @@
-// Simplified Customer Management
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import PageHeader from '@shared/components/ui/PageHeader';
@@ -14,82 +13,60 @@ import {
     MoreVertical,
     UserPlus,
     RotateCw,
-    Activity
+    Activity,
+    Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { adminApi } from '../services/adminApi';
+import { toast } from 'sonner';
 
 const CustomerManagement = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [isExporting, setIsExporting] = useState(false);
+    const [customers, setCustomers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Simplified Mock Customer Data
-    const [customers] = useState([
-        {
-            id: 'CUST-001',
-            name: 'Anjali Sharma',
-            email: 'anjali.s@example.com',
-            phone: '+91 98765-43210',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anjali',
-            totalOrders: 42,
-            totalSpent: 24500,
-            joinedDate: '12 Jan 2023',
-            status: 'active',
-            lastOrder: '2 hours ago'
-        },
-        {
-            id: 'CUST-002',
-            name: 'Rohan Mehta',
-            email: 'rohan.m@techcorp.in',
-            phone: '+91 99887-76655',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rohan',
-            totalOrders: 15,
-            totalSpent: 8200,
-            joinedDate: '05 Mar 2023',
-            status: 'active',
-            lastOrder: 'Yesterday'
-        },
-        {
-            id: 'CUST-003',
-            name: 'Priya Iyer',
-            email: 'priya09@gmail.com',
-            phone: '+91 91234-56789',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya',
-            totalOrders: 4,
-            totalSpent: 1500,
-            joinedDate: '20 Dec 2023',
-            status: 'inactive',
-            lastOrder: '1 month ago'
-        },
-        {
-            id: 'CUST-004',
-            name: 'Vikram Singh',
-            email: 'vikram.singh@gmail.com',
-            phone: '+91 98822-11004',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
-            totalOrders: 88,
-            totalSpent: 112000,
-            joinedDate: '15 Oct 2022',
-            status: 'active',
-            lastOrder: '30 mins ago'
+    useEffect(() => {
+        fetchCustomers();
+    }, []);
+
+    const fetchCustomers = async () => {
+        try {
+            setLoading(true);
+            const { data } = await adminApi.getUsers();
+            if (data.success) {
+                setCustomers(Array.isArray(data.results) ? data.results : []);
+            }
+        } catch (error) {
+            console.error("Error fetching customers:", error);
+            toast.error("Failed to load customers");
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
 
     const stats = useMemo(() => {
+        const safeCustomers = Array.isArray(customers) ? customers : [];
         return {
-            total: customers.length,
-            active: customers.filter(c => c.status === 'active').length,
-            newToday: 2 // Simulated
+            total: safeCustomers.length,
+            active: safeCustomers.filter(c => c.status === 'active').length,
+            newToday: safeCustomers.filter(c => {
+                const today = new Date().toISOString().split('T')[0];
+                const joined = new Date(c.joinedDate).toISOString().split('T')[0];
+                return joined === today;
+            }).length
         };
     }, [customers]);
 
     const filteredCustomers = useMemo(() => {
-        return customers.filter(c => {
-            const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.phone.includes(searchTerm);
+        const safeCustomers = Array.isArray(customers) ? customers : [];
+        return safeCustomers.filter(c => {
+            const matchesSearch = (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (c.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (c.phone || '').includes(searchTerm);
             const matchesStatus = filterStatus === 'all' || c.status === filterStatus;
             return matchesSearch && matchesStatus;
         });
@@ -99,8 +76,21 @@ const CustomerManagement = () => {
         setIsExporting(true);
         setTimeout(() => {
             setIsExporting(false);
-            alert('Customer database exported successfully!');
+            toast.success('Customer database exported successfully!');
         }, 1500);
+    };
+
+    const getTimeAgo = (date) => {
+        if (!date) return 'Never';
+        const now = new Date();
+        const past = new Date(date);
+        const diffInMs = now - past;
+        const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+
+        if (diffInHours < 1) return 'Recently';
+        if (diffInHours < 24) return `${diffInHours}h ago`;
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays}d ago`;
     };
 
     return (
@@ -190,7 +180,16 @@ const CustomerManagement = () => {
             </Card>
 
             {/* Customer List Table */}
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden relative min-h-[400px]">
+                {loading && (
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                            <p className="ds-caption text-gray-500 font-medium">Loading Customers...</p>
+                        </div>
+                    </div>
+                )}
+
                 <div className="overflow-x-auto">
                     <table className="ds-table">
                         <thead className="ds-table-header">
@@ -203,61 +202,81 @@ const CustomerManagement = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredCustomers.map((cust) => (
-                                <tr key={cust.id} className="ds-table-row">
-                                    <td className="ds-table-cell">
-                                        <div className="flex items-center gap-3">
-                                            <img src={cust.avatar} alt="" className="h-10 w-10 rounded-lg bg-gray-100 ring-2 ring-white shadow-sm" />
-                                            <div>
-                                                <p
-                                                    onClick={() => navigate(`/admin/customers/${cust.id}`)}
-                                                    className="ds-h4 hover:text-primary cursor-pointer transition-colors"
-                                                >
-                                                    {cust.name}
-                                                </p>
-                                                <p className="ds-body-sm text-gray-500">{cust.email}</p>
-                                                <div className="flex items-center gap-1.5 mt-0.5">
-                                                    <Phone className="ds-icon-sm text-gray-300" />
-                                                    <span className="text-[9px] text-gray-400">{cust.phone}</span>
-                                                </div>
+                            {!loading && filteredCustomers.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="p-4 bg-gray-50 rounded-full">
+                                                <Users className="h-8 w-8 text-gray-300" />
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td className="ds-table-cell">
-                                        <div>
-                                            <div className="flex items-center gap-1.5 ds-body font-semibold">
-                                                <ShoppingBag className="ds-icon-sm text-primary" />
-                                                {cust.totalOrders} Orders
-                                            </div>
-                                            <p className="ds-body-sm text-gray-400 mt-0.5">Last: {cust.lastOrder}</p>
-                                        </div>
-                                    </td>
-                                    <td className="ds-table-cell ds-h4">
-                                        ₹{cust.totalSpent.toLocaleString()}
-                                    </td>
-                                    <td className="ds-table-cell">
-                                        <Badge
-                                            variant={cust.status === 'active' ? 'success' : 'error'}
-                                            className="ds-badge"
-                                        >
-                                            {cust.status}
-                                        </Badge>
-                                    </td>
-                                    <td className="ds-table-cell text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button
-                                                onClick={() => navigate(`/admin/customers/${cust.id}`)}
-                                                className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all"
-                                            >
-                                                <Eye className="ds-icon-sm" />
-                                            </button>
-                                            <button className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-gray-900 hover:text-white transition-all">
-                                                <MoreVertical className="ds-icon-sm" />
-                                            </button>
+                                            <p className="ds-h4 text-gray-400">No customers found</p>
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredCustomers.map((cust) => (
+                                    <tr key={cust.id} className="ds-table-row">
+                                        <td className="ds-table-cell">
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src={cust.avatar}
+                                                    alt=""
+                                                    className="h-10 w-10 rounded-lg bg-gray-100 ring-2 ring-white shadow-sm"
+                                                    onError={(e) => {
+                                                        e.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${cust.name}`;
+                                                    }}
+                                                />
+                                                <div>
+                                                    <p
+                                                        onClick={() => navigate(`/admin/customers/${cust.id}`)}
+                                                        className="ds-h4 hover:text-primary cursor-pointer transition-colors"
+                                                    >
+                                                        {cust.name}
+                                                    </p>
+                                                    <p className="ds-body-sm text-gray-500">{cust.email || 'No email'}</p>
+                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                        <Phone className="ds-icon-sm text-gray-300" />
+                                                        <span className="text-[9px] text-gray-400">{cust.phone}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="ds-table-cell">
+                                            <div>
+                                                <div className="flex items-center gap-1.5 ds-body font-semibold">
+                                                    <ShoppingBag className="ds-icon-sm text-primary" />
+                                                    {cust.totalOrders} Orders
+                                                </div>
+                                                <p className="ds-body-sm text-gray-400 mt-0.5">Last: {getTimeAgo(cust.lastOrderDate)}</p>
+                                            </div>
+                                        </td>
+                                        <td className="ds-table-cell ds-h4">
+                                            ₹{(cust.totalSpent || 0).toLocaleString()}
+                                        </td>
+                                        <td className="ds-table-cell">
+                                            <Badge
+                                                variant={cust.status === 'active' ? 'success' : 'error'}
+                                                className="ds-badge"
+                                            >
+                                                {cust.status}
+                                            </Badge>
+                                        </td>
+                                        <td className="ds-table-cell text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => navigate(`/admin/customers/${cust.id}`)}
+                                                    className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all"
+                                                >
+                                                    <Eye className="ds-icon-sm" />
+                                                </button>
+                                                <button className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-gray-900 hover:text-white transition-all">
+                                                    <MoreVertical className="ds-icon-sm" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

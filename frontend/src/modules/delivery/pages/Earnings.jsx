@@ -38,8 +38,17 @@ const Earnings = () => {
     try {
       setLoading(true);
       const response = await deliveryApi.getEarnings();
-      if (response.data.success) {
-        setEarningsData(response.data.result);
+      if (response.data.success && response.data.result) {
+        const result = response.data.result;
+        setEarningsData({
+          totalEarnings: result.totalEarnings || 0,
+          incentives: result.incentives || 0,
+          bonuses: result.bonuses || 0,
+          onlinePay: result.onlinePay || 0,
+          cashCollected: result.cashCollected || 0,
+          chartData: result.chartData || [],
+          recentTransactions: result.transactions || result.recentTransactions || []
+        });
       }
     } catch (error) {
       toast.error("Failed to fetch earnings data");
@@ -230,9 +239,9 @@ const Earnings = () => {
               </Button>
             </div>
             <div className="divide-y divide-gray-100">
-              {earningsData.recentTransactions.length > 0 ? earningsData.recentTransactions.map((txn) => (
+              {earningsData.recentTransactions.length > 0 ? earningsData.recentTransactions.map((txn, idx) => (
                 <div
-                  key={txn.id}
+                  key={txn._id || txn.id || `txn-${idx}`}
                   className="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors cursor-pointer">
                   <div className="flex items-center">
                     <div
@@ -242,7 +251,7 @@ const Earnings = () => {
                     <div>
                       <p className="font-bold text-gray-900">{txn.type}</p>
                       <p className="text-xs text-gray-500">
-                        {txn.date} • {txn.id}
+                        {txn.date || new Date(txn.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} • {txn.id || (txn._id ? txn._id.toString().slice(-6).toUpperCase() : 'N/A')}
                       </p>
                     </div>
                   </div>

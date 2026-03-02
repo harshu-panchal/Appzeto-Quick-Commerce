@@ -25,6 +25,7 @@ const DeliveryLayout = () => {
     "/delivery/splash",
     "/delivery/navigation",
     "/delivery/confirm-delivery",
+    "/delivery/order-details",
   ];
 
   const shouldShowBottomNav = !hideBottomNavRoutes.some((route) =>
@@ -92,7 +93,8 @@ const DeliveryLayout = () => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            setActiveOrder(null);
+            // Also call skip API so it doesn't immediately reappear
+            skipOrder();
             toast.error("Order request timed out");
             return 0;
           }
@@ -119,45 +121,25 @@ const DeliveryLayout = () => {
     }
   };
 
-  const skipOrder = () => {
+  const skipOrder = async () => {
     if (activeOrder) {
-      console.log("Delivery Alert - Skipping order:", activeOrder.id);
-      setShownOrderIds(prev => new Set(prev).add(activeOrder.id));
-      setActiveOrder(null);
+      try {
+        console.log("Delivery Alert - Skipping order:", activeOrder.id);
+        await deliveryApi.skipOrder(activeOrder.id);
+        setShownOrderIds(prev => new Set(prev).add(activeOrder.id));
+        setActiveOrder(null);
+        toast.info("Order skipped");
+      } catch (error) {
+        console.error("Delivery Alert - Skip failed:", error);
+        // Even if API fails, clear it from UI to not block user
+        setActiveOrder(null);
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans max-w-md mx-auto relative shadow-2xl overflow-hidden border-x border-gray-100">
-      {/* Status Bar / Safe Area Placeholder */}
-      {/* Dev Debug Overlay */}
-      {process.env.NODE_ENV !== 'production' && (
-        <div className="fixed top-2 left-1/2 -translate-x-1/2 z-[2000] bg-black/90 text-white text-[9px] px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-3 backdrop-blur-md border border-white/10 uppercase tracking-tighter">
-          <div className="flex items-center gap-1">
-            <div className={`w-1.5 h-1.5 rounded-full ${user?.isOnline ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
-            <span>{user?.isOnline ? "Online" : "Offline"}</span>
-          </div>
-
-          <div className="w-[1px] h-3 bg-white/20" />
-
-          <span>Orders: {availableOrdersCount} | {activeOrder ? "Alert Active" : "Polling"}</span>
-
-          <button
-            className="pointer-events-auto bg-primary/20 hover:bg-primary/40 text-primary-light px-2 py-0.5 rounded border border-primary/30 transition-colors"
-            onClick={() => setActiveOrder({
-              id: "TEST-" + Math.floor(Math.random() * 1000),
-              pickup: "Zeto Store",
-              drop: "Customer Home",
-              earnings: 45
-            })}
-          >
-            TEST UI
-          </button>
-        </div>
-      )}
-
-      {/* Status Bar / Safe Area Placeholder */}
-      <div className="h-safe-top w-full bg-white/50 backdrop-blur-sm absolute top-0 z-50 pointer-events-none" />
+      {/* Status Bar / Safe Area Placeholder - Removed as it's not defined and causes spacing issues */}
 
       {/* Global Order Alert Modal */}
       <AnimatePresence>

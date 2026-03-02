@@ -11,8 +11,11 @@ export const deliveryApi = {
     getOrderHistory: (params) => axiosInstance.get('/delivery/order-history', { params }),
     getAvailableOrders: () => axiosInstance.get('/orders/available'),
     acceptOrder: (orderId) => axiosInstance.put(`/orders/accept/${orderId}`),
+    skipOrder: (orderId) => axiosInstance.put(`/orders/skip/${orderId}`),
     getOrderDetails: (orderId) => axiosInstance.get(`/orders/details/${orderId}`),
     getNotifications: () => axiosInstance.get('/notifications'),
     markNotificationRead: (id) => axiosInstance.put(`/notifications/${id}/read`),
     markAllNotificationsRead: () => axiosInstance.put('/notifications/mark-all-read'),
+    requestWithdrawal: (data) => axiosInstance.post('/delivery/request-withdrawal', data),
+    updateOrderStatus: (orderId, data) => axiosInstance.put(`/orders/status/${orderId}`, data),
 };

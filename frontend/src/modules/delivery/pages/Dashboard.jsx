@@ -11,6 +11,8 @@ import {
   XCircle,
   IndianRupee,
   AlertCircle,
+  Store,
+  Building2, // Fallback for Store
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,10 +24,12 @@ import { useAuth } from "@/core/context/AuthContext";
 import { deliveryApi } from "../services/deliveryApi";
 
 const Dashboard = () => {
+  console.log("Dashboard Rendering - Icons:", { Store: typeof Store, Building2: typeof Building2 });
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const [isOnline, setIsOnline] = useState(user?.isOnline || false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [availableOrders, setAvailableOrders] = useState([]);
   const [earnings, setEarnings] = useState({
     today: 0,
     deliveries: 0,
@@ -44,30 +48,73 @@ const Dashboard = () => {
     try {
       const response = await deliveryApi.getStats();
       if (response.data.success) {
-        setEarnings(response.data.result);
+        console.log("Stats Fetched:", response.data.result);
+        setEarnings(prev => ({
+          ...prev,
+          ...response.data.result
+        }));
       }
     } catch (error) {
-      console.error("Failed to fetch statistics");
+      console.error("Failed to fetch statistics:", error);
     }
   };
 
   const fetchNotifications = async () => {
     try {
       const response = await deliveryApi.getNotifications();
-      if (response.data.success) {
-        setUnreadCount(response.data.result.unreadCount);
+      if (response.data.success && response.data.result) {
+        setUnreadCount(response.data.result.unreadCount || 0);
       }
     } catch (error) {
       console.error("Failed to fetch notifications");
     }
   };
 
+  const fetchAvailableOrders = async () => {
+    try {
+      const response = await deliveryApi.getAvailableOrders();
+      if (response.data.success) {
+        // Support both plural 'results' and singular 'result' from different backend versions
+        const orders = response.data.results || response.data.result || [];
+        setAvailableOrders(orders);
+      }
+    } catch (error) {
+      console.error("Failed to fetch available orders:", error);
+    }
+  };
+
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      const response = await deliveryApi.acceptOrder(orderId);
+      if (response.data.success) {
+        toast.success("Order accepted!");
+        navigate(`/delivery/order-details/${orderId}`);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to accept order");
+    }
+  };
+
+  const handleSkipOrder = async (orderId) => {
+    try {
+      await deliveryApi.skipOrder(orderId);
+      setAvailableOrders(prev => prev.filter(o => o.orderId !== orderId));
+      toast.info("Order skipped");
+    } catch (error) {
+      toast.error("Failed to skip order");
+    }
+  };
+
   useEffect(() => {
     fetchStats();
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    if (isOnline) fetchAvailableOrders();
+    const interval = setInterval(() => {
+      fetchNotifications();
+      if (isOnline) fetchAvailableOrders();
+    }, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isOnline]);
 
   const handleOnlineToggle = async () => {
     const newStatus = !isOnline;
@@ -221,35 +268,91 @@ const Dashboard = () => {
         {/* Active Order / Status */}
         <AnimatePresence mode="wait">
           {isOnline ? (
-            <motion.div
-              key="searching"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="bg-white rounded-2xl p-8 text-center border-2 border-dashed border-gray-200 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/50 to-purple-50/50 opacity-50"></div>
-              <div className="relative z-10">
-                <div className="relative w-24 h-24 mx-auto mb-6">
-                  <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-20"></div>
-                  <div className="absolute inset-2 bg-blue-100 rounded-full animate-ping opacity-40 delay-150"></div>
-                  <div className="relative w-full h-full bg-blue-50 rounded-full flex items-center justify-center border border-blue-100 shadow-sm">
-                    <MapPin size={36} className="text-blue-600" />
+            availableOrders.length > 0 ? (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-1">
+                  <h3 className="ds-h3 text-gray-800">Available Orders ({availableOrders.length})</h3>
+                  <div className="flex items-center space-x-1">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Live</span>
                   </div>
                 </div>
-                <h3 className="ds-h3 mb-2 text-gray-800">
-                  Finding Orders Nearby...
-                </h3>
-                <p className="text-sm text-gray-500 max-w-[220px] mx-auto mb-6">
-                  We're looking for delivery requests in your area. Stay
-                  online!
-                </p>
-                <div className="flex justify-center space-x-2">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></span>
-                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100"></span>
-                  <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-200"></span>
-                </div>
+                {availableOrders.map((order) => (
+                  <motion.div
+                    key={order.orderId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm relative overflow-hidden">
+
+                    {/* COD Tag */}
+                    {(order.payment?.method?.toLowerCase() === 'cash' || order.payment?.method?.toLowerCase() === 'cod') && (
+                      <div className="absolute top-0 right-0 bg-orange-600 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl shadow-sm z-10 flex items-center">
+                        <IndianRupee size={12} className="mr-1" /> CASH ON DELIVERY
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                          {typeof Store !== 'undefined' ? <Store size={24} /> : <Building2 size={24} />}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 truncate max-w-[150px]">{order.seller?.shopName || "Unknown Seller"}</h4>
+                          <p className="text-xs text-gray-500 flex items-center mt-0.5">
+                            <MapPin size={12} className="mr-1" /> {String(order.seller?.address || "No address").slice(0, 30)}...
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-gray-900">₹{Math.round(order.pricing?.total * 0.1)}</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase">Earning</p>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-3">
+                      <Button
+                        variant="outline"
+                        className="flex-1 py-3 text-xs font-bold border-gray-200"
+                        onClick={() => handleSkipOrder(order.orderId)}
+                      >
+                        SKIP
+                      </Button>
+                      <Button
+                        className="flex-2 bg-primary py-3 text-xs font-bold px-8 shadow-lg shadow-primary/20"
+                        onClick={() => handleAcceptOrder(order.orderId)}
+                      >
+                        ACCEPT
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-            </motion.div>
+            ) : (
+              <motion.div
+                key="searching"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-white rounded-2xl p-8 text-center border-2 border-dashed border-gray-200 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/50 to-purple-50/50 opacity-50"></div>
+                <div className="relative z-10">
+                  <div className="relative w-24 h-24 mx-auto mb-6">
+                    <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-20"></div>
+                    <div className="absolute inset-2 bg-blue-100 rounded-full animate-ping opacity-40 delay-150"></div>
+                    <div className="relative w-full h-full bg-blue-50 rounded-full flex items-center justify-center border border-blue-100 shadow-sm">
+                      <MapPin size={36} className="text-blue-600" />
+                    </div>
+                  </div>
+                  <h3 className="ds-h3 mb-2 text-gray-800">
+                    Finding Orders Nearby...
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-[220px] mx-auto mb-6">
+                    We're looking for delivery requests in your area. Stay
+                    online!
+                  </p>
+                </div>
+              </motion.div>
+            )
           ) : (
             <motion.div
               key="offline"

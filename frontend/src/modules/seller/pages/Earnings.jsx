@@ -28,10 +28,12 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import ShimmerButton from "@/components/ui/shimmer-button";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { exportToCSV } from "@/lib/exportUtils";
 
 
 const Earnings = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = React.useState(true);
   const [data, setData] = React.useState(null);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = React.useState(false);
@@ -124,7 +126,7 @@ const Earnings = () => {
               Download Report
             </Button>
             <ShimmerButton
-              onClick={() => setIsWithdrawModalOpen(true)}
+              onClick={() => navigate("/seller/withdrawals")}
               className="px-6 py-2 rounded-xl text-sm font-bold text-white shadow-lg">
               <span className="text-white">Withdraw Funds</span>
             </ShimmerButton>

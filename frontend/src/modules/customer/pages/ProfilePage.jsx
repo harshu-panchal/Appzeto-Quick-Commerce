@@ -1,13 +1,30 @@
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     User, MapPin, Package, CreditCard, Settings, ChevronRight,
-    LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, Wallet, ChevronLeft
+    LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, Wallet, ChevronLeft,
+    ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useAuth } from '@core/context/AuthContext';
+import axiosInstance from '@core/api/axios';
+import { useEffect } from 'react';
 
 const ProfilePage = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const [faqs, setFaqs] = useState([]);
+
+    useEffect(() => {
+        const fetchFaqs = async () => {
+            try {
+                const response = await axiosInstance.get('/public/faqs', { params: { category: 'Customer', status: 'published' } });
+                setFaqs(response.data.results || []);
+            } catch (error) {
+                console.error("Error fetching FAQs:", error);
+            }
+        };
+        fetchFaqs();
+    }, []);
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24 md:pb-8 font-sans">
@@ -77,6 +94,26 @@ const ProfilePage = () => {
                     </div>
                 </div>
 
+                {/* FAQ Section */}
+                <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                    <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Common Questions</p>
+                    </div>
+                    <div className="divide-y divide-slate-50">
+                        {faqs.length > 0 ? (
+                            faqs.map((faq) => (
+                                <FAQItem
+                                    key={faq._id}
+                                    question={faq.question}
+                                    answer={faq.answer}
+                                />
+                            ))
+                        ) : (
+                            <div className="p-6 text-center text-xs text-slate-400">No FAQs available</div>
+                        )}
+                    </div>
+                </div>
+
                 {/* Logout Button */}
                 <button
                     onClick={logout}
@@ -109,5 +146,20 @@ const MenuItem = ({ icon: Icon, label, sub, path, color, bg }) => (
         <ChevronRight size={18} className="text-slate-300 group-hover:text-[#0c831f] transition-colors" />
     </Link>
 );
+
+const FAQItem = ({ question, answer }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="px-6 py-4 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => setIsOpen(!isOpen)}>
+            <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-700">{question}</h3>
+                {isOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+            </div>
+            {isOpen && (
+                <p className="mt-2 text-xs text-slate-500 font-medium leading-relaxed">{answer}</p>
+            )}
+        </div>
+    );
+};
 
 export default ProfilePage;

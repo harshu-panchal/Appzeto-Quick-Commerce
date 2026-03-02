@@ -13,33 +13,60 @@ import Button from "@/shared/components/ui/Button";
 import Card from "@/shared/components/ui/Card";
 import confetti from "canvas-confetti";
 
+import { useParams } from "react-router-dom";
+import { deliveryApi } from "../services/deliveryApi";
+import { toast } from "sonner";
+
 const DeliveryConfirmation = () => {
   const navigate = useNavigate();
+  const { orderId } = useParams();
+  const [order, setOrder] = useState(null);
   const [cashCollected, setCashCollected] = useState("");
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [isPrepaid, setIsPrepaid] = useState(false); // Toggle for demo
   const [isCompleted, setIsCompleted] = useState(false);
-
-  const orderAmount = 450;
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Trigger confetti on mount just for fun, or on completion
-    // confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-  }, []);
+    const fetchOrder = async () => {
+      try {
+        setLoading(true);
+        const res = await deliveryApi.getOrderDetails(orderId);
+        if (res.data.success) {
+          setOrder(res.data.result);
+        }
+      } catch (error) {
+        toast.error("Failed to load order details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrder();
+  }, [orderId]);
 
-  const handleComplete = () => {
-    setIsCompleted(true);
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ["#22c55e", "#3b82f6", "#f59e0b"],
-    });
+  const handleComplete = async () => {
+    try {
+      setSubmitting(true);
+      const res = await deliveryApi.updateOrderStatus(orderId, { status: 'delivered' });
 
-    // Navigate back to dashboard after a delay
-    setTimeout(() => {
-      navigate("/delivery/dashboard");
-    }, 2500);
+      if (res.data.success) {
+        setIsCompleted(true);
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#22c55e", "#3b82f6", "#f59e0b"],
+        });
+
+        setTimeout(() => {
+          navigate("/delivery/dashboard");
+        }, 2500);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to complete delivery");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleOtpChange = (index, value) => {
@@ -52,6 +79,13 @@ const DeliveryConfirmation = () => {
       document.getElementById(`conf-otp-${index + 1}`).focus();
     }
   };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  const orderAmount = order?.pricing?.total || 0;
+  const isPrepaid = order?.payment?.method?.toLowerCase() !== 'cash' && order?.payment?.method?.toLowerCase() !== 'cod';
 
   if (isCompleted) {
     return (
@@ -75,7 +109,7 @@ const DeliveryConfirmation = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
           className="text-gray-500 mb-8">
-          Great job! You earned ₹45 for this order.
+          Order #{orderId} has been delivered.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -96,13 +130,7 @@ const DeliveryConfirmation = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6 pt-2">
         <h1 className="ds-h2 text-gray-900">Confirm Delivery</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsPrepaid(!isPrepaid)}
-          className="text-xs h-8 border-dashed border-gray-300">
-          Toggle Payment (Demo)
-        </Button>
+        <div className="text-xs font-bold text-gray-400">Order: #{orderId}</div>
       </div>
 
       <div className="flex-1 space-y-6 max-w-lg mx-auto w-full">
@@ -216,25 +244,24 @@ const DeliveryConfirmation = () => {
       </div>
 
       {/* Action Button */}
-      <div className="mt-6 max-w-lg mx-auto w-full">
-        <motion.div whileTap={{ scale: 0.98 }}>
-          <Button
-            onClick={handleComplete}
-            disabled={
-              (!isPrepaid && Number(cashCollected) < orderAmount) ||
-              otp.some((d) => !d)
-            }
-            className={`w-full py-6 text-lg shadow-lg ${
-              (!isPrepaid && Number(cashCollected) < orderAmount) ||
-              otp.some((d) => !d)
-                ? ""
-                : "shadow-green-600/30 bg-green-600 hover:bg-green-700"
+      <motion.div whileTap={{ scale: 0.98 }} className="mt-6 max-w-lg mx-auto w-full">
+        <Button
+          onClick={handleComplete}
+          disabled={
+            submitting ||
+            (!isPrepaid && Number(cashCollected) < orderAmount) ||
+            otp.some((d) => !d)
+          }
+          className={`w-full py-6 text-lg shadow-lg ${submitting ||
+            (!isPrepaid && Number(cashCollected) < orderAmount) ||
+            otp.some((d) => !d)
+            ? ""
+            : "shadow-green-600/30 bg-green-600 hover:bg-green-700"
             }`}>
-            Complete Delivery <CheckCircle className="ml-2 h-6 w-6" />
-          </Button>
-        </motion.div>
-      </div>
-    </div>
+          {submitting ? "COMPLETING..." : "Complete Delivery"} <CheckCircle className="ml-2 h-6 w-6" />
+        </Button>
+      </motion.div>
+    </div >
   );
 };
 

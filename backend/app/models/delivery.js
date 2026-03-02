@@ -56,6 +56,11 @@ const deliverySchema = new mongoose.Schema(
             trim: true,
         },
 
+        drivingLicenseNumber: {
+            type: String,
+            trim: true,
+        },
+
         currentArea: {
             type: String,
             trim: true,

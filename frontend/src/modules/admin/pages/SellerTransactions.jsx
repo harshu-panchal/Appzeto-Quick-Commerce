@@ -1,7 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import Modal from '@shared/components/ui/Modal';
+import { adminApi } from '../services/adminApi';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 import {
     Receipt,
     Search,
@@ -38,92 +41,68 @@ const SellerTransactions = () => {
     const [selectedSeller, setSelectedSeller] = useState('all');
     const [selectedTxn, setSelectedTxn] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock Sellers for Filter
-    const sellers = [
-        { id: 'S1', name: 'Fresh Mart Superstore' },
-        { id: 'S2', name: 'Tech Zone Electronics' },
-        { id: 'S3', name: 'Organic Greens Co.' },
-        { id: 'S4', name: 'Dairy Pure Farms' }
-    ];
+    useEffect(() => {
+        fetchTransactions();
+    }, []);
 
-    // Detailed Mock Transaction History
-    const [transactions] = useState([
-        {
-            id: 'TXN-SET-10024',
-            orderId: 'ORD-9921',
-            date: '15 Feb 2024, 11:30 AM',
-            seller: 'Fresh Mart Superstore',
-            type: 'sale',
-            amount: 1250.00,
-            commissionRate: 10,
-            commissionAmount: 125.00,
-            taxAmount: 22.50,
-            netPayable: 1102.50,
-            status: 'settled',
-            paymentMethod: 'UPI / Online',
-            items: [
-                { name: 'Basmati Rice 5kg', qty: 2, price: 500 },
-                { name: 'Sunflower Oil 2L', qty: 1, price: 250 }
-            ]
-        },
-        {
-            id: 'TXN-PAY-55012',
-            date: '15 Feb 2024, 09:15 AM',
-            seller: 'Tech Zone Electronics',
-            type: 'payout',
-            amount: 8500.00,
-            status: 'processed',
-            paymentMethod: 'IMPS Bank Transfer',
-            referenceId: 'UTR662110099',
-            bankDetails: 'HDFC Bank (XXXX 4421)'
-        },
-        {
-            id: 'TXN-REF-22091',
-            orderId: 'ORD-9882',
-            date: '14 Feb 2024, 04:20 PM',
-            seller: 'Organic Greens Co.',
-            type: 'refund',
-            amount: -450.00,
-            status: 'completed',
-            notes: 'Customer returned damaged products'
-        },
-        {
-            id: 'TXN-SET-10023',
-            orderId: 'ORD-9918',
-            date: '14 Feb 2024, 02:10 PM',
-            seller: 'Fresh Mart Superstore',
-            type: 'sale',
-            amount: 850.00,
-            commissionRate: 10,
-            commissionAmount: 85.00,
-            taxAmount: 15.30,
-            netPayable: 749.70,
-            status: 'pending',
-            paymentMethod: 'Cash (COD)'
-        },
-        {
-            id: 'TXN-SET-10022',
-            orderId: 'ORD-9915',
-            date: '13 Feb 2024, 10:45 AM',
-            seller: 'Dairy Pure Farms',
-            type: 'sale',
-            amount: 320.00,
-            commissionRate: 5,
-            commissionAmount: 16.00,
-            taxAmount: 5.76,
-            netPayable: 298.24,
-            status: 'settled',
-            paymentMethod: 'Online'
+    const fetchTransactions = async () => {
+        try {
+            setLoading(true);
+            const res = await adminApi.getSellerTransactions();
+            if (res.data.success) {
+                const data = res.data.results || [];
+                const mapped = data.map(t => ({
+                    id: t.reference || t._id,
+                    orderId: t.order?.orderId || null,
+                    date: new Date(t.createdAt).toLocaleString('en-IN', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }),
+                    seller: t.user?.shopName || t.user?.name || 'Unknown',
+                    type: t.type === 'Seller Earning' ? 'sale' :
+                        (t.type === 'Withdrawal' || t.type === 'Payout') ? 'payout' :
+                            t.type.toLowerCase(),
+                    amount: t.amount,
+                    commissionRate: t.order?.pricing?.platformFeeRate || 0,
+                    commissionAmount: t.order?.pricing?.platformFee || 0,
+                    taxAmount: t.order?.pricing?.tax || 0,
+                    netPayable: t.amount,
+                    status: t.status.toLowerCase(),
+                    paymentMethod: t.paymentMethod || 'Wallet',
+                    bankDetails: t.bankDetails || t.user?.bankDetails || 'N/A',
+                    items: t.order?.items?.map(item => ({
+                        name: item.product?.name || 'Unknown Item',
+                        qty: item.quantity,
+                        price: item.price
+                    })) || []
+                }));
+                setTransactions(mapped);
+            }
+        } catch (error) {
+            toast.error("Failed to fetch transactions");
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
-    ]);
+    };
+
+    const sellers = useMemo(() => {
+        const unique = Array.from(new Set(transactions.map(t => t.seller)));
+        return unique.map(name => ({ id: name, name }));
+    }, [transactions]);
 
     const stats = useMemo(() => {
         return {
             totalGross: transactions.filter(t => t.type === 'sale').reduce((acc, t) => acc + t.amount, 0),
-            totalCommission: transactions.filter(t => t.type === 'sale').reduce((acc, t) => acc + t.commissionAmount, 0),
+            totalCommission: transactions.filter(t => t.type === 'sale').reduce((acc, t) => acc + (t.commissionAmount || 0), 0),
             totalPayouts: Math.abs(transactions.filter(t => t.type === 'payout').reduce((acc, t) => acc + t.amount, 0)),
-            pendingSettlements: transactions.filter(t => t.status === 'pending').reduce((acc, t) => acc + t.amount, 0)
+            pendingSettlements: transactions.filter(t => t.status === 'pending').reduce((acc, t) => acc + Math.abs(t.amount), 0)
         };
     }, [transactions]);
 
@@ -147,6 +126,20 @@ const SellerTransactions = () => {
             alert('Financial ledger exported successfully.');
         }, 1500);
     };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+                <div className="relative">
+                    <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />
+                    <div className="absolute inset-0 h-12 w-12 text-orange-500/20 blur-sm animate-pulse">
+                        <Loader2 />
+                    </div>
+                </div>
+                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Synchronizing Ledger...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700">

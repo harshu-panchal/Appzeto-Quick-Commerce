@@ -107,7 +107,7 @@ const OrderDetails = () => {
       setDragX(0);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      navigate("/delivery/confirm-delivery");
+      navigate(`/delivery/confirm-delivery/${order.orderId}`);
     }
   };
 
@@ -145,15 +145,22 @@ const OrderDetails = () => {
           </Button>
           <h1 className="ds-h3 text-gray-800">Order #{order.orderId}</h1>
         </div>
-        <span
-          className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide ${step === 1
+        <div className="flex flex-col items-end">
+          <span
+            className={`text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide ${step === 1
               ? "bg-blue-100 text-blue-700"
               : step === 2
                 ? "bg-orange-100 text-orange-700"
                 : "bg-green-100 text-green-700"
-            }`}>
-          {step === 1 ? "Pickup" : step === 2 ? "At Store" : "Delivery"}
-        </span>
+              }`}>
+            {step === 1 ? "Pickup" : step === 2 ? "At Store" : "Delivery"}
+          </span>
+          {(order.payment?.method?.toLowerCase() === 'cash' || order.payment?.method?.toLowerCase() === 'cod') && (
+            <span className="mt-1 bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded shadow-sm animate-pulse">
+              COLLECT CASH: ₹{order.pricing?.total}
+            </span>
+          )}
+        </div>
       </header>
 
       {/* Map Placeholder */}
@@ -308,9 +315,17 @@ const OrderDetails = () => {
                       <h2 className="font-bold text-gray-800">
                         Customer Details
                       </h2>
-                      <p className="text-xs text-blue-600 font-medium">
-                        Payment: {order.payment?.method?.toUpperCase() || "PENDING"}
-                      </p>
+                      <div className="flex items-center space-x-2 mt-0.5">
+                        <p className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${(order.payment?.method?.toLowerCase() === 'cash' || order.payment?.method?.toLowerCase() === 'cod')
+                            ? "bg-orange-50 text-orange-700 border-orange-200"
+                            : "bg-green-50 text-green-700 border-green-200"
+                          }`}>
+                          {order.payment?.method?.toUpperCase() || "PENDING"}
+                        </p>
+                        <p className="text-[10px] text-gray-400 font-medium">
+                          Bill: ₹{order.pricing?.total}
+                        </p>
+                      </div>
                     </div>
                   </div>
                   <div className="flex space-x-2">

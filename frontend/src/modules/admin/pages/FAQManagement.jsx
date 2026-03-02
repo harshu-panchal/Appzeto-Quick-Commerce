@@ -29,6 +29,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@shared/components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { adminApi } from '../services/adminApi';
+import { useEffect } from 'react';
 
 const FAQManagement = () => {
     const { showToast } = useToast();
@@ -44,74 +46,38 @@ const FAQManagement = () => {
     const [newFaq, setNewFaq] = useState({
         question: '',
         answer: '',
-        category: 'General',
+        category: 'Customer',
         status: 'published'
     });
 
+    const [isLoading, setIsLoading] = useState(true);
     const [newCategoryName, setNewCategoryName] = useState('');
 
-    // Mock Categories State
+    // Categories State
     const [categories, setCategories] = useState([
-        { id: 1, name: 'General', color: 'sky' },
-        { id: 2, name: 'Orders', color: 'emerald' },
+        { id: 1, name: 'Customer', color: 'sky' },
+        { id: 2, name: 'Seller', color: 'indigo' },
         { id: 3, name: 'Delivery', color: 'amber' },
-        { id: 4, name: 'Payments', color: 'rose' },
-        { id: 5, name: 'Sellers', color: 'indigo' },
+        { id: 4, name: 'Orders', color: 'emerald' },
     ]);
 
-    // Mock FAQ Data State
-    const [faqs, setFaqs] = useState([
-        {
-            id: 'FAQ-001',
-            question: 'How do I track my order in real-time?',
-            answer: 'You can track your order by clicking on the "Track Order" button in your active orders section. We provide real-time GPS tracking of the delivery partner once they pick up your package.',
-            category: 'Orders',
-            status: 'published',
-            views: 4250,
-            lastUpdated: '2 days ago',
-            createdAt: new Date('2023-12-01')
-        },
-        {
-            id: 'FAQ-002',
-            question: 'What are the delivery charges for late-night orders?',
-            answer: 'Delivery charges vary based on distance and demand. During late hours (11 PM - 4 AM), a small surge fee might be applicable to ensure delivery availability.',
-            category: 'Delivery',
-            status: 'published',
-            views: 1280,
-            lastUpdated: '1 week ago',
-            createdAt: new Date('2023-12-10')
-        },
-        {
-            id: 'FAQ-003',
-            question: 'Can I change my delivery address after placing an order?',
-            answer: 'Address changes are allowed only if the seller has not yet accepted the order. Once accepted or out for delivery, address changes are restricted for security reasons.',
-            category: 'Delivery',
-            status: 'draft',
-            views: 50,
-            lastUpdated: 'Just now',
-            createdAt: new Date('2024-02-15')
-        },
-        {
-            id: 'FAQ-004',
-            question: 'How do I become a verified seller on Appzeto?',
-            answer: 'To become a verified seller, you need to submit your business registration documents, GSTIN, and identity proof through the Seller Onboarding portal.',
-            category: 'Sellers',
-            status: 'published',
-            views: 3100,
-            lastUpdated: '3 days ago',
-            createdAt: new Date('2024-01-05')
-        },
-        {
-            id: 'FAQ-005',
-            question: 'Is there a minimum order value for free delivery?',
-            answer: 'Yes, orders above ₹499 qualify for free delivery within a 5km radius. Additional distance-based charges may apply for further locations.',
-            category: 'General',
-            status: 'published',
-            views: 8900,
-            lastUpdated: '5 days ago',
-            createdAt: new Date('2023-11-20')
+    const [faqs, setFaqs] = useState([]);
+
+    useEffect(() => {
+        fetchFaqs();
+    }, []);
+
+    const fetchFaqs = async () => {
+        setIsLoading(true);
+        try {
+            const response = await adminApi.getFAQs();
+            setFaqs(response.data.results || []);
+        } catch (error) {
+            showToast('Failed to fetch FAQs', 'error');
+        } finally {
+            setIsLoading(false);
         }
-    ]);
+    };
 
     // Computed Categories with Counts
     const categoriesWithCounts = useMemo(() => {
@@ -149,30 +115,24 @@ const FAQManagement = () => {
     }, [faqs, searchTerm, activeCategory, sortBy]);
 
     // Actions
-    const handleSaveFaq = (e) => {
+    const handleSaveFaq = async (e) => {
         e.preventDefault();
 
-        if (editingFaqId) {
-            // Update existing
-            setFaqs(faqs.map(f => f.id === editingFaqId ? { ...f, ...newFaq } : f));
-            showToast(`FAQ ${editingFaqId} updated successfully`, 'success');
-        } else {
-            // Add new
-            const id = `FAQ-00${faqs.length + 1}`;
-            const entry = {
-                ...newFaq,
-                id,
-                views: 0,
-                lastUpdated: 'Just now',
-                createdAt: new Date()
-            };
-            setFaqs([entry, ...faqs]);
-            showToast(`FAQ ${id} architected successfully`, 'success');
+        try {
+            if (editingFaqId) {
+                await adminApi.updateFAQ(editingFaqId, newFaq);
+                showToast(`FAQ updated successfully`, 'success');
+            } else {
+                await adminApi.createFAQ(newFaq);
+                showToast(`FAQ created successfully`, 'success');
+            }
+            fetchFaqs();
+            setIsAddModalOpen(false);
+            setEditingFaqId(null);
+            setNewFaq({ question: '', answer: '', category: 'Customer', status: 'published' });
+        } catch (error) {
+            showToast('Failed to save FAQ', 'error');
         }
-
-        setIsAddModalOpen(false);
-        setEditingFaqId(null);
-        setNewFaq({ question: '', answer: '', category: 'General', status: 'published' });
     };
 
     const handleEditClick = (faq) => {
@@ -182,18 +142,29 @@ const FAQManagement = () => {
             category: faq.category,
             status: faq.status
         });
-        setEditingFaqId(faq.id);
+        setEditingFaqId(faq._id);
         setIsAddModalOpen(true);
     };
 
-    const handleDeleteFaq = (id) => {
-        setFaqs(faqs.filter(f => f.id !== id));
-        showToast('Query deleted from history', 'warning');
+    const handleDeleteFaq = async (id) => {
+        try {
+            await adminApi.deleteFAQ(id);
+            fetchFaqs();
+            showToast('FAQ deleted successfully', 'warning');
+        } catch (error) {
+            showToast('Failed to delete FAQ', 'error');
+        }
     };
 
-    const handleToggleStatus = (id) => {
-        setFaqs(faqs.map(f => f.id === id ? { ...f, status: f.status === 'published' ? 'draft' : 'published' } : f));
-        showToast('Visibility state updated', 'info');
+    const handleToggleStatus = async (faq) => {
+        try {
+            const newStatus = faq.status === 'published' ? 'draft' : 'published';
+            await adminApi.updateFAQ(faq._id, { status: newStatus });
+            fetchFaqs();
+            showToast('Visibility state updated', 'info');
+        } catch (error) {
+            showToast('Failed to update status', 'error');
+        }
     };
 
     const handleAddCategory = () => {
@@ -367,7 +338,7 @@ const FAQManagement = () => {
                                                                 <span className="text-[10px] font-bold text-slate-400">{faq.views.toLocaleString()}</span>
                                                             </div>
                                                             <button
-                                                                onClick={() => handleToggleStatus(faq.id)}
+                                                                onClick={() => handleToggleStatus(faq)}
                                                                 title={faq.status === 'published' ? 'Set as Draft' : 'Publish Now'}
                                                                 className="p-2 transition-all text-slate-400 hover:text-sky-500 hover:bg-sky-50 rounded-lg"
                                                             >
@@ -380,7 +351,7 @@ const FAQManagement = () => {
                                                                 <Edit3 className="h-4 w-4" />
                                                             </button>
                                                             <button
-                                                                onClick={() => handleDeleteFaq(faq.id)}
+                                                                onClick={() => handleDeleteFaq(faq._id)}
                                                                 className="p-2 transition-all text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
@@ -442,7 +413,7 @@ const FAQManagement = () => {
                 onClose={() => {
                     setIsAddModalOpen(false);
                     setEditingFaqId(null);
-                    setNewFaq({ question: '', answer: '', category: 'General', status: 'published' });
+                    setNewFaq({ question: '', answer: '', category: 'Customer', status: 'published' });
                 }}
                 title={editingFaqId ? `Edit Question: ${editingFaqId}` : "Create New FAQ"}
                 size="lg"

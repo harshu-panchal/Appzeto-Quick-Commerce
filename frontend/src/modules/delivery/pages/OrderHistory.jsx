@@ -26,7 +26,8 @@ const OrderHistory = () => {
       setLoading(true);
       const response = await deliveryApi.getOrderHistory({ status: filter });
       if (response.data.success) {
-        setOrders(response.data.result);
+        // Handle plural 'results' from backend for array data
+        setOrders(response.data.results || response.data.result || []);
       }
     } catch (error) {
       toast.error("Failed to fetch order history");

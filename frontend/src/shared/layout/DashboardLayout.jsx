@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { sellerApi } from '@/modules/seller/services/sellerApi';
+import { useAuth } from '@/core/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BellRing, Check, X, Clock } from 'lucide-react';
 import { toast } from 'sonner';
@@ -12,9 +13,16 @@ const DashboardLayout = ({ children, navItems, title }) => {
     const [shownOrderIds, setShownOrderIds] = useState(new Set());
     const [timeLeft, setTimeLeft] = useState(60);
     const [isFirstLoad, setIsFirstLoad] = useState(true);
+    const { role } = useAuth();
 
     useEffect(() => {
         const fetchOrders = async () => {
+            // Only poll for sellers, as per user request (Admin should not get these alerts)
+            if (role !== 'seller') {
+                console.log("Seller Alert Polling - Skipped (Role is:", role, ")");
+                return;
+            }
+
             try {
                 const res = await sellerApi.getOrders();
                 if (res.data.success) {
@@ -30,6 +38,8 @@ const DashboardLayout = ({ children, navItems, title }) => {
                     } else {
                         // Find a truly new pending order
                         const newOrder = pendingOrders.find(o => !shownOrderIds.has(o.orderId));
+                        console.log(`Seller Alert Polling - Pending: ${pendingOrders.length}, New Detected: ${newOrder ? newOrder.orderId : 'None'}`);
+
                         if (newOrder && !newOrderAlert) {
                             setNewOrderAlert(newOrder);
                             setShownOrderIds(prev => new Set(prev).add(newOrder.orderId));
@@ -50,7 +60,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
 
         const pollInterval = setInterval(fetchOrders, 10000);
         return () => clearInterval(pollInterval);
-    }, [shownOrderIds, newOrderAlert, isFirstLoad]);
+    }, [shownOrderIds, newOrderAlert, isFirstLoad, role]);
 
     // Timer logic for New Order Alert
     useEffect(() => {

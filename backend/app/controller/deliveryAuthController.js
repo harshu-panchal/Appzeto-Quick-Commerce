@@ -25,8 +25,13 @@ export const signupDelivery = async (req, res) => {
         const {
             name, phone, vehicleType,
             email, address, vehicleNumber,
+            drivingLicenseNumber,
             accountHolder, accountNumber, ifsc
         } = req.body;
+
+        import('fs').then(fs => {
+            fs.appendFileSync('signup_debug.json', JSON.stringify({ timestamp: new Date(), body: req.body }, null, 2) + '\n');
+        });
 
         if (!name || !phone) {
             return handleResponse(res, 400, "Name and phone are required");
@@ -63,6 +68,7 @@ export const signupDelivery = async (req, res) => {
             email,
             address,
             vehicleNumber,
+            drivingLicenseNumber,
             accountHolder,
             accountNumber,
             ifsc,
@@ -189,7 +195,7 @@ export const getDeliveryProfile = async (req, res) => {
 ================================ */
 export const updateDeliveryProfile = async (req, res) => {
     try {
-        const { name, vehicleType, vehicleNumber, currentArea, isOnline } = req.body;
+        const { name, vehicleType, vehicleNumber, drivingLicenseNumber, currentArea, isOnline } = req.body;
 
         const delivery = await Delivery.findById(req.user.id);
         if (!delivery) {
@@ -199,6 +205,7 @@ export const updateDeliveryProfile = async (req, res) => {
         if (name) delivery.name = name;
         if (vehicleType) delivery.vehicleType = vehicleType;
         if (vehicleNumber) delivery.vehicleNumber = vehicleNumber;
+        if (drivingLicenseNumber) delivery.drivingLicenseNumber = drivingLicenseNumber;
         if (currentArea) delivery.currentArea = currentArea;
         if (typeof isOnline !== 'undefined') delivery.isOnline = isOnline;
 

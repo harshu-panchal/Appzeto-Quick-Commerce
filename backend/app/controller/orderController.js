@@ -38,8 +38,7 @@ export const placeOrder = async (req, res) => {
         // 3. Find seller from products (taking the first item's seller for simplicity)
         const firstProduct = await Product.findById(orderItems[0].product);
         const sellerId = firstProduct ? firstProduct.sellerId : null;
-        console.log("Order Placement - Seller ID:", sellerId);
-        console.log("Order Placement - First Product:", firstProduct?.name);
+        console.log(`Order Placement [${orderId}] - Found Seller ID: ${sellerId} from product: ${firstProduct?.name}`);
 
         // 4. Create the order
         const newOrder = new Order({
@@ -115,7 +114,7 @@ export const placeOrder = async (req, res) => {
             }
 
             // Create notification for seller
-            await Notification.create({
+            const sellerNotif = await Notification.create({
                 recipient: sellerId,
                 recipientModel: "Seller",
                 title: "New Order Received!",
@@ -123,6 +122,9 @@ export const placeOrder = async (req, res) => {
                 type: "order",
                 data: { orderId: newOrder._id }
             });
+            console.log(`Order Placement [${orderId}] - Created Notification ID: ${sellerNotif._id} for Seller: ${sellerId}`);
+        } else {
+            console.warn(`Order Placement [${orderId}] - WARNING: No Seller ID found, skipping notification.`);
         }
 
         // 6. Clear the customer's cart after order is placed
@@ -283,11 +285,26 @@ export const updateOrderStatus = async (req, res) => {
                     type: "Delivery Earning",
                     amount: deliveryEarning,
                     status: "Settled",
-                    reference: `DEL-${orderId}`
+                    reference: `DEL-ERN-${orderId}`
                 });
+
+                // --- NEW: Cash Collection Logic for COD ---
+                if (order.payment?.method?.toLowerCase() === 'cash' || order.payment?.method?.toLowerCase() === 'cod') {
+                    console.log("Creating Cash Collection Transaction for order:", orderId);
+                    await Transaction.create({
+                        user: order.deliveryBoy,
+                        userModel: "Delivery",
+                        order: order._id,
+                        type: "Cash Collection",
+                        amount: order.pricing.total,
+                        status: "Settled", // Settled means rider has the cash
+                        reference: `CASH-COL-${orderId}`
+                    });
+                }
             }
         }
 
+        console.log("Saving order with new status:", status);
         await order.save();
 
         if (status === 'confirmed' && role === 'seller') {
@@ -365,10 +382,12 @@ export const getAvailableOrders = async (req, res) => {
         }
 
         // 3. Fetch confirmed/packed orders from these sellers with no delivery boy
+        // AND exclude orders already skipped by this partner
         const orders = await Order.find({
             status: { $in: ["confirmed", "packed"] }, // Seller has accepted
             deliveryBoy: null,
-            seller: { $in: sellerIds }
+            seller: { $in: sellerIds },
+            skippedBy: { $ne: userId } // Exclude if already skipped by this user
         })
             .sort({ createdAt: -1 })
             .populate("customer", "name phone")
@@ -423,6 +442,36 @@ export const acceptOrder = async (req, res) => {
         });
 
         return handleResponse(res, 200, "Order accepted successfully", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   SKIP ORDER (Delivery Boy)
+================================ */
+export const skipOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+
+        if (role !== 'delivery' && role !== 'admin') {
+            return handleResponse(res, 403, "Access denied.");
+        }
+
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        // Add user to skippedBy array if not already there
+        if (!order.skippedBy.includes(userId)) {
+            order.skippedBy.push(userId);
+            await order.save();
+        }
+
+        return handleResponse(res, 200, "Order skipped successfully");
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

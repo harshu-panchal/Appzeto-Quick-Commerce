@@ -5,7 +5,9 @@ export const adminApi = {
     signup: (data) => axiosInstance.post('/admin/signup', data),
     getStats: () => axiosInstance.get('/admin/stats'),
     getUsers: () => axiosInstance.get('/admin/users'),
+    getUserById: (id) => axiosInstance.get(`/admin/users/${id}`),
     approveSeller: (id) => axiosInstance.post(`/admin/approve-seller/${id}`),
+    getAdminWalletData: () => axiosInstance.get('/admin/wallet-data'),
     getReports: () => axiosInstance.get('/admin/reports'),
     getProfile: () => axiosInstance.get('/admin/profile'),
     updateProfile: (data) => axiosInstance.put('/admin/profile', data),
@@ -44,4 +46,34 @@ export const adminApi = {
     // Reviews
     getPendingReviews: () => axiosInstance.get('/reviews/admin/pending'),
     updateReviewStatus: (id, status) => axiosInstance.patch(`/reviews/admin/status/${id}`, { status }),
+
+    // Delivery Partners
+    getDeliveryPartners: (params) => axiosInstance.get('/admin/delivery-partners', { params }),
+    approveDeliveryPartner: (id) => axiosInstance.patch(`/admin/delivery-partners/approve/${id}`),
+    rejectDeliveryPartner: (id) => axiosInstance.delete(`/admin/delivery-partners/reject/${id}`),
+    getActiveFleet: () => axiosInstance.get('/admin/active-fleet'),
+
+    // Delivery Payouts / Funds
+    getDeliveryTransactions: () => axiosInstance.get('/admin/delivery-transactions'),
+    settleTransaction: (id) => axiosInstance.put(`/admin/transactions/${id}/settle`),
+    bulkSettleDelivery: () => axiosInstance.put('/admin/transactions/bulk-settle-delivery'),
+
+    // Seller Withdrawals
+    getSellerWithdrawals: () => axiosInstance.get('/admin/seller-withdrawals'),
+    getDeliveryWithdrawals: () => axiosInstance.get('/admin/delivery-withdrawals'),
+    getSellerTransactions: () => axiosInstance.get('/admin/seller-transactions'),
+    updateWithdrawalStatus: (id, data) => axiosInstance.put(`/admin/withdrawals/${id}`, data),
+    // Cash Collection Hub
+    getDeliveryCashBalances: () => axiosInstance.get('/admin/delivery-cash'),
+    getRiderCashDetails: (id) => axiosInstance.get(`/admin/rider-cash-details/${id}`),
+    settleRiderCash: (data) => axiosInstance.post('/admin/settle-cash', data),
+    getCashSettlementHistory: () => axiosInstance.get('/admin/cash-history'),
+
+    // FAQ Management
+    getFAQs: (params) => axiosInstance.get('/admin/faqs', { params }),
+    createFAQ: (data) => axiosInstance.post('/admin/faqs', data),
+    updateFAQ: (id, data) => axiosInstance.put(`/admin/faqs/${id}`, data),
+    deleteFAQ: (id) => axiosInstance.delete(`/admin/faqs/${id}`),
+    // Public FAQs (for profile pages, etc.)
+    getPublicFAQs: (params) => axiosInstance.get('/public/faqs', { params }),
 };

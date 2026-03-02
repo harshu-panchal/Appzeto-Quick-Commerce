@@ -1,6 +1,6 @@
-// Simplified Customer Profile & Order History
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { adminApi } from '../services/adminApi';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
@@ -49,25 +49,36 @@ const CustomerDetail = () => {
     const [notifMessage, setNotifMessage] = useState('');
     const [notes, setNotes] = useState('Prefer morning deliveries. Use the building entrance on the north side.');
 
-    // Mock Data in State
-    const [customer, setCustomer] = useState({
-        id: id || 'CUST-001',
-        name: 'Anjali Sharma',
-        email: 'anjali.s@example.com',
-        phone: '+91 98765-43210',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anjali',
-        totalOrders: 42,
-        totalSpent: 24500,
-        joinedDate: '12 Jan 2023',
-        status: 'active',
-        lastOrder: '2 hours ago',
-        addresses: [
-            { id: 1, type: 'Home', address: 'Flat 402, Green Valley Apartments, Mumbai, Maharashtra 400001', isDefault: true },
-            { id: 2, type: 'Work', address: '12th Floor, Tech Park, Powai, Mumbai, Maharashtra 400076', isDefault: false }
-        ]
-    });
+    const [customer, setCustomer] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [orders, setOrders] = useState([]);
 
-    const [editForm, setEditForm] = useState({ ...customer });
+    const [editForm, setEditForm] = useState({ name: '', email: '', phone: '' });
+
+    useEffect(() => {
+        const fetchCustomerDetails = async () => {
+            try {
+                setLoading(true);
+                const { data } = await adminApi.getUserById(id);
+                if (data.success) {
+                    const customerData = data.result;
+                    setCustomer(customerData);
+                    setOrders(customerData.recentOrders || []);
+                    setEditForm({
+                        name: customerData.name,
+                        email: customerData.email,
+                        phone: customerData.phone
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching customer details:", error);
+                showToast("Failed to load customer profile", "error");
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (id) fetchCustomerDetails();
+    }, [id]);
 
     const handleRefresh = () => {
         setIsRefreshing(true);
@@ -106,18 +117,31 @@ const CustomerDetail = () => {
         showToast('Archive export initiated. CSV will be ready shortly.', 'info');
     };
 
-    const orders = [
-        { id: '#ORD-9921', items: '2 Items', amount: 1250, date: '15 Feb, 11:30 AM', status: 'delivered' },
-        { id: '#ORD-9882', items: '1 Item', amount: 450, date: '14 Feb, 04:20 PM', status: 'returned' },
-        { id: '#ORD-9812', items: '5 Items', amount: 3200, date: '10 Feb, 02:10 PM', status: 'delivered' },
-        { id: '#ORD-9750', items: '3 Items', amount: 1800, date: '05 Feb, 09:15 AM', status: 'delivered' },
-        { id: '#ORD-9690', items: '1 Item', amount: 250, date: '01 Feb, 06:45 PM', status: 'cancelled' },
-    ];
 
-    const filteredOrders = orders.filter(o =>
-        o.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
-        o.status.toLowerCase().includes(orderSearch.toLowerCase())
-    ).slice(0, visibleOrders);
+    const filteredOrders = useMemo(() => {
+        return orders.filter(o =>
+            (o.id || '').toLowerCase().includes(orderSearch.toLowerCase()) ||
+            (o.status || '').toLowerCase().includes(orderSearch.toLowerCase())
+        ).slice(0, visibleOrders);
+    }, [orders, orderSearch, visibleOrders]);
+
+    if (loading) {
+        return (
+            <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
+                <RotateCw className="h-10 w-10 text-primary animate-spin" />
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Profile...</p>
+            </div>
+        );
+    }
+
+    if (!customer) {
+        return (
+            <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
+                <p className="text-lg font-bold text-gray-400">Customer not found</p>
+                <button onClick={() => navigate('/admin/customers')} className="text-primary font-bold">Back to Customers</button>
+            </div>
+        );
+    }
 
     return (
         <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
@@ -173,15 +197,17 @@ const CustomerDetail = () => {
                         <div className="flex-1 text-center md:text-left space-y-6">
                             <div>
                                 <h3 className="text-3xl font-black text-slate-900">{customer.name}</h3>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Customer since {customer.joinedDate}</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                    Customer since {new Date(customer.joinedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {[
-                                    { label: 'Total Spend', value: '₹14,250', trend: '+12%', icon: IndianRupee, color: 'emerald' },
-                                    { label: 'Orders Placed', value: customer.totalOrders, trend: '+2', icon: ShoppingBag, color: 'blue' },
-                                    { label: 'Average Spend', value: '₹2,375', trend: '+5%', icon: TrendingUp, color: 'indigo' },
-                                    { label: 'Delivery Success', value: '100%', trend: 'Stable', icon: CheckCircle2, color: 'fuchsia' },
+                                    { label: 'Total Spend', value: `₹${(customer.totalSpent || 0).toLocaleString()}`, trend: 'Lifetime', icon: IndianRupee, color: 'emerald' },
+                                    { label: 'Orders Placed', value: customer.totalOrders || 0, trend: 'Lifetime', icon: ShoppingBag, color: 'blue' },
+                                    { label: 'Average Spend', value: `₹${customer.totalOrders > 0 ? Math.round(customer.totalSpent / customer.totalOrders).toLocaleString() : 0}`, trend: 'Per Order', icon: TrendingUp, color: 'indigo' },
+                                    { label: 'Account Status', value: (customer.status || '').toUpperCase(), trend: 'Current', icon: CheckCircle2, color: 'fuchsia' },
                                 ].map((stat, i) => (
                                     <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center">
                                         <div className={cn("p-2 rounded-full mb-2",
@@ -207,7 +233,7 @@ const CustomerDetail = () => {
                     <Card className="p-6 bg-sky-600 text-white rounded-xl border-none shadow-lg shadow-sky-200 relative overflow-hidden group">
                         <div className="relative z-10">
                             <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Lifetime Value</p>
-                            <h4 className="text-3xl font-black">₹{customer.ltv.toLocaleString()}</h4>
+                            <h4 className="text-3xl font-black">₹{(customer.totalSpent || 0).toLocaleString()}</h4>
                             <div className="mt-4 flex items-center gap-2">
                                 <div className="p-1 px-2 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-tighter">
                                     {customer.totalOrders} Orders
@@ -226,7 +252,9 @@ const CustomerDetail = () => {
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-slate-700">Last Order placed</p>
-                                <p className="text-[10px] font-semibold text-slate-400">{customer.lastOrder}</p>
+                                <p className="text-[10px] font-semibold text-slate-400">
+                                    {customer.lastOrderDate ? new Date(customer.lastOrderDate).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Never'}
+                                </p>
                             </div>
                         </div>
                     </Card>
@@ -304,12 +332,14 @@ const CustomerDetail = () => {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-black text-slate-900">{order.id}</p>
-                                                        <p className="text-[10px] font-bold text-slate-400">{order.items}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400">{order.itemsCount} Items</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="py-5">
-                                                <p className="text-[10px] font-black text-slate-400 uppercase">{order.date}</p>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase">
+                                                    {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                </p>
                                             </td>
                                             <td className="py-5 text-center">
                                                 <Badge variant={order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'danger' : 'warning'} className="text-[8px] font-black">
@@ -317,7 +347,7 @@ const CustomerDetail = () => {
                                                 </Badge>
                                             </td>
                                             <td className="py-5 text-right font-black text-slate-900 pr-8">
-                                                ₹{order.amount.toLocaleString()}
+                                                ₹{(order.amount || 0).toLocaleString()}
                                             </td>
                                         </tr>
                                     ))}

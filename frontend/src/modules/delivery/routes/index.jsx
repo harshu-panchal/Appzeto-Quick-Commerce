@@ -17,6 +17,7 @@ import Documents from "../pages/profile/Documents";
 import SafetyPrivacy from "../pages/profile/SafetyPrivacy";
 import Settings from "../pages/profile/Settings";
 import HelpSupport from "../pages/profile/HelpSupport";
+import Withdrawals from "../pages/profile/Withdrawals";
 import Notifications from "../pages/Notifications";
 
 const DeliveryRoutes = () => {
@@ -29,7 +30,7 @@ const DeliveryRoutes = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="order-details/:orderId" element={<OrderDetails />} />
         <Route path="navigation" element={<Navigation />} />
-        <Route path="confirm-delivery" element={<DeliveryConfirmation />} />
+        <Route path="confirm-delivery/:orderId" element={<DeliveryConfirmation />} />
         <Route path="earnings" element={<Earnings />} />
         <Route path="history" element={<OrderHistory />} />
         <Route path="profile" element={<Profile />} />
@@ -40,6 +41,7 @@ const DeliveryRoutes = () => {
         <Route path="profile/safety-privacy" element={<SafetyPrivacy />} />
         <Route path="profile/settings" element={<Settings />} />
         <Route path="profile/help-support" element={<HelpSupport />} />
+        <Route path="profile/withdrawals" element={<Withdrawals />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="/" element={<Navigate to="dashboard" replace />} />
       </Route>

@@ -17,7 +17,11 @@ import {
     Package,
     MapPin,
     IndianRupee,
-    ChevronDown
+    ChevronDown,
+    ShoppingBag,
+    Clock,
+    CheckCircle2,
+    XCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@shared/components/ui/Toast';
@@ -160,20 +164,17 @@ const OrdersList = () => {
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { label: 'Total Earnings', value: '₹4.2L', trend: '+12.5%', icon: IndianRupee, color: 'emerald' },
-                    { label: 'Active Orders', value: orders.filter(o => ['pending', 'processed', 'out-for-delivery'].includes(o.status)).length, trend: '+5', icon: ShoppingBag, color: 'blue' },
-                    { label: 'Average Prep Time', value: '18m', trend: '-2m', icon: Clock, color: 'amber' },
-                    { label: 'Delivery Rate', value: '98.2%', trend: '+0.4%', icon: CheckCircle2, color: 'fuchsia' },
-                ].map((stat, i) => (
-                    <Card key={i} className="p-5 border-none shadow-sm ring-1 ring-slate-100 bg-white group hover:ring-fuchsia-200 transition-all">
+                {stats.map((stat, i) => (
+                    <Card key={i} className="p-5 border-none shadow-sm ring-1 ring-slate-100 bg-white group hover:ring-fuchsia-200 transition-all text-left">
                         <div className="flex items-center justify-between mb-4">
                             <div className={cn("p-2 rounded-xl", `bg-${stat.color}-50`)}>
                                 <stat.icon className={cn("h-5 w-5", `text-${stat.color}-600`)} />
                             </div>
-                            <Badge variant="success" className="bg-emerald-50 text-emerald-600 border-none font-bold text-[10px]">
-                                {stat.trend}
-                            </Badge>
+                            {stat.trend && (
+                                <Badge variant="success" className="bg-emerald-50 text-emerald-600 border-none font-bold text-[10px]">
+                                    {stat.trend}
+                                </Badge>
+                            )}
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>

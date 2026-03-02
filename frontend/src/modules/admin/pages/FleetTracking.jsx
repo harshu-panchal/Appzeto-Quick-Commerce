@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import Button from '@shared/components/ui/Button';
@@ -13,63 +13,45 @@ import {
     HiOutlineTruck
 } from 'react-icons/hi2';
 import { motion, AnimatePresence } from 'framer-motion';
+import { adminApi } from '../services/adminApi';
+import { toast } from 'sonner';
 
-const MOCK_FLEET = [
-    {
-        id: 'ORD-2023-101',
-        status: 'On the Way',
-        deliveryBoy: {
-            name: 'Rahul Sharma',
-            phone: '+91 98765 43210',
-            image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop',
-            id: 'DP-7721',
-            rating: 4.9,
-            joined: 'Jan 2023',
-            vehicle: 'Electric Scooter (RJ14-ES-1234)'
-        },
-        seller: { name: 'Fresh Mart Supermarket' },
-        customer: { name: 'Amit Sharma', phone: '+91 88776 65544' },
-        lastUpdate: '2 mins ago'
-    },
-    {
-        id: 'ORD-2023-112',
-        status: 'At Pickup',
-        deliveryBoy: {
-            name: 'Amit Patel',
-            phone: '+91 87654 32109',
-            image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
-            id: 'Dp-4120',
-            rating: 4.7,
-            joined: 'Mar 2023',
-            vehicle: 'Bicycle'
-        },
-        seller: { name: 'The Organic Store' },
-        customer: { name: 'Priya Verma', phone: '+91 77665 54433' },
-        lastUpdate: 'Just now'
-    },
-    {
-        id: 'ORD-2023-105',
-        status: 'Assigned',
-        deliveryBoy: {
-            name: 'Suresh Kumar',
-            phone: '+91 76543 21098',
-            image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop',
-            id: 'DP-4492',
-            rating: 4.8,
-            joined: 'Dec 2022',
-            vehicle: 'Motorcycle (RJ14-MK-9988)'
-        },
-        seller: { name: 'Daily Needs Grocery' },
-        customer: { name: 'Rahul Kapoor', phone: '+91 66554 43322' },
-        lastUpdate: '5 mins ago'
-    }
-];
+const formatTimeDistance = (date) => {
+    if (!date) return 'N/A';
+    const diff = Math.floor((new Date() - new Date(date)) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} mins ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    return `${Math.floor(diff / 86400)} days ago`;
+};
 
 const FleetTrackingTable = () => {
+    const [fleet, setFleet] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBoy, setSelectedBoy] = useState(null);
 
-    const filteredFleet = MOCK_FLEET.filter(item =>
+    const fetchFleet = async () => {
+        setIsLoading(true);
+        try {
+            const response = await adminApi.getActiveFleet();
+            setFleet(response.data.results || []);
+        } catch (error) {
+            console.error('Fetch Fleet Error:', error);
+            toast.error('Failed to fetch live fleet data');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchFleet();
+        // Refresh every 30 seconds for live feel
+        const interval = setInterval(fetchFleet, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const filteredFleet = fleet.filter(item =>
         item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.deliveryBoy.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -143,7 +125,9 @@ const FleetTrackingTable = () => {
                                         </Badge>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <span className="text-xs text-slate-500 font-medium">{item.lastUpdate}</span>
+                                        <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                                            {formatTimeDistance(item.lastUpdate)}
+                                        </span>
                                     </td>
                                 </tr>
                             ))}

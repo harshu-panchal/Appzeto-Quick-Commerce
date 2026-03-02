@@ -7,7 +7,8 @@ import {
     updateOrderStatus,
     getSellerOrders,
     getAvailableOrders,
-    acceptOrder
+    acceptOrder,
+    skipOrder
 } from "../controller/orderController.js";
 // Assuming there's a middleware to verify customer token
 import { verifyToken } from "../middleware/authMiddleware.js";
@@ -28,5 +29,6 @@ router.put("/status/:orderId", verifyToken, updateOrderStatus);
 // Delivery routes
 router.get("/available", verifyToken, allowRoles('admin', 'delivery'), getAvailableOrders);
 router.put("/accept/:orderId", verifyToken, allowRoles('admin', 'delivery'), acceptOrder);
+router.put("/skip/:orderId", verifyToken, allowRoles('admin', 'delivery'), skipOrder);
 
 export default router;

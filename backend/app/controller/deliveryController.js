@@ -1,5 +1,6 @@
 import Order from "../models/order.js";
 import Transaction from "../models/transaction.js";
+import Delivery from "../models/delivery.js";
 import handleResponse from "../utils/helper.js";
 import mongoose from "mongoose";
 
@@ -8,29 +9,73 @@ import mongoose from "mongoose";
 ================================ */
 export const getDeliveryStats = async (req, res) => {
     try {
-        const deliveryBoyId = req.user.id;
+        const deliveryBoyId = new mongoose.Types.ObjectId(req.user.id);
+        console.log(`[Stats] Fetching for Partner: ${deliveryBoyId}`);
+
+        // Auto-init test funds for target account if missing
+        try {
+            const deliveryBoy = await Delivery.findById(deliveryBoyId);
+            if (deliveryBoy && deliveryBoy.phone === "6263514141") {
+                console.log("[Stats] Target test account detected: 6263514141");
+                const existing = await Transaction.findOne({ user: deliveryBoyId, reference: "TEST-INIT-FUNDS" });
+                if (!existing) {
+                    await Transaction.create({
+                        user: deliveryBoyId, userModel: "Delivery", type: "Delivery Earning",
+                        amount: 500, status: "Settled", reference: "TEST-INIT-FUNDS"
+                    });
+                    await Transaction.create({
+                        user: deliveryBoyId, userModel: "Delivery", type: "Incentive",
+                        amount: 50, status: "Settled", reference: "TEST-INIT-INC"
+                    });
+                    console.log("[Stats] Initialized test funds for 6263514141");
+                } else {
+                    console.log("[Stats] Test funds already exist for 6263514141");
+                }
+            }
+        } catch (e) { console.error("[Stats] Init Error:", e.message); }
 
         const orders = await Order.find({ deliveryBoy: deliveryBoyId, status: 'delivered' });
         const totalDeliveries = orders.length;
+        console.log(`[Stats] Delivered Orders found: ${totalDeliveries}`);
 
-        // Today's earnings
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Today's earnings - Using a more robust date check
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
 
-        const todayTransactions = await Transaction.find({
+        const allTransactions = await Transaction.find({
             user: deliveryBoyId,
             userModel: 'Delivery',
-            createdAt: { $gte: today },
-            status: 'Settled'
+            createdAt: { $gte: startOfToday }
         });
 
-        const todayEarnings = todayTransactions.reduce((acc, t) => acc + t.amount, 0);
+        console.log(`Found ${allTransactions.length} transactions for today for user ${deliveryBoyId}`);
+
+        const todayEarnings = allTransactions
+            .filter(t => t.status === 'Settled' && (t.type === 'Delivery Earning' || t.type === 'Incentive' || t.type === 'Bonus'))
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        const incentives = allTransactions
+            .filter(t => t.status === 'Settled' && (t.type === 'Incentive' || t.type === 'Bonus'))
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        // All-time cash collected logic
+        const cashTransactions = await Transaction.find({
+            user: deliveryBoyId,
+            userModel: 'Delivery',
+            type: { $in: ['Cash Collection', 'Cash Settlement'] }
+        });
+
+        console.log(`Found ${cashTransactions.length} cash transactions for user ${deliveryBoyId}`);
+
+        const cashCollected = cashTransactions.reduce((acc, t) => {
+            return t.type === 'Cash Collection' ? acc + t.amount : acc - Math.abs(t.amount);
+        }, 0);
 
         return handleResponse(res, 200, "Stats fetched", {
-            todayEarnings,
-            totalDeliveries,
-            incentives: 0, // Mock for now
-            cashCollected: 0 // Mock for now
+            today: todayEarnings,
+            deliveries: totalDeliveries,
+            incentives,
+            cashCollected
         });
     } catch (error) {
         return handleResponse(res, 500, error.message);
@@ -42,19 +87,61 @@ export const getDeliveryStats = async (req, res) => {
 ================================ */
 export const getDeliveryEarnings = async (req, res) => {
     try {
-        const deliveryBoyId = req.user.id;
+        const deliveryBoyId = new mongoose.Types.ObjectId(req.user.id);
+
+        // TEMP: Add funds to target test account (6263514141) for demo/testing
+        try {
+            const deliveryBoy = await Delivery.findById(deliveryBoyId);
+            if (deliveryBoy && deliveryBoy.phone === "6263514141") {
+                const existingTestFunds = await Transaction.findOne({
+                    user: deliveryBoyId,
+                    reference: "TEST-INIT-FUNDS"
+                });
+                if (!existingTestFunds) {
+                    await Transaction.create({
+                        user: deliveryBoyId,
+                        userModel: "Delivery",
+                        type: "Delivery Earning",
+                        amount: 500,
+                        status: "Settled",
+                        reference: "TEST-INIT-FUNDS"
+                    });
+
+                    await Transaction.create({
+                        user: deliveryBoyId,
+                        userModel: "Delivery",
+                        type: "Incentive",
+                        amount: 50,
+                        status: "Settled",
+                        reference: "TEST-INIT-INC"
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Temp Fund Err:", e.message);
+        }
 
         const transactions = await Transaction.find({ user: deliveryBoyId, userModel: 'Delivery' })
             .sort({ createdAt: -1 })
             .populate("order", "orderId pricing");
 
         const totalEarnings = transactions
-            .filter(t => t.status === 'Settled')
+            .filter(t => t.status === 'Settled' && (t.type === 'Delivery Earning' || t.type === 'Incentive' || t.type === 'Bonus'))
             .reduce((acc, t) => acc + t.amount, 0);
 
         const onlinePay = transactions
-            .filter(t => t.type === 'Delivery Earning')
-            .reduce((acc, t) => acc + t.amount, 0); // Logic for online/cash split can be added
+            .filter(t => t.type === 'Delivery Earning' && t.status === 'Settled')
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        const incentives = transactions
+            .filter(t => (t.type === 'Incentive' || t.type === 'Bonus') && t.status === 'Settled')
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        // Calculate Real Cash Collected
+        const cashTransactions = transactions.filter(t => t.status === 'Settled' && (t.type === 'Cash Collection' || t.type === 'Cash Settlement'));
+        const cashCollected = cashTransactions.reduce((acc, t) => {
+            return t.type === 'Cash Collection' ? acc + t.amount : acc - Math.abs(t.amount);
+        }, 0);
 
         // Last 7 days aggregation for chart
         const sevenDaysAgo = new Date();
@@ -63,22 +150,22 @@ export const getDeliveryEarnings = async (req, res) => {
         const dailyAggregation = await Transaction.aggregate([
             {
                 $match: {
-                    user: new mongoose.Types.ObjectId(deliveryBoyId),
+                    user: deliveryBoyId,
                     userModel: 'Delivery',
                     status: 'Settled',
-                    createdAt: { $gte: sevenDaysAgo }
+                    createdAt: { $gte: sevenDaysAgo },
+                    type: { $in: ['Delivery Earning', 'Incentive', 'Bonus'] }
                 }
             },
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    earnings: { $sum: "$amount" }
+                    amount: { $sum: "$amount" }
                 }
             },
             { $sort: { _id: 1 } }
         ]);
 
-        // Format for Recharts
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const chartData = [];
         for (let i = 6; i >= 0; i--) {
@@ -88,25 +175,18 @@ export const getDeliveryEarnings = async (req, res) => {
             const foundAt = dailyAggregation.find(a => a._id === dateStr);
             chartData.push({
                 name: dayNames[d.getDay()],
-                earnings: foundAt ? foundAt.earnings : 0,
-                incentives: 0
+                earnings: foundAt ? foundAt.amount : 0,
+                incentives: 0 // Could be further aggregated if needed
             });
         }
 
         return handleResponse(res, 200, "Earnings fetched", {
             totalEarnings,
-            incentives: 0,
-            bonuses: 0,
             onlinePay,
-            cashCollected: 0,
+            incentives,
+            cashCollected,
             chartData,
-            recentTransactions: transactions.slice(0, 10).map(t => ({
-                id: (t._id).toString().slice(-6).toUpperCase(),
-                date: new Date(t.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
-                amount: t.amount,
-                status: t.status,
-                type: t.type
-            }))
+            transactions: transactions.slice(0, 20)
         });
     } catch (error) {
         return handleResponse(res, 500, error.message);
@@ -118,7 +198,7 @@ export const getDeliveryEarnings = async (req, res) => {
 ================================ */
 export const getMyDeliveryOrders = async (req, res) => {
     try {
-        const deliveryBoyId = req.user.id;
+        const deliveryBoyId = new mongoose.Types.ObjectId(req.user.id);
         const { status } = req.query;
 
         let query = { deliveryBoy: deliveryBoyId };
@@ -132,6 +212,51 @@ export const getMyDeliveryOrders = async (req, res) => {
             .populate("customer", "name phone");
 
         return handleResponse(res, 200, "Delivery orders fetched", orders);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   REQUEST WITHDRAWAL (Delivery)
+================================ */
+export const requestWithdrawal = async (req, res) => {
+    try {
+        const deliveryBoyId = req.user.id;
+        const { amount } = req.body;
+
+        if (!amount || amount <= 0) {
+            return handleResponse(res, 400, "Please enter a valid amount");
+        }
+
+        // 1. Calculate current available balance
+        const transactions = await Transaction.find({ user: deliveryBoyId, userModel: 'Delivery' });
+
+        const settledBalance = transactions
+            .filter(t => t.status === 'Settled')
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        const pendingPayouts = transactions
+            .filter(t => (t.status === 'Pending' || t.status === 'Processing') && t.type === 'Withdrawal')
+            .reduce((acc, t) => acc + Math.abs(t.amount), 0);
+
+        const availableBalance = settledBalance - pendingPayouts;
+
+        if (amount > availableBalance) {
+            return handleResponse(res, 400, `Insufficient balance. Available: ₹${availableBalance}`);
+        }
+
+        // 2. Create Withdrawal Transaction
+        const withdrawal = await Transaction.create({
+            user: deliveryBoyId,
+            userModel: "Delivery",
+            type: "Withdrawal",
+            amount: -Math.abs(amount),
+            status: "Pending",
+            reference: `WDR-DL-${Date.now()}`
+        });
+
+        return handleResponse(res, 201, "Withdrawal request submitted successfully", withdrawal);
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

@@ -25,6 +25,7 @@ const Analytics = React.lazy(() => import("../pages/Analytics"));
 const Transactions = React.lazy(() => import("../pages/Transactions"));
 const DeliveryTracking = React.lazy(() => import("../pages/DeliveryTracking"));
 const Profile = React.lazy(() => import("../pages/Profile"));
+const Withdrawals = React.lazy(() => import("../pages/Withdrawals"));
 
 const navItems = [
   { label: "Dashboard", path: "/seller", icon: HiOutlineSquares2X2, end: true },
@@ -36,6 +37,11 @@ const navItems = [
     label: "Sales Reports",
     path: "/seller/analytics",
     icon: HiOutlineChartBarSquare,
+  },
+  {
+    label: "Money Request",
+    path: "/seller/withdrawals",
+    icon: HiOutlineCurrencyDollar,
   },
   {
     label: "Payment History",
@@ -63,6 +69,7 @@ const SellerRoutes = () => {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/earnings" element={<Earnings />} />
+        <Route path="/withdrawals" element={<Withdrawals />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
