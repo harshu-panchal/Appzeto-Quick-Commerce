@@ -9,13 +9,14 @@ import { cn } from '@/lib/utils';
 
 import ProductCard from '../components/shared/ProductCard';
 import ProductDetailSheet from '../components/shared/ProductDetailSheet';
-import { ProductDetailProvider } from '../context/ProductDetailContext';
+import { useProductDetail } from '../context/ProductDetailContext';
 import { customerApi } from '../services/customerApi';
 import MiniCart from '../components/shared/MiniCart';
 
 const CategoryProductsPage = () => {
     const { categoryName: catId } = useParams();
     const navigate = useNavigate();
+    const { isOpen: isProductDetailOpen } = useProductDetail();
     const [selectedSubCategory, setSelectedSubCategory] = useState('all');
     const [category, setCategory] = useState(null);
     const [subCategories, setSubCategories] = useState([{ id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' }]);
@@ -81,71 +82,73 @@ const CategoryProductsPage = () => {
     );
 
     return (
-        <ProductDetailProvider>
-            <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative font-sans">
-                {/* Header */}
-                <header className="sticky top-0 z-50 bg-white border-b border-gray-50 px-4 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => navigate(-1)} className="p-1 hover:bg-gray-50 rounded-full transition-colors">
-                            <ChevronLeft size={24} className="text-gray-900" />
-                        </button>
-                        <h1 className="text-[18px] font-bold text-gray-800 tracking-tight">
-                            {category?.name || catId}
-                        </h1>
-                    </div>
-
-                </header>
-
-                <div className="flex flex-1 relative items-start">
-                    {/* Sidebar */}
-                    <aside className="w-[80px] border-r border-gray-50 flex flex-col bg-white overflow-y-auto hide-scrollbar sticky top-[60px] h-[calc(100vh-60px)]">
-                        {subCategories.map((cat) => (
-                            <button
-                                key={cat.id}
-                                onClick={() => setSelectedSubCategory(cat.id)}
-                                className={cn(
-                                    "flex flex-col items-center py-4 px-1 gap-2 transition-all relative border-l-4",
-                                    selectedSubCategory === cat.id
-                                        ? "bg-[#F7FCF5] border-[#0c831f]"
-                                        : "border-transparent hover:bg-gray-50"
-                                )}
-                            >
-                                <div className={cn(
-                                    "w-12 h-12 rounded-2xl flex items-center justify-center p-2 transition-all duration-300",
-                                    selectedSubCategory === cat.id ? "scale-110" : "grayscale opacity-70"
-                                )}>
-                                    <img src={cat.icon} alt={cat.name} className="w-full h-full object-contain" />
-                                </div>
-                                <span className={cn(
-                                    "text-[10px] text-center font-bold font-sans leading-tight px-1",
-                                    selectedSubCategory === cat.id ? "text-[#0c831f]" : "text-gray-500"
-                                )}>
-                                    {cat.name}
-                                </span>
-                            </button>
-                        ))}
-                    </aside>
-
-                    {/* Content */}
-                    <main className="flex-1 p-3 pb-24 bg-white">
-                        <div className="grid grid-cols-2 gap-x-2 gap-y-4">
-                            {filteredProducts.map((product) => (
-                                <ProductCard key={product.id} product={product} compact={true} />
-                            ))}
-                            {filteredProducts.length === 0 && !isLoading && (
-                                <div className="col-span-2 py-20 text-center">
-                                    <p className="text-gray-400 font-bold italic">No products found in this category</p>
-                                </div>
-                            )}
-                        </div>
-                    </main>
+        <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative font-sans">
+            {/* Header */}
+            <header className={cn(
+                "sticky top-0 z-50 bg-white border-b border-gray-50 px-4 py-4 flex items-center justify-between",
+                isProductDetailOpen && "hidden md:flex"
+            )}>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(-1)} className="p-1 hover:bg-gray-50 rounded-full transition-colors">
+                        <ChevronLeft size={24} className="text-gray-900" />
+                    </button>
+                    <h1 className="text-[18px] font-bold text-gray-800 tracking-tight">
+                        {category?.name || catId}
+                    </h1>
                 </div>
 
-                <MiniCart />
-                <ProductDetailSheet />
+            </header>
 
-                <style dangerouslySetInnerHTML={{
-                    __html: `
+            <div className="flex flex-1 relative items-start">
+                {/* Sidebar */}
+                <aside className="w-[80px] border-r border-gray-50 flex flex-col bg-white overflow-y-auto hide-scrollbar sticky top-[60px] h-[calc(100vh-60px)]">
+                    {subCategories.map((cat) => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setSelectedSubCategory(cat.id)}
+                            className={cn(
+                                "flex flex-col items-center py-4 px-1 gap-2 transition-all relative border-l-4",
+                                selectedSubCategory === cat.id
+                                    ? "bg-[#F7FCF5] border-[#0c831f]"
+                                    : "border-transparent hover:bg-gray-50"
+                            )}
+                        >
+                            <div className={cn(
+                                "w-12 h-12 rounded-2xl flex items-center justify-center p-2 transition-all duration-300",
+                                selectedSubCategory === cat.id ? "scale-110" : "grayscale opacity-70"
+                            )}>
+                                <img src={cat.icon} alt={cat.name} className="w-full h-full object-contain" />
+                            </div>
+                            <span className={cn(
+                                "text-[10px] text-center font-bold font-sans leading-tight px-1",
+                                selectedSubCategory === cat.id ? "text-[#0c831f]" : "text-gray-500"
+                            )}>
+                                {cat.name}
+                            </span>
+                        </button>
+                    ))}
+                </aside>
+
+                {/* Content */}
+                <main className="flex-1 p-3 pb-24 bg-white">
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-4">
+                        {filteredProducts.map((product) => (
+                            <ProductCard key={product.id} product={product} compact={true} />
+                        ))}
+                        {filteredProducts.length === 0 && !isLoading && (
+                            <div className="col-span-2 py-20 text-center">
+                                <p className="text-gray-400 font-bold italic">No products found in this category</p>
+                            </div>
+                        )}
+                    </div>
+                </main>
+            </div>
+
+            <MiniCart />
+            <ProductDetailSheet />
+
+            <style dangerouslySetInnerHTML={{
+                __html: `
                     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
                     
                     body {
@@ -160,8 +163,7 @@ const CategoryProductsPage = () => {
                         scrollbar-width: none;
                     }
                 `}} />
-            </div>
-        </ProductDetailProvider>
+        </div>
     );
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import Logo from '@/assets/Logo.png';
 
 const Footer = () => {
     return (
@@ -22,20 +23,17 @@ const Footer = () => {
 
                     {/* Brand Info */}
                     <div className="space-y-4 md:space-y-8">
-                        <div className="flex items-center gap-2 md:gap-4">
-                            <div className="h-8 w-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-xl md:h-14 md:w-14 md:rounded-2xl md:bg-gradient-to-br md:from-[#0c831f] md:to-[#1db939] md:text-3xl md:shadow-xl md:shadow-[#0c831f]/20">
-                                A
-                            </div>
-                            <span className="text-2xl font-bold text-white md:text-4xl md:font-black md:tracking-tighter">Appzeto</span>
+                        <div className="flex items-center">
+                            <img src={Logo} alt="Appzeto Logo" className="h-12 md:h-16 w-auto object-contain" />
                         </div>
-                        <p className="text-sm leading-relaxed md:text-base md:leading-loose md:text-emerald-50/70 md:max-w-xs transition-opacity hover:opacity-100">
+                        <p className="text-sm leading-relaxed md:text-base md:leading-loose text-white/90 md:max-w-xs transition-opacity hover:opacity-100 font-medium">
                             Your daily dose of fresh, organic, and healthy products delivered straight to your door. Freshness guaranteed.
                         </p>
                         <div className="flex gap-4">
-                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Facebook size={18} /></a>
-                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Twitter size={18} /></a>
-                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Instagram size={18} /></a>
-                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Youtube size={18} /></a>
+                            <a href="#" className="p-2 bg-white/10 text-white rounded-full hover:bg-[#0c831f] transition-all group active:scale-95"><Facebook size={18} /></a>
+                            <a href="#" className="p-2 bg-white/10 text-white rounded-full hover:bg-[#0c831f] transition-all group active:scale-95"><Twitter size={18} /></a>
+                            <a href="#" className="p-2 bg-white/10 text-white rounded-full hover:bg-[#0c831f] transition-all group active:scale-95"><Instagram size={18} /></a>
+                            <a href="#" className="p-2 bg-white/10 text-white rounded-full hover:bg-[#0c831f] transition-all group active:scale-95"><Youtube size={18} /></a>
                         </div>
                     </div>
 
@@ -45,11 +43,11 @@ const Footer = () => {
                             <span className="h-1 w-4 bg-[#0c831f] hidden md:block"></span> Quick Links
                         </h3>
                         <ul className="space-y-2 md:space-y-4">
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Home</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>About Us</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Shop</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Blogs</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Contact</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Home</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>About Us</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Shop</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Blogs</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Contact</a></li>
                         </ul>
                     </div>
 
@@ -59,11 +57,11 @@ const Footer = () => {
                             <span className="h-1 w-4 bg-[#0c831f] hidden md:block"></span> Categories
                         </h3>
                         <ul className="space-y-2 md:space-y-4">
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Fruits & Vegetables</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Dairy Products</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Meat & Fish</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Bakery & Snacks</a></li>
-                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Beverages</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Fruits & Vegetables</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Dairy Products</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Meat & Fish</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Bakery & Snacks</a></li>
+                            <li><a href="#" className="hover:text-emerald-300 transition-colors md:text-base md:font-semibold flex items-center group text-white"><span className="hidden md:block w-0 h-px bg-white group-hover:w-4 group-hover:mr-2 transition-all"></span>Beverages</a></li>
                         </ul>
                     </div>
 
@@ -74,29 +72,29 @@ const Footer = () => {
                         </h3>
                         <ul className="space-y-4 md:space-y-6">
                             <li className="flex items-start gap-3 md:gap-5 group">
-                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-[#1A2E21] items-center justify-center text-[#0c831f] group-hover:bg-[#0c831f] group-hover:text-white transition-all shrink-0"><MapPin size={22} /></div>
+                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-white/10 items-center justify-center text-white group-hover:bg-[#0c831f] transition-all shrink-0"><MapPin size={22} /></div>
                                 <MapPin className="text-[#0c831f] mt-1 shrink-0 md:hidden" size={18} />
-                                <span className="md:text-base md:text-emerald-50/70 md:pt-1">123 Green Street, Market Avenue, New York, USA 10001</span>
+                                <span className="md:text-base text-white md:pt-1 font-medium">123 Green Street, Market Avenue, New York, USA 10001</span>
                             </li>
                             <li className="flex items-center gap-3 md:gap-5 group">
-                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-[#1A2E21] items-center justify-center text-[#0c831f] group-hover:bg-[#0c831f] group-hover:text-white transition-all shrink-0"><Phone size={22} /></div>
+                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-white/10 items-center justify-center text-white group-hover:bg-[#0c831f] transition-all shrink-0"><Phone size={22} /></div>
                                 <Phone className="text-[#0c831f] shrink-0 md:hidden" size={18} />
-                                <span className="md:text-base md:text-emerald-50/70">+1 (234) 567-890</span>
+                                <span className="md:text-base text-white font-medium">+1 (234) 567-890</span>
                             </li>
                             <li className="flex items-center gap-3 md:gap-5 group">
-                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-[#1A2E21] items-center justify-center text-[#0c831f] group-hover:bg-[#0c831f] group-hover:text-white transition-all shrink-0"><Mail size={22} /></div>
+                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-white/10 items-center justify-center text-white group-hover:bg-[#0c831f] transition-all shrink-0"><Mail size={22} /></div>
                                 <Mail className="text-[#0c831f] shrink-0 md:hidden" size={18} />
-                                <span className="md:text-base md:text-emerald-50/70">support@appzeto.com</span>
+                                <span className="md:text-base text-white font-medium">support@appzeto.com</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="border-t border-emerald-900/40 mt-12 pt-8 text-center text-sm md:flex md:justify-between md:text-left md:mt-24 md:pt-12 md:border-white/5">
-                    <p className="md:text-base md:opacity-40 text-emerald-50/60">&copy; {new Date().getFullYear()} Appzeto. All rights reserved.</p>
+                <div className="border-t border-white/10 mt-12 pt-8 text-center text-sm md:flex md:justify-between md:text-left md:mt-24 md:pt-12">
+                    <p className="md:text-base text-white/60">&copy; {new Date().getFullYear()} Appzeto. All rights reserved.</p>
                     <div className="flex gap-6 justify-center md:justify-end mt-4 md:mt-0 md:gap-12">
-                        <a href="#" className="hover:text-[#0c831f] md:text-base md:opacity-40 md:hover:opacity-100 transition-all text-emerald-50/60">Privacy Policy</a>
-                        <a href="#" className="hover:text-[#0c831f] md:text-base md:opacity-40 md:hover:opacity-100 transition-all text-emerald-50/60">Terms of Service</a>
+                        <a href="#" className="hover:text-emerald-300 md:text-base text-white/60 transition-all">Privacy Policy</a>
+                        <a href="#" className="hover:text-emerald-300 md:text-base text-white/60 transition-all">Terms of Service</a>
                     </div>
                 </div>
             </div>
@@ -104,6 +102,5 @@ const Footer = () => {
     );
 };
 
-
-
 export default Footer;
+

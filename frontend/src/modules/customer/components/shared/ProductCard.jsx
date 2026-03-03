@@ -146,63 +146,6 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                     />
                 </div>
 
-                {/* Floating ADD/Quantity Button */}
-                {!compact && (
-                    <div className={cn("absolute z-20 -bottom-5 right-3")}>
-                        {quantity > 0 ? (
-                            <div
-                                className="bg-white border-2 border-[#0c831f] text-[#0c831f] rounded-lg flex items-center shadow-lg shadow-green-900/5 overflow-hidden px-1.5 py-1 gap-1"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleDecrement}
-                                    className="h-9 w-9 rounded-lg hover:bg-green-50 text-[#0c831f]"
-                                >
-                                    <Minus size={14} strokeWidth={3.5} />
-                                </Button>
-
-                                <div className="relative flex items-center justify-center overflow-hidden w-6 h-7">
-                                    <AnimatePresence mode="popLayout" initial={false}>
-                                        <motion.span
-                                            key={quantity}
-                                            initial={{ y: 20, opacity: 0 }}
-                                            animate={{ y: 0, opacity: 1 }}
-                                            exit={{ y: -20, opacity: 0 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                            className="absolute font-black text-sm"
-                                        >
-                                            {quantity}
-                                        </motion.span>
-                                    </AnimatePresence>
-                                </div>
-
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleIncrement}
-                                    className="h-9 w-9 rounded-lg hover:bg-green-50 text-[#0c831f]"
-                                >
-                                    <Plus size={14} strokeWidth={3.5} />
-                                </Button>
-                            </div>
-                        ) : (
-                            <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.9 }}
-                            >
-                                <Button
-                                    variant="outline"
-                                    onClick={handleAddToCart}
-                                    className="font-black shadow-lg shadow-green-900/5 border-2 border-[#0c831f] text-[#0c831f] bg-white hover:bg-green-50 transition-colors uppercase h-11 px-7 text-base"
-                                >
-                                    ADD
-                                </Button>
-                            </motion.div>
-                        )}
-                    </div>
-                )}
             </div>
 
             {/* Info Section */}
@@ -239,27 +182,34 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                         )}
                     </div>
 
-                    {compact && (
-                        quantity > 0 ? (
-                            <div className="flex items-center bg-emerald-50 border border-emerald-600 rounded-lg p-0.5">
-                                <button onClick={handleDecrement} className="p-1 text-emerald-700 active:scale-95 transition-transform">
-                                    <Minus size={12} strokeWidth={3} />
+                    {/* ADD Button / Quantity Selector (Always in price row) */}
+                    <div className="flex">
+                        {quantity > 0 ? (
+                            <div className={cn(
+                                "flex items-center bg-white border-[1.5px] border-[#0c831f] rounded-lg p-0.5 justify-between",
+                                compact ? "min-w-[80px]" : "min-w-[90px] md:min-w-[100px]"
+                            )}>
+                                <button onClick={handleDecrement} className="p-1 px-1.5 text-[#0c831f] active:scale-90 transition-transform">
+                                    <Minus size={compact ? 12 : 14} strokeWidth={3.5} />
                                 </button>
-                                <span className="w-5 text-center text-xs font-black text-emerald-900">{quantity}</span>
-                                <button onClick={handleIncrement} className="p-1 text-emerald-700 active:scale-95 transition-transform">
-                                    <Plus size={12} strokeWidth={3} />
+                                <span className={cn("font-black text-[#0c831f]", compact ? "text-[12px]" : "text-[13px] md:text-sm")}>{quantity}</span>
+                                <button onClick={handleIncrement} className="p-1 px-1.5 text-[#0c831f] active:scale-90 transition-transform">
+                                    <Plus size={compact ? 12 : 14} strokeWidth={3.5} />
                                 </button>
                             </div>
                         ) : (
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleAddToCart}
-                                className="bg-[#0c831f] text-white px-4 py-1.5 rounded-lg font-black text-[11px] shadow-[0_4px_12px_rgba(12,131,31,0.2)] active:shadow-none transition-all uppercase tracking-wider"
+                                className={cn(
+                                    "bg-white border-[1.5px] border-[#0c831f] text-[#0c831f] rounded-lg font-black shadow-sm hover:bg-[#0c831f]/5 mb-0 transition-all uppercase tracking-wide leading-none",
+                                    compact ? "px-5 py-1.5 text-[12px]" : "px-7 py-2 text-[13px] md:text-sm md:px-8 md:py-2.5"
+                                )}
                             >
                                 ADD
                             </motion.button>
-                        )
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
         </motion.div>
