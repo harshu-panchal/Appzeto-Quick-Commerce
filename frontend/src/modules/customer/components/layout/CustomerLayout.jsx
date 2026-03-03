@@ -4,6 +4,7 @@ import Footer from './Footer';
 import BottomNav from './BottomNav';
 import MiniCart from '../shared/MiniCart';
 import ProductDetailSheet from '../shared/ProductDetailSheet';
+import MobileFooterMessage from './MobileFooterMessage';
 import { ProductDetailProvider } from '../../context/ProductDetailContext';
 import { cn } from '@/lib/utils';
 
@@ -15,9 +16,9 @@ const CustomerLayout = ({ children, showHeader: showHeaderProp, fullHeight = fal
     // Route-based visibility logic
     const path = location.pathname.replace(/\/$/, '') || '/';
 
-    const hideHeaderRoutes = ['/', '/categories', '/orders', '/profile', '/profile/edit', '/wishlist', '/addresses', '/wallet', '/support', '/privacy', '/about', '/terms', '/checkout'];
-    const hideBottomNavRoutes = ['/checkout'];
-    const hideCartRoutes = ['/checkout', '/cart'];
+    const hideHeaderRoutes = ['/', '/categories', '/orders', '/profile', '/profile/edit', '/wishlist', '/addresses', '/wallet', '/support', '/privacy', '/about', '/terms', '/checkout', '/search', '/chat'];
+    const hideBottomNavRoutes = ['/checkout', '/search', '/chat'];
+    const hideCartRoutes = ['/checkout', '/cart', '/search', '/chat'];
 
     // If props are passed, use them. Otherwise, use route-based logic.
     const showHeader = showHeaderProp !== undefined ? showHeaderProp : (!hideHeaderRoutes.includes(path) && !path.startsWith('/category') && !path.startsWith('/orders'));
@@ -40,6 +41,7 @@ const CustomerLayout = ({ children, showHeader: showHeaderProp, fullHeight = fal
                 <div className="hidden md:block">
                     <Footer />
                 </div>
+                {showBottomNav && <MobileFooterMessage />}
                 {showBottomNav && <BottomNav />}
             </div>
         </ProductDetailProvider>

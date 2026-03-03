@@ -1,21 +1,38 @@
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     User, MapPin, Package, CreditCard, Settings, ChevronRight,
-    LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, Wallet, ChevronLeft
+    LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, Wallet, ChevronLeft,
+    ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useAuth } from '@core/context/AuthContext';
+import axiosInstance from '@core/api/axios';
+import { useEffect } from 'react';
 
 const ProfilePage = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const [faqs, setFaqs] = useState([]);
+
+    useEffect(() => {
+        const fetchFaqs = async () => {
+            try {
+                const response = await axiosInstance.get('/public/faqs', { params: { category: 'Customer', status: 'published' } });
+                setFaqs(response.data.results || []);
+            } catch (error) {
+                console.error("Error fetching FAQs:", error);
+            }
+        };
+        fetchFaqs();
+    }, []);
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-24 md:pb-8 font-sans">
+        <div className="min-h-screen bg-slate-50/50 pb-24 md:pb-8 font-sans">
             {/* Custom Hero Header Area */}
-            <div className="bg-gradient-to-br from-[#0c831f] to-[#149d29] px-5 pt-8 pb-20 relative z-10 rounded-b-[2.5rem] shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-br from-[#0c831f] to-[#0a6d1a] px-5 pt-8 pb-20 relative z-10 rounded-b-[3rem] shadow-[0_10px_30px_rgba(12,131,31,0.15)] overflow-hidden">
                 {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-32 pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-20 -mt-32 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/5 rounded-full blur-2xl -ml-16 -mb-16 pointer-events-none" />
 
                 <div className="flex items-center gap-2 mb-2 relative z-10">
                     <button
@@ -26,25 +43,27 @@ const ProfilePage = () => {
                     </button>
                     <h1 className="text-3xl font-black text-white tracking-tight">My Profile</h1>
                 </div>
-                <p className="text-green-50 text-sm font-medium mt-1 relative z-10">Manage your account & preferences</p>
+                <p className="text-emerald-50/80 text-sm font-medium mt-1 relative z-10">Manage your account & preferences</p>
             </div>
 
-            <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-20 space-y-6">
+            <div className="max-w-2xl mx-auto px-4 -mt-12 relative z-20 space-y-6">
 
                 {/* User Identity Card */}
-                <div className="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center justify-between">
+                <div className="bg-white rounded-[2.5rem] p-6 shadow-[0_15px_40px_rgba(0,0,0,0.04)] border border-white flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <div className="h-16 w-16 rounded-full bg-indigo-50 flex items-center justify-center p-1 border border-indigo-100">
-                            <div className="h-full w-full rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-                                <User size={30} className="text-indigo-600" />
+                        <div className="h-16 w-16 rounded-2xl bg-[#0c831f]/10 flex items-center justify-center p-1 border border-[#0c831f]/5">
+                            <div className="h-full w-full rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-sm">
+                                <User size={30} className="text-[#0c831f]" />
                             </div>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900 leading-tight">{user?.name || 'Customer'}</h2>
-                            <p className="text-slate-500 text-sm font-medium">+91 {user?.phone}</p>
+                            <h2 className="text-xl font-black text-slate-900 leading-tight">{user?.name || 'Customer'}</h2>
+                            <p className="text-slate-400 text-sm font-bold flex items-center gap-1 mt-0.5">
+                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] uppercase">India</span> +91 {user?.phone}
+                            </p>
                         </div>
                     </div>
-                    <Link to="/profile/edit" className="p-3 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
+                    <Link to="/profile/edit" className="p-3.5 rounded-2xl bg-slate-50 text-slate-400 hover:bg-[#0c831f] hover:text-white transition-all shadow-sm">
                         <Edit2 size={18} />
                     </Link>
                 </div>
@@ -52,42 +71,62 @@ const ProfilePage = () => {
                 {/* Menu Sections */}
                 <div className="space-y-4">
                     {/* Account Section */}
-                    <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
-                        <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Account Settings</p>
+                    <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.04)] border border-white">
+                        <div className="px-8 py-5 bg-slate-50/30 border-b border-slate-50/50">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">Personal Account</p>
                         </div>
-                        <div className="divide-y divide-slate-50">
-                            <MenuItem icon={Package} label="Your Orders" sub="Track, return or buy things again" path="/orders" color="text-blue-600" bg="bg-blue-50" />
-                            <MenuItem icon={Heart} label="Your Wishlist" sub="Your saved items" path="/wishlist" color="text-red-500" bg="bg-red-50" />
-                            <MenuItem icon={MapPin} label="Saved Addresses" sub="Manage your delivery locations" path="/addresses" color="text-orange-600" bg="bg-orange-50" />
-                            <MenuItem icon={Wallet} label="Payment Methods" sub="Manage cards, UPI and wallets" path="/wallet" color="text-purple-600" bg="bg-purple-50" />
+                        <div className="divide-y divide-slate-50/50">
+                            <MenuItem icon={Package} label="Your Orders" sub="Track, return or buy things again" path="/orders" />
+                            <MenuItem icon={Heart} label="Your Wishlist" sub="Your saved items" path="/wishlist" />
+                            <MenuItem icon={MapPin} label="Saved Addresses" sub="Manage your delivery locations" path="/addresses" />
+                            <MenuItem icon={Wallet} label="Your Wallet" sub="Manage cards, UPI and wallets" path="/wallet" />
                         </div>
                     </div>
 
                     {/* Support Section */}
-                    <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
-                        <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Support & Legal</p>
+                    <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_15px_40px_rgba(0,0,0,0.04)] border border-white">
+                        <div className="px-8 py-5 bg-slate-50/30 border-b border-slate-50/50">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">Help & Settings</p>
                         </div>
-                        <div className="divide-y divide-slate-50">
-                            <MenuItem icon={HelpCircle} label="Help & Support" path="/support" color="text-cyan-600" bg="bg-cyan-50" />
-                            <MenuItem icon={ShieldCheck} label="Privacy Policy" path="/privacy" color="text-green-600" bg="bg-green-50" />
-                            <MenuItem icon={Info} label="About Us" path="/about" color="text-indigo-600" bg="bg-indigo-50" />
+                        <div className="divide-y divide-slate-50/50">
+                            <MenuItem icon={HelpCircle} label="Help & Support" path="/support" />
+                            <MenuItem icon={ShieldCheck} label="Privacy Policy" path="/privacy" />
+                            <MenuItem icon={Info} label="About Us" path="/about" />
                         </div>
+                    </div>
+                </div>
+
+                {/* FAQ Section */}
+                <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                    <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Common Questions</p>
+                    </div>
+                    <div className="divide-y divide-slate-50">
+                        {faqs.length > 0 ? (
+                            faqs.map((faq) => (
+                                <FAQItem
+                                    key={faq._id}
+                                    question={faq.question}
+                                    answer={faq.answer}
+                                />
+                            ))
+                        ) : (
+                            <div className="p-6 text-center text-xs text-slate-400">No FAQs available</div>
+                        )}
                     </div>
                 </div>
 
                 {/* Logout Button */}
                 <button
                     onClick={logout}
-                    className="w-full py-4 rounded-xl border border-red-100 text-red-600 font-bold bg-white hover:bg-red-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
+                    className="w-full py-5 rounded-3xl border border-red-50 text-red-500 font-black bg-red-50/30 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-[0.98] mt-4"
                 >
-                    <LogOut size={18} />
-                    Log Out
+                    <LogOut size={20} />
+                    SIGN OUT
                 </button>
 
-                <div className="text-center pb-8">
-                    <p className="text-xs text-slate-400 font-medium">App Version 2.4.0</p>
+                <div className="text-center pb-10">
+                    <p className="text-[10px] text-slate-300 font-black tracking-widest uppercase">Version 2.4.0 • Appzeto Quick</p>
                 </div>
 
             </div>
@@ -96,18 +135,35 @@ const ProfilePage = () => {
 };
 
 const MenuItem = ({ icon: Icon, label, sub, path, color, bg }) => (
-    <Link to={path || '#'} className="px-6 py-5 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors group">
+    <Link to={path || '#'} className="px-8 py-5.5 flex items-center justify-between hover:bg-slate-50/80 cursor-pointer transition-all group">
         <div className="flex items-center gap-4">
-            <div className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors ${color || 'text-slate-500'} ${bg || 'bg-slate-100'} group-hover:bg-[#0c831f] group-hover:text-white`}>
-                <Icon size={20} />
+            <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-all bg-emerald-50/50 group-hover:bg-[#0c831f] group-hover:shadow-[0_8px_20px_rgba(12,131,31,0.2)]`}>
+                <Icon size={22} className="text-[#0c831f] group-hover:text-white transition-colors" />
             </div>
             <div>
-                <h3 className="text-base font-bold text-slate-800">{label}</h3>
-                {sub && <p className="text-xs text-slate-400 font-medium mt-0.5">{sub}</p>}
+                <h3 className="text-[15px] font-black text-slate-800 tracking-tight">{label}</h3>
+                {sub && <p className="text-[11px] text-slate-400 font-bold mt-0.5">{sub}</p>}
             </div>
         </div>
-        <ChevronRight size={18} className="text-slate-300 group-hover:text-[#0c831f] transition-colors" />
+        <div className="bg-slate-50 p-2 rounded-xl group-hover:bg-[#0c831f]/10 transition-colors">
+            <ChevronRight size={16} className="text-slate-300 group-hover:text-[#0c831f] transition-all group-hover:translate-x-0.5" />
+        </div>
     </Link>
 );
+
+const FAQItem = ({ question, answer }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="px-6 py-4 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => setIsOpen(!isOpen)}>
+            <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-700">{question}</h3>
+                {isOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+            </div>
+            {isOpen && (
+                <p className="mt-2 text-xs text-slate-500 font-medium leading-relaxed">{answer}</p>
+            )}
+        </div>
+    );
+};
 
 export default ProfilePage;

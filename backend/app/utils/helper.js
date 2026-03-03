@@ -15,13 +15,13 @@ export const handleResponse = (res, statusCode, message, data = {}) => {
         if (obj[key] && typeof obj[key].toObject === 'function') {
           obj[key] = obj[key].toObject();
           // Clean the nested object too
-          const { createdAt, updatedAt, __v, password, ...rest } = obj[key];
+          const { updatedAt, __v, password, ...rest } = obj[key];
           obj[key] = rest;
         }
       }
     }
 
-    const { createdAt, updatedAt, __v, password, ...cleaned } = obj;
+    const { updatedAt, __v, password, ...cleaned } = obj;
     return cleaned;
   };
 

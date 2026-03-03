@@ -3,7 +3,50 @@ import Cart from "../models/cart.js";
 import Product from "../models/product.js";
 import Transaction from "../models/transaction.js";
 import StockHistory from "../models/stockHistory.js";
+import Notification from "../models/notification.js";
+import Seller from "../models/seller.js";
+import Delivery from "../models/delivery.js";
 import handleResponse from "../utils/helper.js";
+
+// Periodic job to auto-cancel expired pending orders instead of per-request timeouts
+const AUTO_CANCEL_INTERVAL_MS = 10000; // runs every 10 seconds
+
+const autoCancelExpiredOrders = async () => {
+    try {
+        const now = new Date();
+        const expiredOrders = await Order.find({
+            status: "pending",
+            expiresAt: { $lte: now },
+        });
+
+        for (const order of expiredOrders) {
+            order.status = "cancelled";
+            order.cancelledBy = "system";
+            order.cancelReason = "Seller timeout (60s)";
+            await order.save();
+
+            if (order.seller) {
+                await Notification.create({
+                    recipient: order.seller,
+                    recipientModel: "Seller",
+                    title: "Order Timed Out",
+                    message: `Order #${order.orderId} was cancelled because it wasn't accepted within 60 seconds.`,
+                    type: "order",
+                    data: { orderId: order._id },
+                });
+            }
+
+            console.log(`Order ${order.orderId} auto-cancelled due to timeout.`);
+        }
+    } catch (err) {
+        console.error("Auto-cancel job error:", err);
+    }
+};
+
+if (!globalThis.__ORDER_AUTO_CANCEL_STARTED__) {
+    globalThis.__ORDER_AUTO_CANCEL_STARTED__ = true;
+    setInterval(autoCancelExpiredOrders, AUTO_CANCEL_INTERVAL_MS);
+}
 
 /* ===============================
    PLACE ORDER
@@ -35,6 +78,7 @@ export const placeOrder = async (req, res) => {
         // 3. Find seller from products (taking the first item's seller for simplicity)
         const firstProduct = await Product.findById(orderItems[0].product);
         const sellerId = firstProduct ? firstProduct.sellerId : null;
+        console.log(`Order Placement [${orderId}] - Found Seller ID: ${sellerId} from product: ${firstProduct?.name}`);
 
         // 4. Create the order
         const newOrder = new Order({
@@ -46,7 +90,8 @@ export const placeOrder = async (req, res) => {
             payment,
             pricing,
             timeSlot: timeSlot || "now",
-            status: "pending"
+            status: "pending",
+            expiresAt: new Date(Date.now() + 60000) // 60 seconds from now
         });
 
         await newOrder.save();
@@ -55,7 +100,8 @@ export const placeOrder = async (req, res) => {
         if (sellerId) {
             // Create pending transaction
             await Transaction.create({
-                seller: sellerId,
+                user: sellerId,
+                userModel: "Seller",
                 order: newOrder._id,
                 type: "Order Payment",
                 amount: pricing.total,
@@ -79,6 +125,19 @@ export const placeOrder = async (req, res) => {
                     $inc: { stock: -item.quantity }
                 });
             }
+
+            // Create notification for seller
+            const sellerNotif = await Notification.create({
+                recipient: sellerId,
+                recipientModel: "Seller",
+                title: "New Order Received!",
+                message: `You have received a new order #${orderId} for ₹${pricing.total}.`,
+                type: "order",
+                data: { orderId: newOrder._id }
+            });
+            console.log(`Order Placement [${orderId}] - Created Notification ID: ${sellerNotif._id} for Seller: ${sellerId}`);
+        } else {
+            console.warn(`Order Placement [${orderId}] - WARNING: No Seller ID found, skipping notification.`);
         }
 
         // 6. Clear the customer's cart after order is placed
@@ -224,10 +283,47 @@ export const updateOrderStatus = async (req, res) => {
 
         // Handle Confirmation/Delivery (Settle Transaction for Demo)
         if (status === 'delivered') {
-            await Transaction.findOneAndUpdate({ reference: orderId }, { status: 'Settled' });
+            await Transaction.findOneAndUpdate(
+                { reference: orderId, userModel: "Seller" },
+                { status: 'Settled' }
+            );
+
+            // Create Delivery Earning Transaction
+            if (order.deliveryBoy) {
+                const deliveryEarning = Math.round((order.pricing?.total || 0) * 0.1); // 10% for demo
+                await Transaction.create({
+                    user: order.deliveryBoy,
+                    userModel: "Delivery",
+                    order: order._id,
+                    type: "Delivery Earning",
+                    amount: deliveryEarning,
+                    status: "Settled",
+                    reference: `DEL-ERN-${orderId}`
+                });
+
+                // --- NEW: Cash Collection Logic for COD ---
+                if (order.payment?.method?.toLowerCase() === 'cash' || order.payment?.method?.toLowerCase() === 'cod') {
+                    console.log("Creating Cash Collection Transaction for order:", orderId);
+                    await Transaction.create({
+                        user: order.deliveryBoy,
+                        userModel: "Delivery",
+                        order: order._id,
+                        type: "Cash Collection",
+                        amount: order.pricing.total,
+                        status: "Settled", // Settled means rider has the cash
+                        reference: `CASH-COL-${orderId}`
+                    });
+                }
+            }
         }
 
+        console.log("Saving order with new status:", status);
         await order.save();
+
+        if (status === 'confirmed' && role === 'seller') {
+            // This order is now 'Automatic' for delivery partners
+            console.log("Order confirmed, available for delivery.");
+        }
 
         return handleResponse(res, 200, "Order status updated", order);
     } catch (error) {
@@ -244,6 +340,7 @@ export const getSellerOrders = async (req, res) => {
 
         // If admin, fetch all orders. If seller, fetch only their orders.
         const query = role === 'admin' ? {} : { seller: userId };
+        console.log("Fetching Orders - User role:", role, "User ID:", userId);
 
         const orders = await Order.find(query)
             .sort({ createdAt: -1 })
@@ -251,6 +348,9 @@ export const getSellerOrders = async (req, res) => {
             .populate("items.product")
             .populate("deliveryBoy")
             .populate("seller", "shopName name");
+
+        console.log("Fetched Orders Count:", orders.length);
+        console.log("Latest Order ID:", orders[0]?.orderId, "Status:", orders[0]?.status);
 
         return handleResponse(res, 200, role === 'admin' ? "All orders fetched" : "Seller orders fetched", orders);
     } catch (error) {
@@ -269,16 +369,46 @@ export const getAvailableOrders = async (req, res) => {
             return handleResponse(res, 403, "Access denied. Only delivery partners can view available orders.");
         }
 
-        // Fetch orders that are pending/confirmed/packed and have no delivery boy assigned
+        // 1. Get delivery boy's location
+        const deliveryPartner = await Delivery.findById(userId);
+        if (!deliveryPartner || !deliveryPartner.location || !deliveryPartner.location.coordinates) {
+            return handleResponse(res, 200, "Update your location to see nearby orders", []);
+        }
+
+        // 2. Find nearby sellers (within 5km)
+        let nearbySellers = await Seller.find({
+            location: {
+                $near: {
+                    $geometry: deliveryPartner.location,
+                    $maxDistance: 5000 // 5km
+                }
+            }
+        }).select('_id');
+
+        let sellerIds = nearbySellers.map(s => s._id);
+
+        // FALLBACK: If in development/testing and no nearby sellers found, show all available orders
+        if (sellerIds.length === 0 && process.env.NODE_ENV !== 'production') {
+            console.log(`DEV LOG - Radius search found 0 sellers. Bypassing radius check for Delivery Partner: ${userId}`);
+            const allSellers = await Seller.find({}).select('_id');
+            sellerIds = allSellers.map(s => s._id);
+        }
+
+        // 3. Fetch confirmed/packed orders from these sellers with no delivery boy
+        // AND exclude orders already skipped by this partner
         const orders = await Order.find({
-            status: { $in: ["pending", "confirmed", "packed"] },
-            deliveryBoy: null
+            status: { $in: ["confirmed", "packed"] }, // Seller has accepted
+            deliveryBoy: null,
+            seller: { $in: sellerIds },
+            skippedBy: { $nin: [userId] } // Exclude if already skipped by this user
         })
             .sort({ createdAt: -1 })
             .populate("customer", "name phone")
-            .populate("seller", "shopName address name");
+            .populate("seller", "shopName address name location");
 
-        return handleResponse(res, 200, "Available orders fetched", orders);
+        console.log(`Delivery Partner (${userId}) - Available orders found: ${orders.length}`);
+
+        return handleResponse(res, 200, orders.length > 0 ? "Available orders fetched" : "No orders found", orders);
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -314,7 +444,47 @@ export const acceptOrder = async (req, res) => {
 
         await order.save();
 
+        // Notify Seller that a partner has been assigned
+        await Notification.create({
+            recipient: order.seller,
+            recipientModel: "Seller",
+            title: "Delivery Partner Assigned",
+            message: `Delivery partner has been assigned to your order #${orderId}.`,
+            type: "order",
+            data: { orderId: order._id }
+        });
+
         return handleResponse(res, 200, "Order accepted successfully", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   SKIP ORDER (Delivery Boy)
+================================ */
+export const skipOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+
+        if (role !== 'delivery' && role !== 'admin') {
+            return handleResponse(res, 403, "Access denied.");
+        }
+
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        // Add user to skippedBy array if not already there
+        if (!order.skippedBy.includes(userId)) {
+            order.skippedBy.push(userId);
+            await order.save();
+        }
+
+        return handleResponse(res, 200, "Order skipped successfully");
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

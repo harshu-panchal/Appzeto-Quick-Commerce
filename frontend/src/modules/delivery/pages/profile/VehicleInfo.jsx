@@ -3,43 +3,32 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Truck, ShieldCheck, FileText, AlertCircle } from "lucide-react";
 import Button from "@/shared/components/ui/Button";
 import Card from "@/shared/components/ui/Card";
+import { useAuth } from "@/core/context/AuthContext";
 
 const VehicleInfo = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const vehicleDetails = {
-    type: "Bike / Scooter",
-    model: "Honda Activa 6G",
-    plateNumber: "KA 05 MN 8921",
-    color: "Matte Black",
-    fuelType: "Petrol",
+    type: user?.vehicleType || "Not Specified",
+    model: "N/A", // We don't have vehicle model in backend yet
+    plateNumber: user?.vehicleNumber || "Not Assigned",
+    color: "N/A",
+    fuelType: "N/A",
   };
 
   const documents = [
     {
       title: "Driving License",
-      number: "KA05 20200012345",
-      expiry: "12 Oct 2035",
+      number: user?.drivingLicenseNumber || "Not Available",
+      expiry: "N/A",
       status: "Verified",
     },
     {
       title: "RC Book",
-      number: "KA05MN8921",
+      number: user?.vehicleNumber || "Not Assigned",
       expiry: "Valid Forever",
       status: "Verified",
-    },
-    {
-      title: "Vehicle Insurance",
-      number: "POL-99887766",
-      expiry: "15 Aug 2025",
-      status: "Verified",
-    },
-    {
-      title: "Pollution Certificate",
-      number: "PUC-112233",
-      expiry: "10 Mar 2024",
-      status: "Expiring Soon",
-      alert: true,
     },
   ];
 
@@ -48,8 +37,8 @@ const VehicleInfo = () => {
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="flex items-center p-4">
-          <button 
-            onClick={() => navigate(-1)} 
+          <button
+            onClick={() => navigate(-1)}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors mr-2"
           >
             <ArrowLeft size={20} className="text-gray-600" />
@@ -71,7 +60,7 @@ const VehicleInfo = () => {
               <Truck size={24} className="text-white" />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
             <div>
               <p className="text-gray-400 text-xs">Color</p>

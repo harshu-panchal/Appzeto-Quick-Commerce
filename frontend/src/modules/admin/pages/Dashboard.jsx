@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import PageHeader from '@shared/components/ui/PageHeader';
 import StatCard from '@shared/components/ui/StatCard';
 import Badge from '@shared/components/ui/Badge';
+import { adminApi } from '../services/adminApi';
 import {
     Users,
     Store,
@@ -11,6 +12,7 @@ import {
     Activity,
     Database,
     RotateCw,
+    Loader2
 } from 'lucide-react';
 import {
     AreaChart,
@@ -25,29 +27,44 @@ import {
     Cell
 } from 'recharts';
 import { cn } from '@/lib/utils';
-
-const chartData = [
-    { name: 'Mon', revenue: 4000, users: 2400 },
-    { name: 'Tue', revenue: 3000, users: 1398 },
-    { name: 'Wed', revenue: 2000, users: 9800 },
-    { name: 'Thu', revenue: 2780, users: 3908 },
-    { name: 'Fri', revenue: 1890, users: 4800 },
-    { name: 'Sat', revenue: 2390, users: 3800 },
-    { name: 'Sun', revenue: 3490, users: 4300 },
-];
-
-const categoryData = [
-    { name: 'Grocery', value: 400, color: '#4f46e5' },
-    { name: 'Electronics', value: 300, color: '#10b981' },
-    { name: 'Fashion', value: 300, color: '#f59e0b' },
-    { name: 'Home', value: 200, color: '#ef4444' },
-];
+import { toast } from 'sonner';
 
 const AdminDashboard = () => {
+    const [statsData, setStatsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await adminApi.getStats();
+                if (res.data.success) {
+                    setStatsData(res.data.result);
+                }
+            } catch (error) {
+                console.error("Dashboard Stats Error:", error);
+                toast.error("Failed to fetch dashboard data");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="h-[80vh] flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Synchronizing Data...</p>
+            </div>
+        );
+    }
+
+    const overview = statsData?.overview || {};
+
     const stats = [
         {
             label: 'Total Users',
-            value: '1,280',
+            value: overview.totalUsers?.toLocaleString() || '0',
             icon: Users,
             color: 'text-blue-600',
             bg: 'bg-blue-50',
@@ -56,7 +73,7 @@ const AdminDashboard = () => {
         },
         {
             label: 'Active Sellers',
-            value: '84',
+            value: overview.activeSellers?.toLocaleString() || '0',
             icon: Store,
             color: 'text-purple-600',
             bg: 'bg-purple-50',
@@ -65,7 +82,7 @@ const AdminDashboard = () => {
         },
         {
             label: 'Total Orders',
-            value: '2,456',
+            value: overview.totalOrders?.toLocaleString() || '0',
             icon: Truck,
             color: 'text-orange-600',
             bg: 'bg-orange-50',
@@ -74,7 +91,7 @@ const AdminDashboard = () => {
         },
         {
             label: 'Revenue',
-            value: '$42,450',
+            value: `₹${overview.totalRevenue?.toLocaleString() || '0'}`,
             icon: BarChart3,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50',
@@ -83,11 +100,10 @@ const AdminDashboard = () => {
         },
     ];
 
-    const healthMetrics = [
-        { label: 'API Gateway', status: 'Operational', variant: 'success', icon: Activity },
-        { label: 'Database Cluster', status: 'Connected', variant: 'success', icon: Database },
-        { label: 'Cloud Storage', status: 'Stable', variant: 'success', icon: RotateCw },
-    ];
+    const chartData = statsData?.revenueHistory || [];
+    const categoryData = statsData?.categoryData || [];
+    const recentOrders = statsData?.recentOrders || [];
+    const topProducts = statsData?.topProducts || [];
 
     return (
         <div className="ds-section-spacing">
@@ -152,8 +168,10 @@ const AdminDashboard = () => {
                                         axisLine={false}
                                         tickLine={false}
                                         tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                        tickFormatter={(value) => `₹${value}`}
                                     />
                                     <Tooltip
+                                        formatter={(value) => [`₹${value}`, "Revenue"]}
                                         contentStyle={{
                                             borderRadius: '12px',
                                             border: 'none',
@@ -242,19 +260,13 @@ const AdminDashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
-                                    {[
-                                        { id: '#ORD-7721', customer: 'John Doe', status: 'success', statusText: 'Delivered', amount: '$120.50', time: '2 mins ago' },
-                                        { id: '#ORD-7720', customer: 'Sarah Wilson', status: 'warning', statusText: 'Processing', amount: '$45.00', time: '12 mins ago' },
-                                        { id: '#ORD-7719', customer: 'Mike Ross', status: 'info', statusText: 'Shipped', amount: '$89.20', time: '1 hr ago' },
-                                        { id: '#ORD-7718', customer: 'Emma Watson', status: 'success', statusText: 'Delivered', amount: '$210.00', time: '3 hrs ago' },
-                                        { id: '#ORD-7717', customer: 'David King', status: 'error', statusText: 'Cancelled', amount: '$15.00', time: '5 hrs ago' },
-                                    ].map((order) => (
+                                    {recentOrders.map((order) => (
                                         <tr key={order.id} className="group hover:bg-gray-50/50 transition-all">
                                             <td className="py-4 text-sm font-semibold text-primary">{order.id}</td>
                                             <td className="py-4">
                                                 <div className="flex items-center space-x-2">
-                                                    <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-500 ring-2 ring-white shadow-sm">
-                                                        {order.customer[0]}
+                                                    <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-500 ring-2 ring-white shadow-sm uppercase">
+                                                        {order.customer?.[0] || "?"}
                                                     </div>
                                                     <span className="text-sm font-semibold text-gray-700">{order.customer}</span>
                                                 </div>
@@ -285,13 +297,7 @@ const AdminDashboard = () => {
                         className="border-none shadow-sm ring-1 ring-gray-100 h-full"
                     >
                         <div className="space-y-4">
-                            {[
-                                { name: 'Organic Bananas', cat: 'Grocery', sales: 450, rev: '$1,200', icon: '🍌', trend: '+12%', color: 'bg-yellow-50 text-yellow-600' },
-                                { name: 'Wireless Earbuds', cat: 'Electronics', sales: 320, rev: '$15.4k', icon: '🎧', trend: '+8%', color: 'bg-blue-50 text-blue-600' },
-                                { name: 'Cotton T-Shirt', cat: 'Fashion', sales: 280, rev: '$5.6k', icon: '👕', trend: '+15%', color: 'bg-rose-50 text-rose-600' },
-                                { name: 'Smart Watch Pro', cat: 'Electronics', sales: 150, rev: '$22.5k', icon: '⌚', trend: '+5%', color: 'bg-indigo-50 text-indigo-600' },
-                                { name: 'Fresh Avocado', cat: 'Grocery', sales: 120, rev: '$800', icon: '🥑', trend: '+20%', color: 'bg-emerald-50 text-emerald-600' },
-                            ].map((product, i) => (
+                            {topProducts.length > 0 ? topProducts.map((product, i) => (
                                 <div key={i} className="flex items-center justify-between p-3 rounded-2xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group">
                                     <div className="flex items-center space-x-3">
                                         <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform", product.color)}>
@@ -307,7 +313,9 @@ const AdminDashboard = () => {
                                         <p className="text-[10px] text-emerald-600 font-bold">{product.trend}</p>
                                     </div>
                                 </div>
-                            ))}
+                            )) : (
+                                <div className="py-12 text-center text-slate-300 italic text-xs">No sales data yet</div>
+                            )}
                         </div>
                         <button className="w-full mt-6 py-3 border-2 border-dashed border-gray-100 rounded-xl text-xs font-bold text-gray-400 hover:border-primary hover:text-primary transition-all">
                             VIEW ALL PRODUCTS

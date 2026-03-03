@@ -14,6 +14,7 @@ import {
   Plus,
   Eye,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import {
   AreaChart,
   Area,
@@ -59,7 +60,7 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, []); // Only fetch on mount
 
   const stats = [
     {
@@ -150,7 +151,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="ds-section-spacing">
+    <div className="ds-section-spacing relative">
       <PageHeader
         title="Dashboard"
         description="Welcome back! Here's what's happening with your store today."

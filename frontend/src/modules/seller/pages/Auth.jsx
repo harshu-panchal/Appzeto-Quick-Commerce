@@ -14,6 +14,11 @@ import {
   TrendingUp,
   Rocket,
   Globe,
+  MapPin,
+  LayoutList,
+  FileText,
+  Upload,
+  CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import Lottie from "lottie-react";
@@ -23,6 +28,7 @@ import { sellerApi } from "../services/sellerApi";
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [signupStep, setSignupStep] = useState(1);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -32,22 +38,43 @@ const Auth = () => {
     name: "",
     shopName: "",
     phone: "",
+    address: "",
+    category: "",
+    description: "",
+  });
+
+  const [documents, setDocuments] = useState({
+    tradeLicense: null,
+    gstCertificate: null,
+    idProof: null,
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleDocumentChange = (e, docName) => {
+    setDocuments({ ...documents, [docName]: e.target.files[0] });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // For signup, simulate multi-step before actual submit
+    if (!isLogin && signupStep === 1) {
+      setSignupStep(2);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      // Note: Only sending formData as user requested backend shouldn't be changed
       const response = isLogin
         ? await sellerApi.login({
-            email: formData.email,
-            password: formData.password,
-          })
+          email: formData.email,
+          password: formData.password,
+        })
         : await sellerApi.signup(formData);
 
       const { token, seller } = response.data.result;
@@ -128,18 +155,18 @@ const Auth = () => {
         </div>
 
         {/* Form Content Side */}
-        <div className="w-full md:w-[55%] p-8 md:p-12 flex flex-col justify-center bg-white">
+        <div className="w-full md:w-[55%] p-8 md:p-12 flex flex-col justify-center bg-white overflow-y-auto max-h-[90vh] custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div
-              key={isLogin ? "login" : "signup"}
+              key={isLogin ? "login" : `signup-step-${signupStep}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-              className="space-y-8">
+              className="space-y-8 my-auto">
               <div className="space-y-4">
                 <span className="inline-block px-4 py-1 bg-slate-100 text-slate-800 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200">
-                  {isLogin ? "Welcome Back" : "New Partnership"}
+                  {isLogin ? "Welcome Back" : `New Partnership - Step ${signupStep} of 2`}
                 </span>
                 <h1 className="text-3xl font-black text-slate-900 tracking-tighter">
                   Seller{" "}
@@ -150,112 +177,197 @@ const Auth = () => {
                 <p className="text-slate-400 font-medium text-base leading-relaxed">
                   {isLogin
                     ? "Access your unified seller dashboard and manage orders."
-                    : "Register your store and start selling instantly."}
+                    : signupStep === 1
+                      ? "Register your store and start selling instantly."
+                      : "Provide additional details and verification documents."}
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                {!isLogin && (
-                  <div className="grid grid-cols-2 gap-4">
+                {/* LOGIN OR SIGNUP STEP 1 */}
+                {(isLogin || signupStep === 1) && (
+                  <>
+                    {!isLogin && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="relative group">
+                          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
+                            <User size={18} />
+                          </div>
+                          <input
+                            type="text"
+                            name="name"
+                            required
+                            placeholder="Owner Name"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
+                            value={formData.name}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div className="relative group">
+                          <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
+                            <Store size={18} />
+                          </div>
+                          <input
+                            type="text"
+                            name="shopName"
+                            required
+                            placeholder="Shop / Business Name"
+                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
+                            value={formData.shopName}
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
+                    )}
+
                     <div className="relative group">
                       <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
-                        <User size={18} />
+                        <Mail size={18} />
                       </div>
                       <input
-                        type="text"
-                        name="name"
+                        type="email"
+                        name="email"
                         required
-                        placeholder="Seller Name"
+                        placeholder="Business Email"
                         className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
-                        value={formData.name}
+                        value={formData.email}
                         onChange={handleChange}
                       />
                     </div>
+
+                    {!isLogin && (
+                      <div className="relative group">
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
+                          <Phone size={18} />
+                        </div>
+                        <input
+                          type="tel"
+                          name="phone"
+                          required
+                          placeholder="Contact Number"
+                          className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
+                          value={formData.phone}
+                          onChange={handleChange}
+                        />
+                      </div>
+                    )}
+
                     <div className="relative group">
                       <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
-                        <Store size={18} />
+                        <Lock size={18} />
+                      </div>
+                      <input
+                        type="password"
+                        name="password"
+                        required
+                        placeholder="Secure Pin / Password"
+                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
+                        value={formData.password}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* SIGNUP STEP 2 (Extra verification & details fields) */}
+                {!isLogin && signupStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="relative group">
+                      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
+                        <MapPin size={18} />
                       </div>
                       <input
                         type="text"
-                        name="shopName"
+                        name="address"
                         required
-                        placeholder="Store Name"
+                        placeholder="City, State"
                         className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
-                        value={formData.shopName}
+                        value={formData.address}
                         onChange={handleChange}
                       />
+                    </div>
+
+                    <div className="pt-2">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Verification Documents</p>
+                      <div className="space-y-3">
+                        {[
+                          { label: "Trade License", id: "tradeLicense" },
+                          { label: "GST Certificate", id: "gstCertificate" },
+                          { label: "ID Proof", id: "idProof" },
+                        ].map((doc) => (
+                          <div key={doc.id} className="relative">
+                            <input
+                              type="file"
+                              id={doc.id}
+                              className="hidden"
+                              accept="image/*,.pdf"
+                              onChange={(e) => handleDocumentChange(e, doc.id)}
+                            />
+                            <label
+                              htmlFor={doc.id}
+                              className={`flex items-center justify-between p-3.5 rounded-lg border-2 border-dashed transition-all cursor-pointer ${documents[doc.id]
+                                ? "border-green-200 bg-green-50/50"
+                                : "border-slate-200 bg-slate-50 hover:border-slate-300"
+                                }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-md ${documents[doc.id] ? "bg-green-100 text-green-600" : "bg-white text-slate-400 shadow-sm"}`}>
+                                  {documents[doc.id] ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
+                                </div>
+                                <div className="text-left">
+                                  <p className={`text-xs font-bold ${documents[doc.id] ? "text-green-700" : "text-slate-600"}`}>
+                                    {doc.label}
+                                  </p>
+                                  <p className="text-[10px] text-slate-400 font-medium truncate max-w-[150px]">
+                                    {documents[doc.id] ? documents[doc.id].name : "Upload secure PDF or image"}
+                                  </p>
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
 
-                <div className="relative group">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
-                    <Mail size={18} />
-                  </div>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    placeholder="Business Email"
-                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                {!isLogin && (
-                  <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
-                      <Phone size={18} />
-                    </div>
-                    <input
-                      type="tel"
-                      name="phone"
-                      required
-                      placeholder="Contact Number"
-                      className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
-                      value={formData.phone}
-                      onChange={handleChange}
+                <div className="flex gap-3 pt-2">
+                  {!isLogin && signupStep === 2 && (
+                    <button
+                      type="button"
+                      onClick={() => setSignupStep(1)}
+                      className="w-1/3 bg-slate-100 text-slate-600 rounded-lg py-4 text-sm font-black tracking-[2px] transition-all hover:bg-slate-200"
+                    >
+                      BACK
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`${!isLogin && signupStep === 2 ? 'w-2/3' : 'w-full'} bg-slate-900 text-white rounded-lg py-4 text-sm font-black tracking-[2px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.3)] hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group`}>
+                    {isLoading
+                      ? "WORKING..."
+                      : isLogin
+                        ? "ENTER DASHBOARD"
+                        : signupStep === 1
+                          ? "NEXT STEP"
+                          : "SUBMIT APPLICATION"}
+                    <ArrowRight
+                      className="group-hover:translate-x-2 transition-transform"
+                      size={20}
                     />
-                  </div>
-                )}
-
-                <div className="relative group">
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
-                    <Lock size={18} />
-                  </div>
-                  <input
-                    type="password"
-                    name="password"
-                    required
-                    placeholder="Secure Pin"
-                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
+                  </button>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-slate-900 text-white rounded-lg py-4 text-sm font-black tracking-[4px] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.3)] hover:bg-black transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 group">
-                  {isLoading
-                    ? "WORKING..."
-                    : isLogin
-                      ? "ENTER DASHBOARD"
-                      : "CREATE PARTNERSHIP"}
-                  <ArrowRight
-                    className="group-hover:translate-x-2 transition-transform"
-                    size={20}
-                  />
-                </button>
               </form>
 
               <div className="pt-6 border-t border-slate-50 flex flex-col items-center gap-4">
                 <p className="text-slate-400 font-bold text-sm">
                   {isLogin ? "New to the platform?" : "Already part of us?"}{" "}
                   <button
-                    onClick={() => setIsLogin(!isLogin)}
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setSignupStep(1);
+                    }}
                     className="text-slate-900 hover:text-black transition-colors px-2">
                     {isLogin ? "Register Store" : "Sign In"}
                   </button>

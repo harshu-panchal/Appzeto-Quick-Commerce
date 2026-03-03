@@ -3,90 +3,107 @@ import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone } from 'luci
 
 const Footer = () => {
     return (
-        <footer className="relative bg-slate-900 pt-20 pb-10 mt-20 text-slate-300">
-            {/* Top Wave Divider */}
-            <div className="absolute top-[-1px] left-0 w-full overflow-hidden leading-[0] rotate-180">
-                <svg className="relative block w-[calc(100%+1.3px)] h-[50px] md:h-[100px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                    <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="fill-white"></path>
+        <footer className="relative bg-[#051108] pt-20 pb-10 mt-20 text-slate-300 md:bg-gradient-to-br md:from-emerald-700 md:via-green-800 md:to-emerald-900 md:pt-32 md:pb-16 md:mt-32 overflow-hidden">
+            {/* Subtle Texture/Glow Overlay */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#0c831f] blur-[150px] rounded-full opacity-30" />
+                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-[#0c831f] blur-[150px] rounded-full opacity-20" />
+            </div>
+
+            {/* Top Curved Divider */}
+            <div className="absolute top-[-1px] left-0 w-full overflow-hidden leading-[0]">
+                <svg className="relative block w-[calc(100%+1.3px)] h-[25px] md:h-[60px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M0,0 Q600,120 1200,0 V0 H0 Z" className="fill-white"></path>
                 </svg>
             </div>
 
             <div className="container mx-auto px-4 z-10 relative">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-16">
 
                     {/* Brand Info */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-xl">
+                    <div className="space-y-4 md:space-y-8">
+                        <div className="flex items-center gap-2 md:gap-4">
+                            <div className="h-8 w-8 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold text-xl md:h-14 md:w-14 md:rounded-2xl md:bg-gradient-to-br md:from-[#0c831f] md:to-[#1db939] md:text-3xl md:shadow-xl md:shadow-[#0c831f]/20">
                                 A
                             </div>
-                            <span className="text-2xl font-bold text-white">Appzeto</span>
+                            <span className="text-2xl font-bold text-white md:text-4xl md:font-black md:tracking-tighter">Appzeto</span>
                         </div>
-                        <p className="text-sm leading-relaxed">
+                        <p className="text-sm leading-relaxed md:text-base md:leading-loose md:text-emerald-50/70 md:max-w-xs transition-opacity hover:opacity-100">
                             Your daily dose of fresh, organic, and healthy products delivered straight to your door. Freshness guaranteed.
                         </p>
                         <div className="flex gap-4">
-                            <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-brand-500 hover:text-white transition-colors"><Facebook size={18} /></a>
-                            <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-brand-500 hover:text-white transition-colors"><Twitter size={18} /></a>
-                            <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-brand-500 hover:text-white transition-colors"><Instagram size={18} /></a>
-                            <a href="#" className="p-2 bg-slate-800 rounded-full hover:bg-brand-500 hover:text-white transition-colors"><Youtube size={18} /></a>
+                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Facebook size={18} /></a>
+                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Twitter size={18} /></a>
+                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Instagram size={18} /></a>
+                            <a href="#" className="p-2 bg-[#1A2E21] text-emerald-100 rounded-full hover:bg-[#0c831f] hover:text-white transition-all group active:scale-95"><Youtube size={18} /></a>
                         </div>
                     </div>
 
                     {/* Quick Links */}
-                    <div>
-                        <h3 className="text-white font-bold text-lg mb-4">Quick Links</h3>
-                        <ul className="space-y-2">
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Home</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">About Us</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Shop</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Blogs</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Contact</a></li>
+                    <div className="md:pt-4">
+                        <h3 className="text-white font-bold text-lg mb-4 md:text-xl md:font-black md:uppercase md:tracking-widest md:mb-8 flex items-center gap-2">
+                            <span className="h-1 w-4 bg-[#0c831f] hidden md:block"></span> Quick Links
+                        </h3>
+                        <ul className="space-y-2 md:space-y-4">
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Home</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>About Us</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Shop</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Blogs</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Contact</a></li>
                         </ul>
                     </div>
 
                     {/* Categories */}
-                    <div>
-                        <h3 className="text-white font-bold text-lg mb-4">Categories</h3>
-                        <ul className="space-y-2">
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Fruits & Vegetables</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Dairy Products</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Meat & Fish</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Bakery & Snacks</a></li>
-                            <li><a href="#" className="hover:text-brand-400 transition-colors">Beverages</a></li>
+                    <div className="md:pt-4">
+                        <h3 className="text-white font-bold text-lg mb-4 md:text-xl md:font-black md:uppercase md:tracking-widest md:mb-8 flex items-center gap-2">
+                            <span className="h-1 w-4 bg-[#0c831f] hidden md:block"></span> Categories
+                        </h3>
+                        <ul className="space-y-2 md:space-y-4">
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Fruits & Vegetables</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Dairy Products</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Meat & Fish</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Bakery & Snacks</a></li>
+                            <li><a href="#" className="hover:text-[#0c831f] transition-colors md:text-base md:font-medium flex items-center group text-emerald-50/60"><span className="hidden md:block w-0 h-px bg-[#0c831f] group-hover:w-4 group-hover:mr-2 transition-all"></span>Beverages</a></li>
                         </ul>
                     </div>
 
                     {/* Contact Info */}
-                    <div>
-                        <h3 className="text-white font-bold text-lg mb-4">Contact Us</h3>
-                        <ul className="space-y-4">
-                            <li className="flex items-start gap-3">
-                                <MapPin className="text-brand-500 mt-1 shrink-0" size={18} />
-                                <span>123 Green Street, Market Avenue, New York, USA 10001</span>
+                    <div className="md:pt-4">
+                        <h3 className="text-white font-bold text-lg mb-4 md:text-xl md:font-black md:uppercase md:tracking-widest md:mb-8 flex items-center gap-2">
+                            <span className="h-1 w-4 bg-[#0c831f] hidden md:block"></span> Contact Us
+                        </h3>
+                        <ul className="space-y-4 md:space-y-6">
+                            <li className="flex items-start gap-3 md:gap-5 group">
+                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-[#1A2E21] items-center justify-center text-[#0c831f] group-hover:bg-[#0c831f] group-hover:text-white transition-all shrink-0"><MapPin size={22} /></div>
+                                <MapPin className="text-[#0c831f] mt-1 shrink-0 md:hidden" size={18} />
+                                <span className="md:text-base md:text-emerald-50/70 md:pt-1">123 Green Street, Market Avenue, New York, USA 10001</span>
                             </li>
-                            <li className="flex items-center gap-3">
-                                <Phone className="text-brand-500 shrink-0" size={18} />
-                                <span>+1 (234) 567-890</span>
+                            <li className="flex items-center gap-3 md:gap-5 group">
+                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-[#1A2E21] items-center justify-center text-[#0c831f] group-hover:bg-[#0c831f] group-hover:text-white transition-all shrink-0"><Phone size={22} /></div>
+                                <Phone className="text-[#0c831f] shrink-0 md:hidden" size={18} />
+                                <span className="md:text-base md:text-emerald-50/70">+1 (234) 567-890</span>
                             </li>
-                            <li className="flex items-center gap-3">
-                                <Mail className="text-brand-500 shrink-0" size={18} />
-                                <span>support@appzeto.com</span>
+                            <li className="flex items-center gap-3 md:gap-5 group">
+                                <div className="hidden md:flex h-12 w-12 rounded-xl bg-[#1A2E21] items-center justify-center text-[#0c831f] group-hover:bg-[#0c831f] group-hover:text-white transition-all shrink-0"><Mail size={22} /></div>
+                                <Mail className="text-[#0c831f] shrink-0 md:hidden" size={18} />
+                                <span className="md:text-base md:text-emerald-50/70">support@appzeto.com</span>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <div className="border-t border-slate-800 mt-12 pt-8 text-center text-sm md:flex md:justify-between md:text-left">
-                    <p>&copy; {new Date().getFullYear()} Appzeto. All rights reserved.</p>
-                    <div className="flex gap-6 justify-center md:justify-end mt-4 md:mt-0">
-                        <a href="#" className="hover:text-brand-400">Privacy Policy</a>
-                        <a href="#" className="hover:text-brand-400">Terms of Service</a>
+                <div className="border-t border-emerald-900/40 mt-12 pt-8 text-center text-sm md:flex md:justify-between md:text-left md:mt-24 md:pt-12 md:border-white/5">
+                    <p className="md:text-base md:opacity-40 text-emerald-50/60">&copy; {new Date().getFullYear()} Appzeto. All rights reserved.</p>
+                    <div className="flex gap-6 justify-center md:justify-end mt-4 md:mt-0 md:gap-12">
+                        <a href="#" className="hover:text-[#0c831f] md:text-base md:opacity-40 md:hover:opacity-100 transition-all text-emerald-50/60">Privacy Policy</a>
+                        <a href="#" className="hover:text-[#0c831f] md:text-base md:opacity-40 md:hover:opacity-100 transition-all text-emerald-50/60">Terms of Service</a>
                     </div>
                 </div>
             </div>
         </footer>
     );
 };
+
+
 
 export default Footer;

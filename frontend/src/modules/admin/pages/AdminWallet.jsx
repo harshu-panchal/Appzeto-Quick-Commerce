@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import PageHeader from '@shared/components/ui/PageHeader';
@@ -28,19 +28,58 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '@shared/components/ui/Modal';
+import { adminApi } from "../services/adminApi";
+import { toast } from "sonner";
 
 const AdminWallet = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [walletData, setWalletData] = useState({ stats: {}, transactions: [] });
+    const [sellerRequests, setSellerRequests] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterType, setFilterType] = useState('all');
+    const [activeTab, setActiveTab] = useState('all'); // all, earnings, payouts, seller_requests
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [activeTab, setActiveTab] = useState('all'); // all, earnings, payouts, refunds
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [walletRes, requestsRes] = await Promise.all([
+                adminApi.getAdminWalletData(),
+                adminApi.getSellerWithdrawals()
+            ]);
+
+            if (walletRes.data.success) setWalletData(walletRes.data.result || {});
+            if (requestsRes.data.success) setSellerRequests(requestsRes.data.results || requestsRes.data.result || []);
+        } catch (error) {
+            console.error("Admin Wallet Fetch Error:", error);
+            toast.error("Failed to load finance data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleUpdateStatus = async (id, status, reason = "") => {
+        try {
+            const res = await adminApi.updateWithdrawalStatus(id, { status, reason });
+            if (res.data.success) {
+                toast.success(`Request ${status} successfully`);
+                fetchData();
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Action failed");
+        }
+    };
+
     const stats = [
         {
             label: 'Total Platform Earning',
-            value: '₹320',
+            value: `₹${(walletData.stats?.totalPlatformEarning || 0).toLocaleString()}`,
             description: 'Total money collected',
             icon: TrendingUp,
             color: 'blue',
@@ -49,7 +88,7 @@ const AdminWallet = () => {
         },
         {
             label: 'Total Admin Earning',
-            value: '₹65',
+            value: `₹${(walletData.stats?.totalAdminEarning || 0).toLocaleString()}`,
             description: 'Net profit for platform',
             icon: DollarSign,
             color: 'purple',
@@ -57,18 +96,18 @@ const AdminWallet = () => {
             iconColor: 'text-purple-500'
         },
         {
-            label: 'Current Platform Balance',
-            value: '₹320',
-            description: 'Available for business',
+            label: 'Available Balance',
+            value: `₹${(walletData.stats?.totalPlatformEarning || 0).toLocaleString()}`,
+            description: 'Available in business wallet',
             icon: Building2,
             color: 'emerald',
             bg: 'bg-emerald-50',
             iconColor: 'text-emerald-500'
         },
         {
-            label: 'Pending from Delivery Boys',
-            value: '₹0',
-            description: 'COD cash to be collected',
+            label: 'System Float (COD)',
+            value: `₹${(walletData.stats?.systemFloat || 0).toLocaleString()}`,
+            description: 'Cash with delivery partners',
             icon: Clock,
             color: 'amber',
             bg: 'bg-orange-50',
@@ -76,7 +115,7 @@ const AdminWallet = () => {
         },
         {
             label: 'Seller Pending Payouts',
-            value: '₹270',
+            value: `₹${(walletData.stats?.sellerPendingPayouts || 0).toLocaleString()}`,
             description: 'Owed to sellers',
             icon: CreditCard,
             color: 'blue',
@@ -84,8 +123,8 @@ const AdminWallet = () => {
             iconColor: 'text-blue-500'
         },
         {
-            label: 'Delivery Boy Pending Payouts',
-            value: '₹15',
+            label: 'Delivery Pending Payouts',
+            value: `₹${(walletData.stats?.deliveryPendingPayouts || 0).toLocaleString()}`,
             description: 'Owed to delivery partners',
             icon: CreditCard,
             color: 'purple',
@@ -94,15 +133,7 @@ const AdminWallet = () => {
         }
     ];
 
-    const [transactions] = useState([
-        { id: 'TXN-8821', type: 'order_commission', amount: 45, status: 'completed', date: 'Today, 10:30 AM', sender: 'Order #9921', recipient: 'Platform Wallet', method: 'Internal Transfer', notes: 'Platform commission for Order #9921' },
-        { id: 'TXN-8820', type: 'seller_payout', amount: -210, status: 'pending', date: 'Today, 09:15 AM', sender: 'Platform Wallet', recipient: 'Fresh Mart Store', method: 'Bank Transfer (IMPS)', notes: 'Weekly payout for verified seller' },
-        { id: 'TXN-8819', type: 'delivery_earning', amount: 15, status: 'completed', date: 'Yesterday, 08:45 PM', sender: 'Order #9918', recipient: 'Rahul Delivery Partner', method: 'Internal Transfer', notes: 'Delivery fee payout for Order #9918' },
-        { id: 'TXN-8818', type: 'cod_collection', amount: 850, status: 'completed', date: 'Yesterday, 06:30 PM', sender: 'Suresh Delivery Partner', recipient: 'Platform Wallet', method: 'Cash Deposit', notes: 'COD cash collected and verified' },
-        { id: 'TXN-8817', type: 'refund_issued', amount: -120, status: 'completed', date: '13 Feb, 04:20 PM', sender: 'Platform Wallet', recipient: 'John Doe (User)', method: 'Gateway Refund', notes: 'Refund for cancelled Order #9812' },
-    ]);
-
-    const filteredTransactions = transactions.filter(txn => {
+    const filteredTransactions = (walletData.transactions || []).filter(txn => {
         const matchesSearch = txn.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             txn.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
             txn.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -110,11 +141,12 @@ const AdminWallet = () => {
 
         const matchesTab = activeTab === 'all' ||
             (activeTab === 'earnings' && txn.amount > 0) ||
-            (activeTab === 'payouts' && txn.amount < 0 && txn.type !== 'refund_issued') ||
-            (activeTab === 'refunds' && txn.type === 'refund_issued');
+            (activeTab === 'payouts' && txn.amount < 0);
 
         return matchesSearch && matchesTab;
     });
+
+    const pendingRequests = sellerRequests.filter(req => req.status === 'Pending' || req.status === 'Processing');
 
     const handleExport = () => {
         setIsExporting(true);
@@ -231,16 +263,22 @@ const AdminWallet = () => {
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="flex bg-slate-100 p-1 rounded-xl">
-                                {['all', 'earnings', 'payouts', 'refunds'].map((tab) => (
+                                {['all', 'earnings', 'payouts', 'seller_requests'].map((tab) => (
                                     <button
                                         key={tab}
                                         onClick={() => setActiveTab(tab)}
                                         className={cn(
-                                            "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight transition-all",
+                                            "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight transition-all relative",
                                             activeTab === tab ? "bg-white text-slate-900 shadow-sm" : "text-slate-400 hover:text-slate-600"
                                         )}
                                     >
-                                        {tab}
+                                        {tab.replace('_', ' ')}
+                                        {tab === 'seller_requests' && pendingRequests.length > 0 && (
+                                            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-500 text-[8px] items-center justify-center text-white border-2 border-white">{pendingRequests.length}</span>
+                                            </span>
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -260,81 +298,144 @@ const AdminWallet = () => {
                     <Card className="border-none shadow-2xl ring-1 ring-slate-100/50 overflow-hidden bg-white rounded-[32px]">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-slate-50/50 border-b border-slate-100">
-                                        <th className="ds-table-header-cell pl-8">Transaction Details</th>
-                                        <th className="ds-table-header-cell">Entities</th>
-                                        <th className="ds-table-header-cell text-center">Amount</th>
-                                        <th className="ds-table-header-cell">Status</th>
-                                        <th className="ds-table-header-cell text-right pr-8">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {filteredTransactions.map((txn, i) => (
-                                        <tr
-                                            key={txn.id}
-                                            onClick={() => setSelectedTransaction(txn)}
-                                            className="group hover:bg-slate-50/50 transition-all cursor-pointer"
-                                        >
-                                            <td className="px-6 py-5 pl-8">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={cn(
-                                                        "h-10 w-10 rounded-xl flex items-center justify-center shadow-sm",
-                                                        txn.amount > 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-                                                    )}>
-                                                        {txn.amount > 0 ? <ArrowDownCircle className="h-5 w-5" /> : <ArrowUpCircle className="h-5 w-5" />}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">{txn.type.replace('_', ' ').toUpperCase()}</p>
-                                                        <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{txn.id} • {txn.date}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex flex-col gap-1">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <ArrowDownLeft className="h-3 w-3 text-emerald-500" />
-                                                        <span className="text-[11px] font-bold text-slate-600">{txn.recipient}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 opacity-50">
-                                                        <ArrowUpRight className="h-3 w-3 text-rose-500" />
-                                                        <span className="text-[10px] font-semibold text-slate-400">{txn.sender}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5 text-center">
-                                                <p className={cn(
-                                                    "text-sm font-black",
-                                                    txn.amount > 0 ? "text-emerald-600" : "text-rose-600"
-                                                )}>
-                                                    {txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount)}
-                                                </p>
-                                            </td>
-                                            <td className="px-6 py-5 text-center">
-                                                <Badge variant={txn.status === 'completed' ? 'success' : 'warning'} className="text-[8px] font-black px-2.5 py-1">
-                                                    {txn.status.toUpperCase()}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-6 py-5 text-right pr-8">
-                                                <button className="p-2 hover:bg-white hover:shadow-md rounded-lg transition-all text-slate-400 hover:text-primary active:scale-90">
-                                                    <ChevronRight className="h-4 w-4" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {filteredTransactions.length === 0 && (
-                                        <tr>
-                                            <td colSpan="5" className="px-6 py-20 text-center">
-                                                <div className="flex flex-col items-center">
-                                                    <div className="p-4 bg-slate-50 rounded-full mb-4">
-                                                        <Search className="h-8 w-8 text-slate-200" />
-                                                    </div>
-                                                    <p className="text-slate-400 font-bold text-sm">No transactions found matching your criteria.</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
+                                {activeTab === 'seller_requests' ? (
+                                    <>
+                                        <thead>
+                                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                                                <th className="ds-table-header-cell pl-8">Seller Detail</th>
+                                                <th className="ds-table-header-cell text-center">Amount</th>
+                                                <th className="ds-table-header-cell">Status</th>
+                                                <th className="ds-table-header-cell text-right pr-8">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {sellerRequests.map((req) => (
+                                                <tr key={req._id} className="group hover:bg-slate-50/50 transition-all">
+                                                    <td className="px-6 py-5 pl-8">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                                                                <Building2 className="h-5 w-5 text-indigo-500" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-slate-900">{req.user?.shopName || req.user?.name}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{req.user?.phone}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-center">
+                                                        <p className="text-sm font-black text-slate-900">₹{Math.abs(req.amount).toLocaleString()}</p>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        <Badge variant={req.status === 'Settled' ? 'success' : (req.status === 'Pending' || req.status === 'Processing') ? 'warning' : 'danger'} className="text-[8px] font-black px-2.5 py-1">
+                                                            {req.status.toUpperCase()}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-right pr-8">
+                                                        {req.status === 'Pending' ? (
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <button
+                                                                    onClick={() => handleUpdateStatus(req._id, 'Settled')}
+                                                                    className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-[10px] font-black uppercase hover:bg-emerald-600 transition-all"
+                                                                >
+                                                                    Approve
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const reason = prompt("Select reason for rejection:");
+                                                                        if (reason) handleUpdateStatus(req._id, 'Failed', reason);
+                                                                    }}
+                                                                    className="px-3 py-1.5 bg-rose-500 text-white rounded-lg text-[10px] font-black uppercase hover:bg-rose-600 transition-all"
+                                                                >
+                                                                    Reject
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-[10px] font-bold text-slate-400 italic">No Actions</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </>
+                                ) : (
+                                    <>
+                                        <thead>
+                                            <tr className="bg-slate-50/50 border-b border-slate-100">
+                                                <th className="ds-table-header-cell pl-8">Transaction Details</th>
+                                                <th className="ds-table-header-cell">Entities</th>
+                                                <th className="ds-table-header-cell text-center">Amount</th>
+                                                <th className="ds-table-header-cell">Status</th>
+                                                <th className="ds-table-header-cell text-right pr-8">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {filteredTransactions.map((txn, i) => (
+                                                <tr
+                                                    key={txn.id}
+                                                    onClick={() => setSelectedTransaction(txn)}
+                                                    className="group hover:bg-slate-50/50 transition-all cursor-pointer"
+                                                >
+                                                    <td className="px-6 py-5 pl-8">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={cn(
+                                                                "h-10 w-10 rounded-xl flex items-center justify-center shadow-sm",
+                                                                txn.amount > 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                                            )}>
+                                                                {txn.amount > 0 ? <ArrowDownCircle className="h-5 w-5" /> : <ArrowUpCircle className="h-5 w-5" />}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors">{txn.type.replace('_', ' ').toUpperCase()}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-tighter">{txn.id} • {txn.date}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5">
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex items-center gap-1.5">
+                                                                <ArrowDownLeft className="h-3 w-3 text-emerald-500" />
+                                                                <span className="text-[11px] font-bold text-slate-600">{txn.recipient}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5 opacity-50">
+                                                                <ArrowUpRight className="h-3 w-3 text-rose-500" />
+                                                                <span className="text-[10px] font-semibold text-slate-400">{txn.sender}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-center">
+                                                        <p className={cn(
+                                                            "text-sm font-black",
+                                                            txn.amount > 0 ? "text-emerald-600" : "text-rose-600"
+                                                        )}>
+                                                            {txn.amount > 0 ? '+' : ''}₹{Math.abs(txn.amount).toLocaleString()}
+                                                        </p>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-center">
+                                                        <Badge variant={txn.status === 'completed' || txn.status === 'Settled' ? 'success' : 'warning'} className="text-[8px] font-black px-2.5 py-1">
+                                                            {txn.status.toUpperCase()}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-right pr-8">
+                                                        <button className="p-2 hover:bg-white hover:shadow-md rounded-lg transition-all text-slate-400 hover:text-primary active:scale-90">
+                                                            <ChevronRight className="h-4 w-4" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {(activeTab === 'seller_requests' ? sellerRequests.length === 0 : filteredTransactions.length === 0) && (
+                                                <tr>
+                                                    <td colSpan="5" className="px-6 py-20 text-center">
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="p-4 bg-slate-50 rounded-full mb-4">
+                                                                <Search className="h-8 w-8 text-slate-200" />
+                                                            </div>
+                                                            <p className="text-slate-400 font-bold text-sm">No items found matching your criteria.</p>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </>
+                                )}
                             </table>
                         </div>
                     </Card>
@@ -354,7 +455,7 @@ const AdminWallet = () => {
                             <div className="relative z-10 space-y-6">
                                 <div>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-2">Ready for Settlement</p>
-                                    <h3 className="text-4xl font-black">₹285.00</h3>
+                                    <h3 className="text-4xl font-black">₹{((walletData.stats?.sellerPendingPayouts || 0) + (walletData.stats?.deliveryPendingPayouts || 0)).toLocaleString()}</h3>
                                 </div>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-2xl border border-white/5">
@@ -362,14 +463,14 @@ const AdminWallet = () => {
                                             <div className="h-2 w-2 rounded-full bg-blue-400" />
                                             <span className="text-xs font-bold text-slate-300">Sellers</span>
                                         </div>
-                                        <span className="text-xs font-black">₹270.00</span>
+                                        <span className="text-xs font-black">₹{(walletData.stats?.sellerPendingPayouts || 0).toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-2xl border border-white/5">
                                         <div className="flex items-center gap-2">
                                             <div className="h-2 w-2 rounded-full bg-purple-400" />
                                             <span className="text-xs font-bold text-slate-300">Riders</span>
                                         </div>
-                                        <span className="text-xs font-black">₹15.00</span>
+                                        <span className="text-xs font-black">₹{(walletData.stats?.deliveryPendingPayouts || 0).toLocaleString()}</span>
                                     </div>
                                 </div>
                                 <button

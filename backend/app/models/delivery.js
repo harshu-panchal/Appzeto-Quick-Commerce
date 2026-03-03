@@ -20,7 +20,43 @@ const deliverySchema = new mongoose.Schema(
             default: "bike",
         },
 
+        email: {
+            type: String,
+            trim: true,
+        },
+
+        address: {
+            type: String,
+            trim: true,
+        },
+
+        accountHolder: {
+            type: String,
+            trim: true,
+        },
+
+        accountNumber: {
+            type: String,
+            trim: true,
+        },
+
+        ifsc: {
+            type: String,
+            trim: true,
+        },
+
+        documents: {
+            aadhar: { type: String },
+            pan: { type: String },
+            drivingLicense: { type: String },
+        },
+
         vehicleNumber: {
+            type: String,
+            trim: true,
+        },
+
+        drivingLicenseNumber: {
             type: String,
             trim: true,
         },
@@ -41,7 +77,17 @@ const deliverySchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
-
+        location: {
+            type: {
+                type: String,
+                enum: ["Point"],
+                default: "Point",
+            },
+            coordinates: {
+                type: [Number],
+                default: [0, 0],
+            },
+        },
         role: {
             type: String,
             default: "delivery",
@@ -65,6 +111,8 @@ const deliverySchema = new mongoose.Schema(
         toObject: { virtuals: true }
     }
 );
+
+deliverySchema.index({ location: "2dsphere" });
 
 deliverySchema.virtual('id').get(function () {
     return this._id.toHexString();

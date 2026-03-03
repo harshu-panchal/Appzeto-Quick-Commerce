@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import {
@@ -17,71 +17,100 @@ import {
     FileText,
     ShieldCheck,
     MessageSquare,
+    Users,
+    Eye,
     X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { adminApi } from '../services/adminApi';
+import { toast } from 'sonner';
 
 const DeliveryFunds = () => {
-    // Mock Data for Fund Transfers
-    const [transfers, setTransfers] = useState([
-        {
-            id: 'TXN-001',
-            riderName: 'Rahul Sharma',
-            riderId: 'RD-001',
-            amount: 4250,
-            status: 'completed', // completed, pending, failed
-            paymentMethod: 'UPI / PhonePe',
-            accountInfo: 'rahul.s@okaxis',
-            dateTime: '15 Feb 2024, 10:30 AM',
-            referenceId: '882310223941',
-            type: 'settlement'
-        },
-        {
-            id: 'TXN-002',
-            riderName: 'Vikram Singh',
-            riderId: 'RD-002',
-            amount: 1850,
-            status: 'pending',
-            paymentMethod: 'Bank IMPS',
-            accountInfo: 'XXXX-XXXX-5678',
-            dateTime: '15 Feb 2024, 02:15 PM',
-            referenceId: 'WAITING_BANK_ACK',
-            type: 'incentive'
-        },
-        {
-            id: 'TXN-003',
-            riderName: 'Amit Kumar',
-            riderId: 'RD-003',
-            amount: 920,
-            status: 'failed',
-            paymentMethod: 'Direct Deposit',
-            accountInfo: 'XXXX-XXXX-9012',
-            dateTime: '14 Feb 2024, 06:45 PM',
-            referenceId: 'ERR_INSUFFICIENT_FUNDS',
-            type: 'rebate'
-        }
-    ]);
-
+    const [transfers, setTransfers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [viewingTxn, setViewingTxn] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
+    const fetchTransactions = async () => {
+        setIsLoading(true);
+        try {
+            const response = await adminApi.getDeliveryTransactions();
+            const data = response.data.result || response.data.results || [];
+
+            // Map backend Transaction model to frontend format
+            const mapped = data.map(tx => ({
+                id: tx.reference,
+                _id: tx._id,
+                riderName: tx.user?.name || 'Unknown',
+                riderId: tx.user?._id?.slice(-6).toUpperCase() || 'N/A',
+                amount: Math.abs(tx.amount),
+                status: tx.status.toLowerCase(), // Completed, Pending, Failed
+                paymentMethod: 'Bank Transfer', // Default for now
+                accountInfo: tx.user?.documents?.bankDetails || 'No details',
+                dateTime: new Date(tx.date).toLocaleString(),
+                referenceId: tx.reference,
+                type: tx.type
+            }));
+            setTransfers(mapped);
+        } catch (error) {
+            console.error("Fetch Transactions Error:", error);
+            toast.error("Failed to load transactions");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchTransactions();
+    }, []);
+
+    const handleBulkSettle = async () => {
+        if (!window.confirm("Are you sure you want to settle all pending transactions?")) return;
+        setIsProcessing(true);
+        try {
+            await adminApi.bulkSettleDelivery();
+            toast.success("Bulk settlement processed");
+            fetchTransactions();
+        } catch (error) {
+            toast.error("Bulk settlement failed");
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleSettleSingle = async (id) => {
+        try {
+            await adminApi.settleTransaction(id);
+            toast.success("Transaction settled");
+            fetchTransactions();
+        } catch (error) {
+            toast.error("Settlement failed");
+        }
+    };
+
     const filteredTransfers = useMemo(() => {
         return transfers.filter(tx => {
-            const matchesSearch = tx.riderName.toLowerCase().includes(searchTerm.toLowerCase()) || tx.id.includes(searchTerm);
+            const matchesSearch = tx.riderName.toLowerCase().includes(searchTerm.toLowerCase()) || tx.id.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesStatus = filterStatus === 'all' || tx.status === filterStatus;
             return matchesSearch && matchesStatus;
         });
     }, [transfers, searchTerm, filterStatus]);
 
-    const stats = [
-        { label: 'Total Settled', value: '₹1,24,500', icon: Banknote, color: 'emerald' },
-        { label: 'Pending Payouts', value: '₹12,850', icon: Clock, color: 'amber' },
-        { label: 'System Float', value: '₹45,000', icon: Wallet, color: 'indigo' },
-        { label: 'Refunded', value: '₹2,400', icon: Undo2, color: 'rose' },
-    ];
+    const stats = useMemo(() => {
+        const settled = transfers.filter(tx => tx.status === 'settled').reduce((acc, tx) => acc + tx.amount, 0);
+        const pending = transfers.filter(tx => tx.status === 'pending').reduce((acc, tx) => acc + tx.amount, 0);
+        const float = transfers.reduce((acc, tx) => acc + tx.amount, 0);
+
+        return [
+            { label: 'Total Settled', value: `₹${settled.toLocaleString()}`, icon: Banknote, color: 'emerald' },
+            { label: 'Pending Payouts', value: `₹${pending.toLocaleString()}`, icon: Clock, color: 'amber' },
+            { label: 'System Float', value: `₹${float.toLocaleString()}`, icon: Wallet, color: 'indigo' },
+            { label: 'Riders Involved', value: [...new Set(transfers.map(tx => tx.riderId))].length, icon: Users, color: 'rose' },
+        ];
+    }, [transfers]);
 
     return (
         <div className="ds-section-spacing animate-in fade-in duration-700">
@@ -97,9 +126,13 @@ const DeliveryFunds = () => {
                     <p className="ds-description mt-1">Audit and execute secure fund transfers to your fleet partners.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95 group">
-                        <Banknote className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                        <span>BULK SETTLE ALL</span>
+                    <button
+                        onClick={handleBulkSettle}
+                        disabled={isProcessing}
+                        className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3.5 rounded-2xl text-xs font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95 group disabled:opacity-50"
+                    >
+                        {isProcessing ? <RotateCw className="h-4 w-4 animate-spin" /> : <Banknote className="h-4 w-4 group-hover:scale-110 transition-transform" />}
+                        <span>{isProcessing ? 'PROCESSING...' : 'BULK SETTLE ALL'}</span>
                     </button>
                 </div>
             </div>
@@ -181,55 +214,86 @@ const DeliveryFunds = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {filteredTransfers.map((tx) => (
-                                <tr key={tx.id} className="group hover:bg-slate-50/50 transition-all duration-300">
-                                    <td className="px-5 py-7 pl-12">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-slate-900/5 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
-                                                <ArrowUpRight className="h-5 w-5" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-black text-slate-900 tracking-tight">{tx.id}</p>
-                                                <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">{tx.type}</p>
-                                            </div>
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan="5" className="py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="h-10 w-10 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Auditing Ledger...</p>
                                         </div>
-                                    </td>
-                                    <td className="px-4 py-7">
-                                        <div>
-                                            <p className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{tx.riderName}</p>
-                                            <span className="text-[10px] font-bold text-slate-400">{tx.riderId}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-7 text-center">
-                                        <div className="flex flex-col items-center">
-                                            <p className="text-sm font-black text-slate-900">₹{tx.amount.toLocaleString()}</p>
-                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{tx.paymentMethod}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-7">
-                                        <div className="flex items-center gap-2">
-                                            {tx.status === 'completed' ? (
-                                                <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                                            ) : tx.status === 'pending' ? (
-                                                <Clock className="h-4 w-4 text-amber-500 shrink-0 animate-spin-slow" />
-                                            ) : (
-                                                <XCircle className="h-4 w-4 text-rose-500 shrink-0" />
-                                            )}
-                                            <Badge variant={tx.status === 'completed' ? 'success' : tx.status === 'pending' ? 'warning' : 'destructive'} className="text-[8px] font-black uppercase tracking-wider px-2">
-                                                {tx.status}
-                                            </Badge>
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-7 text-right pr-12">
-                                        <button
-                                            onClick={() => setViewingTxn(tx)}
-                                            className="p-3 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 hover:ring-slate-900 transition-all shadow-sm active:scale-95"
-                                        >
-                                            <FileText className="h-5 w-5" />
-                                        </button>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : filteredTransfers.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="py-20 text-center">
+                                        <div className="flex flex-col items-center gap-3 opacity-40">
+                                            <FileText className="h-10 w-10 text-slate-300" />
+                                            <p className="text-sm font-bold text-slate-500">No transactions found for this period.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredTransfers.map((tx) => (
+                                    <tr key={tx._id} className="group hover:bg-slate-50/50 transition-all duration-300">
+                                        <td className="px-5 py-7 pl-12">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 rounded-xl bg-slate-900/5 flex items-center justify-center text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+                                                    <ArrowUpRight className="h-5 w-5" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-black text-slate-900 tracking-tight">{tx.id}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-widest">{tx.type}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-7">
+                                            <div>
+                                                <p className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{tx.riderName}</p>
+                                                <span className="text-[10px] font-bold text-slate-400">{tx.riderId}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-7 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <p className="text-sm font-black text-slate-900">₹{tx.amount.toLocaleString()}</p>
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{tx.paymentMethod}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-7">
+                                            <div className="flex items-center gap-2">
+                                                {tx.status === 'settled' ? (
+                                                    <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
+                                                ) : tx.status === 'pending' ? (
+                                                    <Clock className="h-4 w-4 text-amber-500 shrink-0 animate-spin-slow" />
+                                                ) : (
+                                                    <XCircle className="h-4 w-4 text-rose-500 shrink-0" />
+                                                )}
+                                                <Badge variant={tx.status === 'settled' ? 'success' : tx.status === 'pending' ? 'warning' : 'destructive'} className="text-[8px] font-black uppercase tracking-wider px-2">
+                                                    {tx.status}
+                                                </Badge>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-7 text-right pr-12">
+                                            <div className="flex items-center justify-end gap-2">
+                                                {tx.status === 'pending' && (
+                                                    <button
+                                                        onClick={() => handleSettleSingle(tx._id)}
+                                                        className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-sm active:scale-95"
+                                                        title="Settle Transaction"
+                                                    >
+                                                        <CheckCircle className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => setViewingTxn(tx)}
+                                                    className="p-3 bg-white ring-1 ring-slate-200 rounded-2xl text-slate-400 hover:text-slate-900 hover:ring-slate-900 transition-all shadow-sm active:scale-95"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -255,9 +319,22 @@ const DeliveryFunds = () => {
                             <div className="p-5">
                                 <div className="flex justify-between items-center mb-10">
                                     <h3 className="ds-h2 uppercase tracking-widest">Ledger Entry</h3>
-                                    <button onClick={() => setViewingTxn(null)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400">
-                                        <XCircle className="h-6 w-6" />
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        {viewingTxn.status === 'pending' && (
+                                            <button
+                                                onClick={() => {
+                                                    handleSettleSingle(viewingTxn._id);
+                                                    setViewingTxn(null);
+                                                }}
+                                                className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-bold hover:bg-emerald-500 hover:text-white transition-all"
+                                            >
+                                                SETTLE NOW
+                                            </button>
+                                        )}
+                                        <button onClick={() => setViewingTxn(null)} className="p-2 hover:bg-slate-50 rounded-full text-slate-400">
+                                            <XCircle className="h-6 w-6" />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="text-center mb-10">

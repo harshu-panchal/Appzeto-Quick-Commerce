@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, AnimatePresence, useAnimation, useDragControls } from 'framer-motion';
-import { X, ChevronDown, Share2, Heart, Search, Clock, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { X, ChevronDown, Share2, Heart, Search, Clock, Minus, Plus, ShoppingBag, Star, MessageSquare } from 'lucide-react';
 import { useProductDetail } from '../../context/ProductDetailContext';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '@shared/components/ui/Toast';
-import { cn } from '@/lib/utils'; // Keep existing logic
+import { cn } from '@/lib/utils';
+import { customerApi } from '../../services/customerApi';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
 const ProductDetailSheet = () => {
     const { selectedProduct, isOpen, closeProduct } = useProductDetail();
@@ -18,6 +21,11 @@ const ProductDetailSheet = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+    const [reviews, setReviews] = useState([]);
+    const [reviewLoading, setReviewLoading] = useState(true);
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
 
     const scrollRef = useRef(null);
 
@@ -41,7 +49,47 @@ const ProductDetailSheet = () => {
             setSelectedVariant(null);
         }
         setActiveImageIndex(0);
+
+        if (selectedProduct?.id) {
+            fetchReviews(selectedProduct.id);
+        }
     }, [selectedProduct]);
+
+    const fetchReviews = async (productId) => {
+        try {
+            setReviewLoading(true);
+            const res = await customerApi.getProductReviews(productId);
+            if (res.data.success) {
+                setReviews(res.data.results);
+            }
+        } catch (error) {
+            console.error("Fetch reviews error:", error);
+        } finally {
+            setReviewLoading(false);
+        }
+    };
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (!newReview.comment.trim()) return;
+
+        try {
+            setIsSubmittingReview(true);
+            const res = await customerApi.submitReview({
+                productId: selectedProduct.id,
+                rating: newReview.rating,
+                comment: newReview.comment
+            });
+            if (res.data.success) {
+                showToast("Review submitted for moderation", "success");
+                setNewReview({ rating: 5, comment: '' });
+            }
+        } catch (error) {
+            showToast(error.response?.data?.message || "Failed to submit review", "error");
+        } finally {
+            setIsSubmittingReview(false);
+        }
+    };
 
     // If no product selected, don't render anything (well, Context handles isOpen, but still good check)
     // Removed early return to satisfy Rules of Hooks (hooks must be called in same order)
@@ -324,6 +372,91 @@ const ProductDetailSheet = () => {
                                             <span className="text-gray-400 block mb-1">Customer Care</span>
                                             <span className="font-bold text-gray-800">support@appzeto.com</span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div className="h-px bg-gray-100 my-8" />
+
+                                {/* Reviews Section */}
+                                <div className="space-y-6">
+                                    <h3 className="text-xl font-black text-gray-900 flex items-center justify-between">
+                                        Customer Reviews
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold">
+                                            <Star size={14} fill="currentColor" />
+                                            {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '4.8'}
+                                        </div>
+                                    </h3>
+
+                                    {/* Submissions form (Foldable or inline) */}
+                                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                                        <h4 className="font-bold text-gray-800 text-sm mb-1">Rate this product</h4>
+                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-4">Reviews are moderated</p>
+
+                                        <form onSubmit={handleReviewSubmit} className="space-y-4">
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                    <button
+                                                        key={s}
+                                                        type="button"
+                                                        onClick={() => setNewReview({ ...newReview, rating: s })}
+                                                        className={cn(
+                                                            "h-10 w-10 rounded-xl flex items-center justify-center transition-all",
+                                                            newReview.rating >= s ? "bg-orange-100 text-orange-500" : "bg-white text-gray-300 border border-gray-100"
+                                                        )}
+                                                    >
+                                                        <Star size={18} className={cn(newReview.rating >= s && "fill-current")} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <textarea
+                                                value={newReview.comment}
+                                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                                                placeholder="Write your experience..."
+                                                className="w-full bg-white border border-gray-100 rounded-2xl p-4 text-sm font-medium min-h-[100px] outline-none focus:border-blue-500/50 transition-all resize-none"
+                                            />
+                                            <Button
+                                                type="submit"
+                                                disabled={isSubmittingReview}
+                                                className="w-full h-12 bg-gray-900 hover:bg-black text-white font-black rounded-xl text-xs uppercase tracking-widest"
+                                            >
+                                                {isSubmittingReview ? "Submitting..." : "Post Review"}
+                                            </Button>
+                                        </form>
+                                    </div>
+
+                                    {/* Reviews List */}
+                                    <div className="space-y-4">
+                                        {reviewLoading ? (
+                                            <div className="flex justify-center py-8">
+                                                <Loader2 className="animate-spin text-blue-600" size={24} />
+                                            </div>
+                                        ) : reviews.length > 0 ? (
+                                            reviews.map((r) => (
+                                                <div key={r._id} className="p-5 rounded-2xl border border-gray-100 space-y-2">
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-[10px] font-black text-blue-600">
+                                                                {r.userId?.name?.[0] || "A"}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-black text-gray-800">{r.userId?.name || "Anonymous"}</p>
+                                                                <div className="flex gap-0.5">
+                                                                    {[...Array(5)].map((_, i) => (
+                                                                        <Star key={i} size={10} className={cn(i < r.rating ? "text-orange-400 fill-orange-400" : "text-gray-200")} />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-600 font-medium leading-relaxed">{r.comment}</p>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-10 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No reviews yet</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

@@ -107,6 +107,18 @@ const orderSchema = new mongoose.Schema(
             enum: ["Direct", "Search", "Social", "Referral"],
             default: "Direct",
         },
+        expiresAt: {
+            type: Date,
+        },
+        acceptedAt: {
+            type: Date,
+        },
+        skippedBy: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Delivery",
+            },
+        ],
     },
     { timestamps: true }
 );

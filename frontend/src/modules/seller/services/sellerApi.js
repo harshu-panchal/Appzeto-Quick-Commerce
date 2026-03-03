@@ -34,4 +34,7 @@ export const sellerApi = {
     getNotifications: () => axiosInstance.get('/notifications'),
     markNotificationRead: (id) => axiosInstance.put(`/notifications/${id}/read`),
     markAllNotificationsRead: () => axiosInstance.put('/notifications/mark-all-read'),
+
+    // Money Requests
+    requestWithdrawal: (data) => axiosInstance.post('/seller/request-withdrawal', data),
 };

@@ -82,18 +82,21 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
         <motion.div
             whileHover={{ scale: 1.02 }}
             className={cn(
-                "flex-shrink-0 w-full bg-[#FAFEF0] rounded-xl overflow-hidden border border-green-100 flex flex-col h-full shadow-sm cursor-pointer",
+                "flex-shrink-0 w-full rounded-2xl overflow-hidden flex flex-col h-full shadow-sm cursor-pointer transition-all duration-300",
+                compact
+                    ? "bg-white border-[1.5px] border-emerald-50 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)]"
+                    : "bg-[#FAFEF0] border border-green-100",
                 className
             )}
             onClick={handleProductClick}
         >
             {/* Top Image Section */}
-            <div className={cn("relative pb-0", compact ? "p-1.5" : "p-2.5")}>
+            <div className={cn("relative pb-0", compact ? "p-2" : "p-2.5")}>
                 {/* Badge (Custom or Discount) */}
                 {(badge || product.discount || product.originalPrice > product.price) && (
                     <div className={cn(
-                        "absolute z-10 bg-[#0c831f] text-white font-black rounded-lg shadow-sm uppercase",
-                        compact ? "top-1.5 left-1.5 px-1.5 py-0.5 text-[8px]" : "top-3 left-3 px-2 py-1 text-[9px]"
+                        "absolute z-10 bg-[#0c831f] text-white font-[900] rounded-md shadow-sm uppercase tracking-wider flex items-center justify-center",
+                        compact ? "top-2 left-2 px-1.5 py-0.5 text-[7px]" : "top-3 left-3 px-2 py-1 text-[9px]"
                     )}>
                         {badge || product.discount || `${Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF`}
                     </div>
@@ -102,8 +105,8 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                 <button
                     onClick={toggleWishlist}
                     className={cn(
-                        "absolute z-10 bg-white rounded-full shadow-md flex items-center justify-center cursor-pointer hover:bg-neutral-50 transition-colors",
-                        compact ? "top-1.5 right-1.5 h-6 w-6" : "top-3 right-3 h-8 w-8"
+                        "absolute z-10 bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center justify-center cursor-pointer hover:bg-white transition-all active:scale-90",
+                        compact ? "top-2 right-2 h-7 w-7" : "top-3 right-3 h-8 w-8"
                     )}
                 >
                     <motion.div
@@ -111,7 +114,7 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                         animate={isWishlisted ? { scale: [1, 1.2, 1] } : {}}
                     >
                         <Heart
-                            size={compact ? 12 : 16}
+                            size={compact ? 13 : 16}
                             className={cn(isWishlisted ? "text-red-500 fill-current" : "text-neutral-400")}
                         />
                     </motion.div>
@@ -131,118 +134,131 @@ const ProductCard = ({ product, badge, className, compact = false }) => {
                     )}
                 </AnimatePresence>
 
-                <div className="block aspect-square w-full rounded-xl overflow-hidden bg-white/50 flex items-center justify-center p-1.5">
+                <div className={cn(
+                    "block aspect-square w-full overflow-hidden flex items-center justify-center p-2 transition-transform duration-500 group-hover:scale-105",
+                    compact ? "rounded-xl bg-gray-50/50" : "rounded-xl bg-white/50"
+                )}>
                     <img
                         ref={imageRef}
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-contain mix-blend-multiply"
+                        className="w-full h-full object-contain mix-blend-multiply drop-shadow-sm"
                     />
                 </div>
 
                 {/* Floating ADD/Quantity Button */}
-                <div className={cn("absolute z-20", compact ? "-bottom-3.5 right-1.5" : "-bottom-5 right-3")}>
-                    {quantity > 0 ? (
-                        <div
-                            className={cn(
-                                "bg-white border-2 border-[#0c831f] text-[#0c831f] rounded-lg flex items-center shadow-lg shadow-green-900/5 overflow-hidden",
-                                compact ? "px-1 py-0.5 gap-0.5" : "px-1.5 py-1 gap-1"
-                            )}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleDecrement}
-                                className={cn("rounded-lg hover:bg-green-50 text-[#0c831f]", compact ? "h-6 w-6" : "h-9 w-9")}
+                {!compact && (
+                    <div className={cn("absolute z-20 -bottom-5 right-3")}>
+                        {quantity > 0 ? (
+                            <div
+                                className="bg-white border-2 border-[#0c831f] text-[#0c831f] rounded-lg flex items-center shadow-lg shadow-green-900/5 overflow-hidden px-1.5 py-1 gap-1"
+                                onClick={(e) => e.stopPropagation()}
                             >
-                                <Minus size={compact ? 12 : 14} strokeWidth={3.5} />
-                            </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleDecrement}
+                                    className="h-9 w-9 rounded-lg hover:bg-green-50 text-[#0c831f]"
+                                >
+                                    <Minus size={14} strokeWidth={3.5} />
+                                </Button>
 
-                            <div className={cn("relative flex items-center justify-center overflow-hidden", compact ? "w-4 h-5" : "w-6 h-7")}>
-                                <AnimatePresence mode="popLayout" initial={false}>
-                                    <motion.span
-                                        key={quantity}
-                                        initial={{ y: 20, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        exit={{ y: -20, opacity: 0 }}
-                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        className={cn("absolute font-black", compact ? "text-[11px]" : "text-sm")}
-                                    >
-                                        {quantity}
-                                    </motion.span>
-                                </AnimatePresence>
+                                <div className="relative flex items-center justify-center overflow-hidden w-6 h-7">
+                                    <AnimatePresence mode="popLayout" initial={false}>
+                                        <motion.span
+                                            key={quantity}
+                                            initial={{ y: 20, opacity: 0 }}
+                                            animate={{ y: 0, opacity: 1 }}
+                                            exit={{ y: -20, opacity: 0 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                            className="absolute font-black text-sm"
+                                        >
+                                            {quantity}
+                                        </motion.span>
+                                    </AnimatePresence>
+                                </div>
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={handleIncrement}
+                                    className="h-9 w-9 rounded-lg hover:bg-green-50 text-[#0c831f]"
+                                >
+                                    <Plus size={14} strokeWidth={3.5} />
+                                </Button>
                             </div>
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={handleIncrement}
-                                className={cn("rounded-lg hover:bg-green-50 text-[#0c831f]", compact ? "h-6 w-6" : "h-9 w-9")}
+                        ) : (
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.9 }}
                             >
-                                <Plus size={compact ? 12 : 14} strokeWidth={3.5} />
-                            </Button>
-                        </div>
-                    ) : (
-                        <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            <Button
-                                variant="outline"
-                                onClick={handleAddToCart}
-                                className={cn(
-                                    "font-black shadow-lg shadow-green-900/5",
-                                    "border-2 border-[#0c831f] text-[#0c831f] bg-white hover:bg-green-50 transition-colors uppercase",
-                                    compact ? "h-8 px-4 text-[11px]" : "h-11 px-7 text-base"
-                                )}
-                            >
-                                ADD
-                            </Button>
-                        </motion.div>
-                    )}
-                </div>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleAddToCart}
+                                    className="font-black shadow-lg shadow-green-900/5 border-2 border-[#0c831f] text-[#0c831f] bg-white hover:bg-green-50 transition-colors uppercase h-11 px-7 text-base"
+                                >
+                                    ADD
+                                </Button>
+                            </motion.div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Info Section */}
-            {/* Info Section */}
-            <div className={cn("flex flex-col flex-1 bg-white/40", compact ? "p-2 pt-3 gap-0" : "p-3 pt-4 gap-0.5")}>
-                <div className="flex items-center gap-1.5 mb-0.5">
-                    {/* Diet Indicator (Veg default for now) */}
+            <div className={cn("flex flex-col flex-1", compact ? "p-3 pt-2 gap-0" : "bg-white/40 p-3 pt-4 gap-0.5")}>
+                <div className="flex items-center gap-1.5 mb-1">
                     <div className={cn("border-2 border-green-500 rounded-full flex items-center justify-center", compact ? "h-2.5 w-2.5" : "h-3.5 w-3.5")}>
                         <div className={cn("bg-green-500 rounded-full", compact ? "h-0.5 w-0.5" : "h-1 w-1")} />
                     </div>
-                    {/* Weight Badge */}
-                    <div className={cn("bg-blue-50 text-blue-600 font-bold rounded-md", compact ? "text-[8px] px-1 py-0" : "text-[9px] px-1.5 py-0.5")}>
-                        {product.weight || "1kg"}
+                    <div className={cn("bg-blue-50 text-blue-600 font-bold rounded px-1.5 py-0.2 tracking-wide", compact ? "text-[8px]" : "text-[9px]")}>
+                        {product.weight || "1 unit"}
                     </div>
                 </div>
 
-                <div className={cn(compact ? "h-8" : "h-9")}>
-                    <h4 className={cn("font-bold text-[#1A1A1A] leading-tight line-clamp-2", compact ? "text-[11px]" : "text-[13px]")}>{product.name}</h4>
+                <div className={cn(compact ? "h-9" : "h-9")}>
+                    <h4 className={cn("font-[600] text-[#1A1A1A] leading-tight line-clamp-2", compact ? "text-[12px]" : "text-[13px]")}>{product.name}</h4>
                 </div>
 
-                {/* Delivery Time (Mocked) */}
-                <div className="flex items-center gap-1 text-gray-400 mt-0.5 mb-1">
-                    <Clock size={compact ? 9 : 11} className="text-green-500/60" />
-                    <span className={cn("font-medium", compact ? "text-[9px]" : "text-[10px]")}>{product.deliveryTime || "8 mins"}</span>
+                {/* Delivery Time & Unit info */}
+                <div className="flex items-center gap-1.5 text-gray-500 mt-1 mb-2">
+                    <Clock size={compact ? 10 : 11} className="text-emerald-500/80" />
+                    <span className={cn("font-semibold", compact ? "text-[9px]" : "text-[10px]")}>{product.deliveryTime || "8-12 mins"}</span>
                 </div>
 
-                {/* Price Button with MRP - Pushed to bottom */}
-                <div className="mt-auto pt-1 flex items-center gap-1.5">
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        className={cn(
-                            "bg-[#0c831f] text-white rounded-lg font-bold flex items-center gap-1 shadow-[0_3px_0_0_rgba(10,103,24,0.8)] active:shadow-none active:translate-y-[1px] transition-all",
-                            compact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-sm"
-                        )}
-                    >
-                        ₹ {product.price}
-                    </motion.button>
-                    {product.originalPrice > product.price && (
-                        <span className={cn("font-medium text-gray-400 line-through decoration-gray-400/50 decoration-1", compact ? "text-[9px]" : "text-[11px]")}>
-                            ₹{product.originalPrice}
+                {/* Price Row / ADD Button Combination for compact */}
+                <div className="mt-auto flex items-center justify-between gap-1.5">
+                    <div className="flex flex-col">
+                        <span className={cn("font-[1000] text-[#1A1A1A]", compact ? "text-[13px]" : "text-sm")}>
+                            ₹{product.price}
                         </span>
+                        {product.originalPrice > product.price && (
+                            <span className={cn("font-medium text-gray-400 line-through text-[10px] leading-none")}>
+                                ₹{product.originalPrice}
+                            </span>
+                        )}
+                    </div>
+
+                    {compact && (
+                        quantity > 0 ? (
+                            <div className="flex items-center bg-emerald-50 border border-emerald-600 rounded-lg p-0.5">
+                                <button onClick={handleDecrement} className="p-1 text-emerald-700 active:scale-95 transition-transform">
+                                    <Minus size={12} strokeWidth={3} />
+                                </button>
+                                <span className="w-5 text-center text-xs font-black text-emerald-900">{quantity}</span>
+                                <button onClick={handleIncrement} className="p-1 text-emerald-700 active:scale-95 transition-transform">
+                                    <Plus size={12} strokeWidth={3} />
+                                </button>
+                            </div>
+                        ) : (
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleAddToCart}
+                                className="bg-[#0c831f] text-white px-4 py-1.5 rounded-lg font-black text-[11px] shadow-[0_4px_12px_rgba(12,131,31,0.2)] active:shadow-none transition-all uppercase tracking-wider"
+                            >
+                                ADD
+                            </motion.button>
+                        )
                     )}
                 </div>
             </div>

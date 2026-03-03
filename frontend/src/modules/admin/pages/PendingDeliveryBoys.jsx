@@ -19,55 +19,52 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { adminApi } from '../services/adminApi';
 
 const PendingDeliveryBoys = () => {
-    // Mock Data for Pending Riders
-    const [pendingRiders, setPendingRiders] = useState([
-        {
-            id: 'pr1',
-            name: 'Karan Mehra',
-            phone: '+91 91234 56789',
-            email: 'karan.m@example.com',
-            appliedDate: '14 Feb 2024',
-            location: 'Navi Mumbai, MH',
-            vehicle: 'Two Wheeler (Petrol)',
-            documents: ['License', 'Aadhar Card', 'Vehicle RC', 'Pan Card'],
-            status: 'pending', // pending, missing_info
-            experience: '2 Years',
-            preferredArea: 'Vashi, Belapur'
-        },
-        {
-            id: 'pr2',
-            name: 'Sunil Verma',
-            phone: '+91 82345 67890',
-            email: 'sunil.v@example.com',
-            appliedDate: '13 Feb 2024',
-            location: 'Borivali, Mumbai',
-            vehicle: 'Electric Scooter',
-            documents: ['License', 'Aadhar Card'],
-            status: 'missing_info',
-            experience: 'Fresher',
-            preferredArea: 'Borivali West'
-        },
-        {
-            id: 'pr3',
-            name: 'Rajesh G.',
-            phone: '+91 73456 78901',
-            email: 'rajesh.g@example.com',
-            appliedDate: '12 Feb 2024',
-            location: 'Thane, MH',
-            vehicle: 'Two Wheeler',
-            documents: ['License', 'Aadhar Card', 'RC'],
-            status: 'pending_review',
-            experience: '5 Years',
-            preferredArea: 'Thane City'
-        }
-    ]);
-
+    const [pendingRiders, setPendingRiders] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [viewingRider, setViewingRider] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Fetch Pending Riders
+    const fetchPendingRiders = async () => {
+        setIsLoading(true);
+        try {
+            // verified=false fetches riders waiting for review
+            const response = await adminApi.getDeliveryPartners({ verified: 'false' });
+            const data = response.data.results || response.data.result || [];
+
+            // Map backend data to frontend format
+            const mappedRiders = data.map(r => ({
+                id: r._id,
+                name: r.name,
+                phone: r.phone,
+                email: r.email,
+                appliedDate: new Date(r.createdAt).toLocaleDateString(),
+                location: r.currentArea || 'Unknown',
+                vehicle: r.vehicleType,
+                documents: Object.keys(r.documents || {}).filter(key => r.documents[key]),
+                status: r.isVerified ? 'approved' : 'pending_review',
+                experience: 'Not Specified', // Mock for now
+                preferredArea: r.currentArea || 'Not Specified'
+            }));
+
+            setPendingRiders(mappedRiders);
+        } catch (error) {
+            console.error('Fetch Pending Riders Error:', error);
+            toast.error('Failed to load applications');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchPendingRiders();
+    }, []);
 
     const filteredRiders = useMemo(() => {
         return pendingRiders.filter(r => {
@@ -77,20 +74,35 @@ const PendingDeliveryBoys = () => {
         });
     }, [pendingRiders, searchTerm, filterStatus]);
 
-    const handleApprove = (id) => {
+    const handleApprove = async (id) => {
         setIsProcessing(true);
-        setTimeout(() => {
+        try {
+            await adminApi.approveDeliveryPartner(id);
+            toast.success('Rider Approved & Activated!');
             setPendingRiders(pendingRiders.filter(r => r.id !== id));
             setViewingRider(null);
+        } catch (error) {
+            console.error('Approval Error:', error);
+            toast.error('Failed to approve rider');
+        } finally {
             setIsProcessing(false);
-            // In real app: toast.success('Rider Approved!')
-        }, 1500);
+        }
     };
 
-    const handleReject = (id) => {
+    const handleReject = async (id) => {
         if (window.confirm('Are you sure you want to reject this application?')) {
-            setPendingRiders(pendingRiders.filter(r => r.id !== id));
-            setViewingRider(null);
+            setIsProcessing(true);
+            try {
+                await adminApi.rejectDeliveryPartner(id);
+                toast.success('Application Rejected');
+                setPendingRiders(pendingRiders.filter(r => r.id !== id));
+                setViewingRider(null);
+            } catch (error) {
+                console.error('Rejection Error:', error);
+                toast.error('Failed to reject rider');
+            } finally {
+                setIsProcessing(false);
+            }
         }
     };
 
@@ -155,7 +167,15 @@ const PendingDeliveryBoys = () => {
             </Card>
 
             {/* Applications Table View */}
-            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-xl">
+            <Card className="border-none shadow-2xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-xl relative min-h-[400px]">
+                {isLoading && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="h-10 w-10 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Applications...</p>
+                        </div>
+                    </div>
+                )}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -167,63 +187,72 @@ const PendingDeliveryBoys = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {filteredRiders.map((rider) => (
-                                <tr key={rider.id} className="group hover:bg-slate-50/50 transition-colors">
-                                    <td className="px-8 py-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                                                <IdCard className="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-black text-slate-900">{rider.name}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <Phone className="h-3 w-3 text-slate-400" />
-                                                    <span className="text-[10px] font-bold text-slate-500">{rider.phone}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center gap-2 text-slate-600">
-                                                <Truck className="h-3.5 w-3.5" />
-                                                <span className="text-[10px] font-bold">{rider.vehicle}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-slate-400">
-                                                <MapPin className="h-3.5 w-3.5" />
-                                                <span className="text-[10px] font-bold">{rider.location}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6">
-                                        <div className="flex flex-col gap-2">
-                                            <Badge variant={rider.status === 'pending_review' ? 'primary' : 'warning'} className="w-fit text-[8px] font-black uppercase">
-                                                {rider.status.replace('_', ' ')}
-                                            </Badge>
-                                            <div className="flex gap-1">
-                                                {rider.documents.slice(0, 2).map((doc, i) => (
-                                                    <div key={i} className="h-5 px-2 bg-slate-100 rounded-md text-[8px] font-bold text-slate-500 flex items-center">
-                                                        {doc}
-                                                    </div>
-                                                ))}
-                                                {rider.documents.length > 2 && (
-                                                    <div className="h-5 px-2 bg-slate-100 rounded-md text-[8px] font-bold text-slate-400 flex items-center">
-                                                        +{rider.documents.length - 2} More
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-8 py-6 text-right">
-                                        <button
-                                            onClick={() => setViewingRider(rider)}
-                                            className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
-                                        >
-                                            VIEW APPLICATION
-                                        </button>
+                            {!isLoading && filteredRiders.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4" className="py-20 text-center">
+                                        <FileSearch className="h-10 w-10 text-slate-300 mx-auto mb-4" />
+                                        <p className="text-sm font-bold text-slate-500">No pending applications found.</p>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredRiders.map((rider) => (
+                                    <tr key={rider.id} className="group hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                                                    <IdCard className="h-6 w-6" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black text-slate-900">{rider.name}</p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <Phone className="h-3 w-3 text-slate-400" />
+                                                        <span className="text-[10px] font-bold text-slate-500">{rider.phone}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center gap-2 text-slate-600">
+                                                    <Truck className="h-3.5 w-3.5" />
+                                                    <span className="text-[10px] font-bold">{rider.vehicle}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-slate-400">
+                                                    <MapPin className="h-3.5 w-3.5" />
+                                                    <span className="text-[10px] font-bold">{rider.location}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex flex-col gap-2">
+                                                <Badge variant={rider.status === 'pending_review' ? 'primary' : 'warning'} className="w-fit text-[8px] font-black uppercase">
+                                                    {rider.status.replace('_', ' ')}
+                                                </Badge>
+                                                <div className="flex gap-1">
+                                                    {rider.documents.slice(0, 2).map((doc, i) => (
+                                                        <div key={i} className="h-5 px-2 bg-slate-100 rounded-md text-[8px] font-bold text-slate-500 flex items-center">
+                                                            {doc}
+                                                        </div>
+                                                    ))}
+                                                    {rider.documents.length > 2 && (
+                                                        <div className="h-5 px-2 bg-slate-100 rounded-md text-[8px] font-bold text-slate-400 flex items-center">
+                                                            +{rider.documents.length - 2} More
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <button
+                                                onClick={() => setViewingRider(rider)}
+                                                className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-bold shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95"
+                                            >
+                                                VIEW APPLICATION
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

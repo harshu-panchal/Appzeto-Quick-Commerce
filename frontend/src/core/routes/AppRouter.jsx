@@ -39,6 +39,7 @@ import EditProfilePage from '../../modules/customer/pages/EditProfilePage';
 import OrderDetailPage from '../../modules/customer/pages/OrderDetailPage';
 import ProductDetailPage from '../../modules/customer/pages/ProductDetailPage';
 import CheckoutPage from '../../modules/customer/pages/CheckoutPage';
+import SearchPage from '../../modules/customer/pages/SearchPage';
 
 // Lazy load heavy modules
 const SellerModule = lazy(() => import('../../modules/seller/routes/index'));
@@ -146,6 +147,7 @@ const AppRouter = () => {
                         { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
                         { path: 'profile/edit', element: <ProtectedRoute><EditProfilePage /></ProtectedRoute> },
                         { path: 'cart', element: <CartPage /> },
+                        { path: 'search', element: <SearchPage /> },
                     ]
                 },
                 {

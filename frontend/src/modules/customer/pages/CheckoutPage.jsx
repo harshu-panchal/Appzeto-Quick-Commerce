@@ -25,7 +25,8 @@ import {
     Search,
     X,
     Clipboard,
-    Check
+    Check,
+    Contact2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -68,6 +69,16 @@ const CheckoutPage = () => {
         city: 'Indore - 452018'
     });
     const [isLocationConfirmed, setIsLocationConfirmed] = useState(true);
+    const [showRecipientForm, setShowRecipientForm] = useState(false);
+    const [recipientData, setRecipientData] = useState({
+        // city: 'Select city',
+        completeAddress: '',
+        landmark: '',
+        pincode: '',
+        name: '',
+        phone: ''
+    });
+    const [savedRecipient, setSavedRecipient] = useState(null);
 
     // Mock saved addresses
     const savedAddresses = [
@@ -132,6 +143,16 @@ const CheckoutPage = () => {
     const totalAmount = (cartTotal - discountAmount) + deliveryFee + platformFee + gst + selectedTip;
 
     const displayCartItems = showAllCartItems ? cart : cart;
+
+    const handleSaveRecipient = () => {
+        if (!recipientData.completeAddress || !recipientData.name || recipientData.phone.length !== 10) {
+            showToast('Please fill all required fields', 'error');
+            return;
+        }
+        setSavedRecipient(recipientData);
+        setShowRecipientForm(false);
+        showToast('Recipient details saved!', 'success');
+    };
 
     const handleMoveToWishlist = (item) => {
         addToWishlist(item);
@@ -439,8 +460,105 @@ const CheckoutPage = () => {
                 >
                     <div className="flex justify-between items-center mb-3">
                         <span className="text-xs text-slate-500 font-medium">Ordering for someone else?</span>
-                        <button className="text-[#0c831f] text-xs font-bold hover:underline">Add details</button>
+                        <button
+                            onClick={() => setShowRecipientForm(!showRecipientForm)}
+                            className="text-[#0c831f] text-xs font-bold hover:underline"
+                        >
+                            {showRecipientForm ? 'Close' : (savedRecipient ? 'Change details' : 'Add details')}
+                        </button>
                     </div>
+
+                    {savedRecipient && !showRecipientForm && (
+                        <div className="mb-4 p-4 bg-green-50 border border-green-100 rounded-2xl flex items-start justify-between">
+                            <div className="flex gap-3">
+                                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-[#0c831f] flex-shrink-0">
+                                    <Contact2 size={18} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-slate-800">{savedRecipient.name}</p>
+                                    <p className="text-xs text-[#0c831f] font-bold mb-1">{savedRecipient.phone}</p>
+                                    <p className="text-xs text-slate-500 leading-tight">
+                                        {savedRecipient.completeAddress}
+                                        {savedRecipient.landmark && `, ${savedRecipient.landmark}`}
+                                        {savedRecipient.pincode && ` - ${savedRecipient.pincode}`}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSavedRecipient(null)}
+                                className="text-red-500 text-xs font-bold hover:underline"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    )}
+
+                    <AnimatePresence>
+                        {showRecipientForm && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="overflow-hidden mb-4"
+                            >
+                                <div className="bg-[#f8f9fb] rounded-2xl p-4 border border-slate-100 space-y-4">
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-800 mb-3">Enter delivery address details</h4>
+                                        <div className="space-y-3">
+                                            <Input
+                                                placeholder="Enter complete address*"
+                                                value={recipientData.completeAddress}
+                                                onChange={(e) => setRecipientData({ ...recipientData, completeAddress: e.target.value })}
+                                                className="h-12 rounded-xl border-slate-200 focus:ring-[#0c831f] focus:border-[#0c831f] text-sm"
+                                            />
+                                            <Input
+                                                placeholder="Find landmark (optional)"
+                                                value={recipientData.landmark}
+                                                onChange={(e) => setRecipientData({ ...recipientData, landmark: e.target.value })}
+                                                className="h-12 rounded-xl border-slate-200 focus:ring-[#0c831f] focus:border-[#0c831f] text-sm"
+                                            />
+                                            <Input
+                                                placeholder="Enter pin code (optional)"
+                                                value={recipientData.pincode}
+                                                onChange={(e) => setRecipientData({ ...recipientData, pincode: e.target.value })}
+                                                className="h-12 rounded-xl border-slate-200 focus:ring-[#0c831f] focus:border-[#0c831f] text-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-800 mb-1">Enter receiver details</h4>
+                                        <p className="text-[10px] text-slate-400 mb-3 font-medium">We'll contact receiver to get the exact delivery address</p>
+                                        <div className="space-y-3">
+                                            <Input
+                                                placeholder="Receiver's name*"
+                                                value={recipientData.name}
+                                                onChange={(e) => setRecipientData({ ...recipientData, name: e.target.value })}
+                                                className="h-12 rounded-xl border-slate-200 focus:ring-[#0c831f] focus:border-[#0c831f] text-sm"
+                                            />
+                                            <div className="relative">
+                                                <Input
+                                                    placeholder="Receiver's phone number*"
+                                                    value={recipientData.phone}
+                                                    onChange={(e) => setRecipientData({ ...recipientData, phone: e.target.value })}
+                                                    className="h-12 rounded-xl border-slate-200 focus:ring-[#0c831f] focus:border-[#0c831f] text-sm pr-10"
+                                                />
+                                                <Contact2 size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        onClick={handleSaveRecipient}
+                                        className="w-full h-12 bg-[#2d8618] hover:bg-[#236b11] text-white font-bold rounded-xl"
+                                    >
+                                        Save address
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                     <div className="mb-3">
                         <h3 className="font-black text-slate-800 text-base">Delivery Address</h3>
                         <p className="text-xs text-slate-500">Select or edit your saved address</p>

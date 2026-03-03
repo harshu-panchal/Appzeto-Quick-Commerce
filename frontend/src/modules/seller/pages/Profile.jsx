@@ -11,11 +11,14 @@ import {
   X,
   Rocket,
   Globe,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
 import Card from "@shared/components/ui/Card";
 import Button from "@shared/components/ui/Button";
+import axiosInstance from '@core/api/axios';
 
 const SellerProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -27,10 +30,21 @@ const SellerProfile = () => {
     shopName: "",
     phone: "",
   });
+  const [faqs, setFaqs] = useState([]);
 
   useEffect(() => {
     fetchProfile();
+    fetchFaqs();
   }, []);
+
+  const fetchFaqs = async () => {
+    try {
+      const response = await axiosInstance.get('/public/faqs', { params: { category: 'Seller', status: 'published' } });
+      setFaqs(response.data.results || []);
+    } catch (error) {
+      console.error("Error fetching FAQs:", error);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -300,8 +314,48 @@ const SellerProfile = () => {
               Contact Partner Support
             </Button>
           </Card>
+
+          {/* Seller FAQ Section */}
+          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[40px]">
+            <h4 className="text-[10px] font-black uppercase tracking-[4px] text-slate-400 mb-6">
+              Seller FAQs
+            </h4>
+            <div className="space-y-4">
+              {faqs.length > 0 ? (
+                faqs.map((faq) => (
+                  <SellerFAQItem
+                    key={faq._id}
+                    question={faq.question}
+                    answer={faq.answer}
+                  />
+                ))
+              ) : (
+                <div className="py-4 text-center text-xs text-slate-400">No FAQs available</div>
+              )}
+            </div>
+          </Card>
         </div>
       </div>
+    </div>
+  );
+};
+
+const SellerFAQItem = ({ question, answer }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border-b border-slate-50 pb-4">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between text-left group"
+      >
+        <span className="text-sm font-bold text-slate-700 group-hover:text-slate-900 transition-colors">{question}</span>
+        {isOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
+      </button>
+      {isOpen && (
+        <p className="mt-3 text-xs text-slate-500 font-medium leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
+          {answer}
+        </p>
+      )}
     </div>
   );
 };

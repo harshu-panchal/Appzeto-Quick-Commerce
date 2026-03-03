@@ -32,4 +32,10 @@ export const customerApi = {
     // Payments
     createPaymentOrder: (data) => axiosInstance.post('/payments/create-order', data),
     verifyPayment: (data) => axiosInstance.post('/payments/verify', data),
+
+    // Support & Reviews
+    getProductReviews: (productId) => axiosInstance.get(`/reviews/product/${productId}`),
+    submitReview: (data) => axiosInstance.post('/reviews/submit', data),
+    createTicket: (data) => axiosInstance.post('/tickets/create', data),
+    getMyTickets: () => axiosInstance.get('/tickets/my-tickets'),
 };

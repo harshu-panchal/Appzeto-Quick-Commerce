@@ -7,6 +7,25 @@ import {
     getAdminProfile,
     updateAdminProfile,
     updateAdminPassword,
+    getAdminStats,
+    getDeliveryPartners,
+    approveDeliveryPartner,
+    rejectDeliveryPartner,
+    getActiveFleet,
+    getAdminWalletData,
+    getDeliveryTransactions,
+    settleTransaction,
+    bulkSettleDelivery,
+    getSellerWithdrawals,
+    getDeliveryWithdrawals,
+    updateWithdrawalStatus,
+    getSellerTransactions,
+    getDeliveryCashBalances,
+    getRiderCashDetails,
+    settleRiderCash,
+    getCashSettlementHistory,
+    getUsers,
+    getUserById
 } from "../controller/adminController.js";
 
 import { verifyToken, allowRoles } from "../middleware/authMiddleware.js";
@@ -37,6 +56,56 @@ router.put(
     allowRoles("admin"),
     updateAdminPassword
 );
+
+router.get(
+    "/stats",
+    verifyToken,
+    allowRoles("admin"),
+    getAdminStats
+);
+router.get("/users", verifyToken, allowRoles("admin"), getUsers);
+router.get("/users/:id", verifyToken, allowRoles("admin"), getUserById);
+
+router.get(
+    "/delivery-partners",
+    verifyToken,
+    allowRoles("admin"),
+    getDeliveryPartners
+);
+
+router.patch(
+    "/delivery-partners/approve/:id",
+    verifyToken,
+    allowRoles("admin"),
+    approveDeliveryPartner
+);
+
+router.delete(
+    "/delivery-partners/reject/:id",
+    verifyToken,
+    allowRoles("admin"),
+    rejectDeliveryPartner
+);
+
+router.get("/active-fleet", verifyToken, allowRoles("admin"), getActiveFleet);
+router.get("/wallet-data", verifyToken, allowRoles("admin"), getAdminWalletData);
+
+// Delivery Payouts / Funds
+router.get("/delivery-transactions", verifyToken, allowRoles('admin'), getDeliveryTransactions);
+router.put("/transactions/:id/settle", verifyToken, allowRoles("admin"), settleTransaction);
+router.put("/transactions/bulk-settle-delivery", verifyToken, allowRoles("admin"), bulkSettleDelivery);
+
+// Cash Collection Hub
+router.get("/delivery-cash", verifyToken, allowRoles("admin"), getDeliveryCashBalances);
+router.get("/rider-cash-details/:id", verifyToken, allowRoles("admin"), getRiderCashDetails);
+router.post("/settle-cash", verifyToken, allowRoles("admin"), settleRiderCash);
+router.get("/cash-history", verifyToken, allowRoles("admin"), getCashSettlementHistory);
+
+// Seller Withdrawal Management
+router.get("/seller-withdrawals", verifyToken, allowRoles("admin"), getSellerWithdrawals);
+router.get("/delivery-withdrawals", verifyToken, allowRoles("admin"), getDeliveryWithdrawals);
+router.get("/seller-transactions", verifyToken, allowRoles("admin"), getSellerTransactions);
+router.put("/withdrawals/:id", verifyToken, allowRoles("admin"), updateWithdrawalStatus);
 
 // Protected admin route example
 router.get(

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import { adminApi } from '../services/adminApi';
 import {
     HiOutlineStar,
     HiOutlineTrash,
@@ -14,57 +15,65 @@ import {
 import { useToast } from '@shared/components/ui/Toast';
 import Modal from '@shared/components/ui/Modal';
 import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 const ReviewModeration = () => {
     const { showToast } = useToast();
     const [isReplyModalOpen, setIsReplyModalOpen] = useState(false);
     const [selectedReview, setSelectedReview] = useState(null);
     const [replyText, setReplyText] = useState('');
-    const [reviews, setReviews] = useState([
-        {
-            id: 'R-9921',
-            user: 'Anita Desai',
-            item: 'Organic Avocados',
-            store: 'Fresh Mart',
-            rating: 1,
-            comment: 'The avocados were completely rotten when they arrived. Very disappointed!',
-            status: 'flagged',
-            date: '2 hours ago',
-            tags: ['Quality Issue', 'Refund Requested']
-        },
-        {
-            id: 'R-9920',
-            user: 'Karan Mehra',
-            item: 'Milk Pack (1L)',
-            store: 'Dairy Pure',
-            rating: 5,
-            comment: 'Fast delivery and fresh products as always. Subscribed for daily delivery.',
-            status: 'approved',
-            date: '5 hours ago',
-            tags: ['Positive Feedback', 'Subscription']
-        },
-        {
-            id: 'R-9918',
-            user: 'Sana Shaikh',
-            item: 'Order #3321',
-            store: 'Quick Mart',
-            rating: 2,
-            comment: 'The rider was extremely rude and kept calling for address even though it was clear.',
-            status: 'pending',
-            date: 'Yesterday',
-            tags: ['Rider Misbehavior']
-        }
-    ]);
+    const [loading, setLoading] = useState(true);
+    const [reviews, setReviews] = useState([]);
 
-    const handleApprove = (id) => {
-        setReviews(reviews.map(r => r.id === id ? { ...r, status: 'approved' } : r));
-        showToast('Review approved and published', 'success');
+    useEffect(() => {
+        fetchReviews();
+    }, []);
+
+    const fetchReviews = async () => {
+        try {
+            setLoading(true);
+            const res = await adminApi.getPendingReviews();
+            if (res.data.success) {
+                setReviews(res.data.results.map(r => ({
+                    ...r,
+                    id: r._id,
+                    user: r.userId?.name || "Anonymous",
+                    item: r.productId?.name || "Deleted Product",
+                    itemImage: r.productId?.images?.[0],
+                    date: new Date(r.createdAt).toLocaleString(),
+                    tags: [] // Tags can be empty or logic-based
+                })));
+            }
+        } catch (error) {
+            console.error("Fetch Reviews Error:", error);
+            showToast("Failed to load reviews", "error");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to remove this review?')) {
-            setReviews(reviews.filter(r => r.id !== id));
-            showToast('Review removed from platform', 'warning');
+    const handleApprove = async (id) => {
+        try {
+            const res = await adminApi.updateReviewStatus(id, 'approved');
+            if (res.data.success) {
+                setReviews(reviews.filter(r => r.id !== id));
+                showToast('Review approved and published', 'success');
+            }
+        } catch (error) {
+            showToast("Failed to approve review", "error");
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to reject and remove this review?')) return;
+        try {
+            const res = await adminApi.updateReviewStatus(id, 'rejected');
+            if (res.data.success) {
+                setReviews(reviews.filter(r => r.id !== id));
+                showToast('Review rejected and removed', 'warning');
+            }
+        } catch (error) {
+            showToast("Failed to remove review", "error");
         }
     };
 
@@ -75,7 +84,9 @@ const ReviewModeration = () => {
 
     const submitReply = () => {
         if (!replyText.trim()) return;
-        showToast(`Reply sent to ${selectedReview.user}`, 'success');
+        // Reply logic for reviews is usually public or private. 
+        // For now we'll just show toast since we don't have review-reply model yet
+        showToast(`Reply noted for ${selectedReview.user}`, 'success');
         setIsReplyModalOpen(false);
         setReplyText('');
     };
