@@ -24,55 +24,39 @@ const MiniCart = () => {
                 <div
                     key="mini-cart-wrapper"
                     id="mini-cart-target"
-                    className="fixed bottom-[90px] md:bottom-24 left-0 right-0 flex justify-center z-[55] pointer-events-none px-4"
+                    className="fixed bottom-[100px] md:bottom-24 left-0 right-0 flex justify-center z-[55] pointer-events-none px-4"
                 >
 
                     <motion.div
-                        className="w-full max-w-[180px] pointer-events-auto"
+                        initial={{ y: 50, opacity: 0, scale: 0.9 }}
+                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        exit={{ y: 50, opacity: 0, scale: 0.9 }}
+                        className="w-full max-w-[200px] pointer-events-auto"
                     >
                         <Link
                             to="/checkout"
-                            className="flex items-center gap-2 bg-gradient-to-r from-[#0c831f] via-[#149d29] to-[#0c831f] bg-[length:200%_auto] animate-gradient text-white py-2.5 px-3 pr-2 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-[#0b721b] transition-all hover:scale-[1.02] active:scale-95 group border border-white/20 relative overflow-hidden"
+                            className="flex items-center gap-3 bg-[#0c831f] text-white py-2 px-3 rounded-full shadow-[0_10px_30px_rgba(12,131,31,0.3)] hover:scale-[1.02] active:scale-95 transition-all group border border-white/10 relative"
                         >
-                            {/* Shimmer Effect */}
-                            <motion.div
-                                initial={{ x: '-100%' }}
-                                animate={{ x: '200%' }}
-                                transition={{ repeat: Infinity, duration: 2, ease: "linear", repeatDelay: 1 }}
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-20deg] pointer-events-none"
-                            />
-
-                            {/* Product Avatars Stack */}
-                            <div className="flex -space-x-3.5 relative z-10">
-                                {displayItems.map((item, index) => (
-                                    <div
-                                        key={item.id || `cart-item-${index}`}
-                                        className="h-8 w-8 rounded-full border-2 border-[#0c831f] bg-white overflow-hidden shadow-sm relative"
-                                        style={{ zIndex: 10 - index }}
-                                    >
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-full h-full object-contain p-0.5"
-                                        />
-                                    </div>
-                                ))}
-                                {cart.length > 2 && (
-                                    <div className="h-8 w-8 rounded-full border-2 border-[#0c831f] bg-[#149d29] flex items-center justify-center text-[9px] font-bold z-0 text-white shadow-inner">
-                                        +{cartCount - 2}
-                                    </div>
+                            {/* Single Product Image Icon */}
+                            <div className="h-9 w-9 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                                {cart.length > 0 && (
+                                    <img
+                                        src={cart[0].image}
+                                        alt={cart[0].name}
+                                        className="w-full h-full object-contain p-1"
+                                    />
                                 )}
                             </div>
 
                             {/* Text Section */}
-                            <div className="flex-1 flex flex-col justify-center min-w-0 relative z-10">
-                                <h4 className="text-[12px] font-bold leading-tight truncate">View cart</h4>
-                                <p className="text-[9px] opacity-90 font-medium leading-tight">{cartCount} {cartCount === 1 ? 'item' : 'items'}</p>
+                            <div className="flex-1 flex flex-col justify-center min-w-0">
+                                <h4 className="text-[13px] font-black leading-tight truncate">View cart</h4>
+                                <p className="text-[10px] opacity-90 font-bold leading-tight">{cartCount} {cartCount === 1 ? 'item' : 'items'}</p>
                             </div>
 
-                            {/* Arrow Icon */}
-                            <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors flex-shrink-0 relative z-10">
-                                <ChevronRight size={16} strokeWidth={3} className="group-hover:translate-x-0.5 transition-transform" />
+                            {/* Arrow Icon in circle */}
+                            <div className="h-7 w-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                                <ChevronRight size={18} strokeWidth={3} className="text-white" />
                             </div>
                         </Link>
                     </motion.div>

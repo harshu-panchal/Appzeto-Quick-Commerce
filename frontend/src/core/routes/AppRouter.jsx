@@ -9,6 +9,7 @@ import RootErrorBoundary from '../../shared/components/RootErrorBoundary';
 import { WishlistProvider } from '../../modules/customer/context/WishlistContext';
 import { CartProvider } from '../../modules/customer/context/CartContext';
 import { CartAnimationProvider } from '../../modules/customer/context/CartAnimationContext';
+import { ProductDetailProvider } from '../../modules/customer/context/ProductDetailContext';
 import { LocationProvider } from '../../modules/customer/context/LocationContext';
 import ScrollToTop from '../../modules/customer/components/shared/ScrollToTop';
 
@@ -53,10 +54,12 @@ const CustomerLayoutWrapper = () => (
         <WishlistProvider>
             <CartProvider>
                 <CartAnimationProvider>
-                    <ScrollToTop />
-                    <CustomerLayout>
-                        <Outlet />
-                    </CustomerLayout>
+                    <ProductDetailProvider>
+                        <ScrollToTop />
+                        <CustomerLayout>
+                            <Outlet />
+                        </CustomerLayout>
+                    </ProductDetailProvider>
                 </CartAnimationProvider>
             </CartProvider>
         </WishlistProvider>

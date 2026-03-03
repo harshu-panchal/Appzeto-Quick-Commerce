@@ -4,10 +4,13 @@ import { Search, Mic, ArrowLeft, X, TrendingUp, ChevronRight, History } from 'lu
 import { motion, AnimatePresence } from 'framer-motion';
 import { customerApi } from '../services/customerApi';
 import ProductCard from '../components/shared/ProductCard';
+import { useProductDetail } from '../context/ProductDetailContext';
+import { cn } from '@/lib/utils';
 
 const SearchPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { isOpen: isProductDetailOpen } = useProductDetail();
 
     // Get initial query from URL state or params
     const initialQuery = location.state?.query || new URLSearchParams(location.search).get('q') || '';
@@ -102,7 +105,10 @@ const SearchPage = () => {
     return (
         <div className="min-h-screen bg-white font-outfit">
             {/* Header / Search Input */}
-            <div className="sticky top-0 z-50 bg-white shadow-sm">
+            <div className={cn(
+                "sticky top-0 z-50 bg-white shadow-sm",
+                isProductDetailOpen && "hidden md:block"
+            )}>
                 <div className="px-4 pt-4 pb-2 flex items-center justify-between">
                     <h1 className="text-2xl font-black text-[#0c831f] tracking-tight">Appzeto</h1>
                     <button className="p-2 hover:bg-slate-50 rounded-full text-[#0c831f]">
