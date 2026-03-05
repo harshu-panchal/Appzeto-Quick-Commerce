@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "@/core/context/AuthContext";
 import { cn } from "@/lib/utils";
 import { HiChevronDown } from "react-icons/hi2";
 import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
 
 const colorMap = {
   indigo:
@@ -192,17 +194,10 @@ const SidebarItem = ({
   );
 };
 
-const Sidebar = ({ items, title }) => {
-  const [openMenu, setOpenMenu] = useState(null);
-  const [hoveredIdx, setHoveredIdx] = useState(null);
-
-  const handleToggle = (label) => {
-    setOpenMenu((prev) => (prev === label ? null : label));
-  };
-
+const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hoveredIdx, setHoveredIdx }) => {
   return (
-    <aside className="fixed left-0 inset-y-0 w-56 bg-[#0a0c10] text-gray-400 border-r border-white/5 shadow-[20px_0_60px_rgba(0,0,0,0.4)] flex flex-col z-50 overflow-hidden">
-      <div className="flex-shrink-0 flex h-16 items-center px-5 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent z-10">
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex-shrink-0 flex h-16 items-center justify-between px-5 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent z-10">
         <div className="flex items-center space-x-2.5">
           <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transform -rotate-6 hover:rotate-0 transition-all duration-500 ease-out">
             <span className="text-lg font-black italic">A</span>
@@ -216,12 +211,22 @@ const Sidebar = ({ items, title }) => {
             </span>
           </div>
         </div>
+
+        {/* Mobile Close Button */}
+        <button
+          onClick={onClose}
+          className="p-2 md:hidden text-gray-500 hover:text-white transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
 
       <nav
         data-lenis-prevent
         onMouseLeave={() => setHoveredIdx(null)}
-        className="mt-4 px-3 space-y-1.5 flex-1 overflow-y-auto overscroll-none custom-scrollbar-dark min-h-0 pb-6 relative z-20">
+        className="mt-4 px-3 space-y-1.5 flex-1 overflow-y-auto overscroll-contain custom-scrollbar-dark min-h-0 pb-6 relative z-20"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         <p className="px-3 text-[9px] font-black text-gray-600 uppercase tracking-[0.3em] mb-3">
           Core Management
         </p>
@@ -234,21 +239,24 @@ const Sidebar = ({ items, title }) => {
               onToggle={() => handleToggle(item.label)}
               isHovered={hoveredIdx === idx}
               onMouseEnter={() => setHoveredIdx(idx)}
-              onMouseLeave={() => {}} // Handle in nav container
+              onMouseEnterWithClose={() => {
+                setHoveredIdx(idx);
+              }}
+              onMouseLeave={() => { }} // Handle in nav container
             />
           ))}
         </AnimatePresence>
       </nav>
 
       <div className="p-4 border-t border-white/5 bg-gradient-to-t from-white/[0.02] to-transparent flex-shrink-0">
-                <div className="bg-white/5 rounded-lg p-3 shadow-sm border border-white/5 hover:bg-white/[0.08] hover:border-white/10 transition-all group cursor-pointer">
-                    <div className="flex items-center space-x-2.5">
-                        <div className="relative group">
-                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary via-indigo-500 to-violet-600 flex items-center justify-center text-white font-black text-xs shadow-lg group-hover:scale-110 transition-all duration-500">
-                                A
-                            </div>
-                            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 rounded-full border-2 border-[#0a0c10] shadow-sm animate-pulse"></div>
-                        </div>
+        <div className="bg-white/5 rounded-lg p-3 shadow-sm border border-white/5 hover:bg-white/[0.08] hover:border-white/10 transition-all group cursor-pointer">
+          <div className="flex items-center space-x-2.5">
+            <div className="relative group">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary via-indigo-500 to-violet-600 flex items-center justify-center text-white font-black text-xs shadow-lg group-hover:scale-110 transition-all duration-500">
+                A
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 rounded-full border-2 border-[#0a0c10] shadow-sm animate-pulse"></div>
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-white truncate group-hover:text-primary transition-colors">
                 Admin Console
@@ -260,7 +268,69 @@ const Sidebar = ({ items, title }) => {
           </div>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+};
+
+const Sidebar = ({ items, title, isOpen, onClose }) => {
+  const { role } = useAuth();
+  const [openMenu, setOpenMenu] = useState(null);
+  const [hoveredIdx, setHoveredIdx] = useState(null);
+
+  const handleToggle = (label) => {
+    setOpenMenu((prev) => (prev === label ? null : label));
+  };
+
+  const commonProps = {
+    items,
+    title,
+    onClose,
+    openMenu,
+    handleToggle,
+    hoveredIdx,
+    setHoveredIdx
+  };
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className={cn(
+        "fixed left-0 inset-y-0 w-56 bg-[#0a0c10] text-gray-400 border-r border-white/5 shadow-[20px_0_60px_rgba(0,0,0,0.4)] md:flex flex-col z-50 transition-all duration-300",
+        (role === "admin" || role === "seller") ? "hidden md:flex" : "flex",
+      )}>
+        <SidebarContent {...commonProps} />
+      </aside>
+
+      {/* Mobile Sidebar (Drawer) */}
+      <AnimatePresence mode="wait">
+        {isOpen && (
+          <div className="fixed inset-0 z-[100] md:hidden">
+            {/* Backdrop Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
+            />
+
+            {/* Outer Container (Fixed Shell - NO TRANSFORM) */}
+            <div className="absolute left-0 inset-y-0 w-56 flex flex-col pointer-events-none">
+              {/* Inner Animation Wrapper (TRANSFORM APPLIED HERE) */}
+              <motion.div
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
+                className="flex-1 bg-[#0a0c10] shadow-2xl flex flex-col pointer-events-auto min-h-0"
+              >
+                <SidebarContent {...commonProps} />
+              </motion.div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

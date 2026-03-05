@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import BottomNav from './BottomNav';
 import { sellerApi } from '@/modules/seller/services/sellerApi';
 import { useAuth } from '@/core/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +15,14 @@ const DashboardLayout = ({ children, navItems, title }) => {
     const [shownOrderIds, setShownOrderIds] = useState(new Set());
     const [timeLeft, setTimeLeft] = useState(60);
     const [isFirstLoad, setIsFirstLoad] = useState(true);
-    const { role } = useAuth();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { user, logout, role } = useAuth();
+
+    // Close sidebar on route change
+    const location = useLocation();
+    useEffect(() => {
+        setIsSidebarOpen(false);
+    }, [location.pathname]);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -103,15 +112,20 @@ const DashboardLayout = ({ children, navItems, title }) => {
     };
 
     return (
-        <div className="min-h-screen mesh-gradient-light relative">
+        <div className="min-h-screen mesh-gradient-light relative overflow-x-hidden">
             {/* Background Blobs for depth */}
             <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none"></div>
             <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
 
-            <Sidebar items={navItems} title={title} />
-            <div className="pl-56">
-                <Topbar />
-                <main className="pt-20 p-6 min-h-screen">
+            <Sidebar
+                items={navItems}
+                title={title}
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+            />
+            <div className={cn("transition-all duration-300", (role === "admin" || role === "seller") ? "pl-0 md:pl-56" : "pl-56")}>
+                <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
+                <main className={cn("p-6 min-h-screen", (role === "admin" || role === "seller") ? "pt-20 md:pt-6 pb-24 md:pb-6" : "pt-20")}>
                     <div className="max-w-7xl mx-auto pb-12">
                         {children}
                     </div>
@@ -176,6 +190,8 @@ const DashboardLayout = ({ children, navItems, title }) => {
                     </div>
                 )}
             </AnimatePresence>
+
+            {(role === "admin" || role === "seller") && <BottomNav navItems={navItems} />}
         </div>
     );
 };

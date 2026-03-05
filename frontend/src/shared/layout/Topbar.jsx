@@ -4,7 +4,8 @@ import {
     HiOutlineLogout,
     HiOutlineUserCircle,
     HiOutlineBell,
-    HiOutlineSearch
+    HiOutlineSearch,
+    HiOutlineMenu
 } from 'react-icons/hi';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -13,8 +14,8 @@ import { AnimatePresence } from 'framer-motion';
 import NotificationPopup from './NotificationPopup';
 import { toast } from 'sonner';
 
-const Topbar = () => {
-    const { user, logout } = useAuth();
+const Topbar = ({ onMenuClick }) => {
+    const { user, logout, role } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -83,9 +84,21 @@ const Topbar = () => {
     };
 
     return (
-        <header className="fixed left-56 top-0 right-0 h-16 bg-white/70 backdrop-blur-xl border-b border-gray-100/50 z-40 flex items-center justify-between px-6 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
-            <div className="flex items-center flex-1">
-                <div className="relative w-[400px] group">
+        <header className={cn(
+            "bg-white/70 backdrop-blur-xl border-b border-gray-100/50 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.02)] transition-all duration-300",
+            (role === 'admin' || role === 'seller')
+                ? "fixed top-0 left-0 right-0 z-50 h-14 px-4 md:static md:h-16 md:px-6"
+                : "fixed top-0 left-56 right-0 h-16 px-6 z-40"
+        )}>
+            <div className="flex items-center flex-1 mr-4 overflow-hidden">
+                <button
+                    onClick={onMenuClick}
+                    className="p-2.5 mr-2 bg-gray-100/80 hover:bg-white rounded-xl text-gray-600 hover:text-primary transition-all duration-300 md:hidden border border-transparent hover:border-primary/20 shadow-sm"
+                >
+                    <HiOutlineMenu className="h-5 w-5" />
+                </button>
+
+                <div className="relative w-full md:w-[400px] group">
                     <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-all duration-300" />
                     <input
                         type="text"

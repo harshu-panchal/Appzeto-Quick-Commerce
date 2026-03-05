@@ -254,15 +254,15 @@ const AdminWallet = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Transaction History */}
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                 <History className="h-5 w-5" />
                             </div>
                             <h2 className="ds-h2">Recent Transactions</h2>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="flex bg-slate-100 p-1 rounded-xl">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+                            <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto">
                                 {['all', 'earnings', 'payouts', 'seller_requests'].map((tab) => (
                                     <button
                                         key={tab}
@@ -282,14 +282,14 @@ const AdminWallet = () => {
                                     </button>
                                 ))}
                             </div>
-                            <div className="relative group">
+                            <div className="relative group w-full sm:w-auto">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
                                 <input
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     placeholder="Search details..."
-                                    className="pl-9 pr-4 py-2 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/10 w-48 transition-all"
+                                    className="pl-9 pr-4 py-2 bg-white ring-1 ring-slate-200 rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/10 w-full sm:w-48 transition-all"
                                 />
                             </div>
                         </div>
@@ -297,7 +297,7 @@ const AdminWallet = () => {
 
                     <Card className="border-none shadow-2xl ring-1 ring-slate-100/50 overflow-hidden bg-white rounded-[32px]">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="min-w-full text-left border-collapse">
                                 {activeTab === 'seller_requests' ? (
                                     <>
                                         <thead>
