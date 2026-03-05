@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import LocationDrawer from "./LocationDrawer";
 import { useLocation } from "../../context/LocationContext";
+import { useProductDetail } from "../../context/ProductDetailContext";
+import { cn } from "@/lib/utils";
 import LogoImage from "../../../../assets/Logo.png";
 
 // MUI Icons
@@ -23,6 +25,7 @@ const MainLocationHeader = ({
   const { scrollY } = useScroll();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const { currentLocation } = useLocation();
+  const { isOpen: isProductDetailOpen } = useProductDetail();
   const navigate = useNavigate();
 
   // Search Logic
@@ -134,7 +137,10 @@ const MainLocationHeader = ({
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 z-[200]">
+      <div className={cn(
+        "fixed top-0 left-0 right-0 z-[200]",
+        isProductDetailOpen && "hidden md:block"
+      )}>
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -303,7 +309,7 @@ const MainLocationHeader = ({
                 display: displayNav,
                 overflowY: "hidden",
               }}
-              className="flex items-center md:justify-center gap-4 lg:gap-8 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 md:-mx-0 md:px-0 relative z-10 snap-x">
+              className="flex items-center md:justify-center gap-2 md:gap-4 lg:gap-8 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 md:-mx-0 md:px-0 relative z-10 snap-x">
               {categories.slice(0, 10).map((cat, idx) => {
                 const isActive = activeCategory?.id === cat.id;
                 return (
@@ -312,27 +318,27 @@ const MainLocationHeader = ({
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onCategorySelect && onCategorySelect(cat)}
-                    className="flex flex-col items-center gap-1.5 group cursor-pointer flex-shrink-0 snap-start min-w-[65px] transition-all duration-200">
+                    className="flex flex-col items-center gap-1 group cursor-pointer flex-shrink-0 snap-start min-w-[50px] md:min-w-[65px] transition-all duration-200">
                     <div
-                      className={`h-11 w-11 md:h-12 md:w-12 rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md ${isActive
+                      className={`h-9 w-9 md:h-12 md:w-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md ${isActive
                         ? "bg-white text-emerald-800 shadow-lg scale-105"
                         : "bg-white/10 text-white shadow-inner border border-white/10 group-hover:bg-white/20"
                         }`}>
                       {typeof cat.icon === "function" ||
                         (typeof cat.icon === "object" && cat.icon.$$typeof) ? (
                         <cat.icon
-                          sx={{ fontSize: { xs: 20, md: 24 }, transition: 'color 0.2s', color: 'inherit' }}
+                          sx={{ fontSize: { xs: 18, md: 24 }, transition: 'color 0.2s', color: 'inherit' }}
                         />
                       ) : (
                         <img
                           src={cat.icon}
                           alt={cat.name}
-                          className="w-5 h-5 md:w-6 md:h-6 object-contain"
+                          className="w-4 h-4 md:w-6 md:h-6 object-contain"
                         />
                       )}
                     </div>
                     <span
-                      className={`text-[9px] md:text-[10px] font-bold uppercase tracking-tight whitespace-nowrap transition-colors duration-200 ${isActive ? "text-white" : "text-white/60 group-hover:text-white"}`}>
+                      className={`text-[8px] md:text-[10px] font-bold uppercase tracking-tight whitespace-nowrap transition-colors duration-200 ${isActive ? "text-white" : "text-white/60 group-hover:text-white"}`}>
                       {cat.name}
                     </span>
                   </motion.div>

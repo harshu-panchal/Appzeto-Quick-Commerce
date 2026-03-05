@@ -36,6 +36,8 @@ import { customerApi } from "../services/customerApi";
 import { toast } from "sonner";
 import ProductCard from "../components/shared/ProductCard";
 import MainLocationHeader from "../components/shared/MainLocationHeader";
+import { useProductDetail } from "../context/ProductDetailContext";
+import { cn } from "@/lib/utils";
 import CardBanner from "@/assets/CardBanner.jpg";
 
 const DEFAULT_CATEGORY_THEME = {
@@ -322,8 +324,10 @@ const bestsellerCategories = [
 
 const Home = () => {
   const { scrollY } = useScroll();
+  const { isOpen: isProductDetailOpen } = useProductDetail();
   const navigate = useNavigate();
   const quickCatsRef = useRef(null);
+  const mobileBannerRef = useRef(null);
 
   const [categories, setCategories] = useState([ALL_CATEGORY]);
   const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY);
@@ -410,6 +414,40 @@ const Home = () => {
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  // Autoplay for Mobile Banner Carousel
+  useEffect(() => {
+    const bannerContainer = mobileBannerRef.current;
+    if (!bannerContainer) return;
+
+    let intervalId;
+    const startAutoplay = () => {
+      intervalId = setInterval(() => {
+        const { scrollLeft, scrollWidth, clientWidth } = bannerContainer;
+        // If we're at the end, scroll back to the start
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          bannerContainer.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          bannerContainer.scrollTo({ left: scrollLeft + clientWidth, behavior: 'smooth' });
+        }
+      }, 3000); // 3 seconds per slide
+    };
+
+    startAutoplay();
+
+    // Pause on touch to avoid conflict with user interaction
+    const handleTouchStart = () => clearInterval(intervalId);
+    const handleTouchEnd = () => startAutoplay();
+
+    bannerContainer.addEventListener('touchstart', handleTouchStart);
+    bannerContainer.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      clearInterval(intervalId);
+      bannerContainer.removeEventListener('touchstart', handleTouchStart);
+      bannerContainer.removeEventListener('touchend', handleTouchEnd);
+    };
   }, []);
 
   const bestsellerCategories = useMemo(() => {
@@ -502,11 +540,13 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-[#F5F7F8] pt-[240px] md:pt-[250px]">
       {/* Top Dynamic Gradient Section */}
-      <MainLocationHeader
-        categories={categories}
-        activeCategory={activeCategory}
-        onCategorySelect={setActiveCategory}
-      />
+      <div className={cn("contents", isProductDetailOpen && "hidden md:contents")}>
+        <MainLocationHeader
+          categories={categories}
+          activeCategory={activeCategory}
+          onCategorySelect={setActiveCategory}
+        />
+      </div>
 
       {/* Quick Navigation Category Slider */}
       {quickCategories.length > 0 && (
@@ -525,7 +565,7 @@ const Home = () => {
 
           <div
             ref={quickCatsRef}
-            className="flex items-start gap-4 lg:gap-6 overflow-x-auto no-scrollbar py-2 px-1 snap-x scroll-smooth"
+            className="flex items-start gap-2.5 md:gap-4 lg:gap-6 overflow-x-auto no-scrollbar py-2 px-1 snap-x scroll-smooth"
           >
             {quickCategories.map((cat) => (
               <motion.div
@@ -533,16 +573,16 @@ const Home = () => {
                 whileHover={{ y: -4 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => navigate(`/category/${cat.id}`)}
-                className="flex flex-col items-center gap-2 min-w-[90px] md:min-w-[110px] lg:min-w-[120px] cursor-pointer group/item snap-start"
+                className="flex flex-col items-center gap-1.5 min-w-[75px] md:min-w-[110px] lg:min-w-[120px] cursor-pointer group/item snap-start"
               >
-                <div className="w-[85px] h-[85px] lg:w-[105px] lg:h-[105px] rounded-2xl bg-[#F8F9FA] shadow-sm border border-gray-100 flex items-center justify-center p-2.5 transition-all group-hover/item:shadow-md group-hover/item:bg-white overflow-hidden">
+                <div className="w-[70px] h-[70px] md:w-[85px] md:h-[85px] lg:w-[105px] lg:h-[105px] rounded-2xl bg-[#F8F9FA] shadow-sm border border-gray-100 flex items-center justify-center p-2 transition-all group-hover/item:shadow-md group-hover/item:bg-white overflow-hidden">
                   <img
                     src={cat.image}
                     alt={cat.name}
                     className="w-full h-full object-contain mix-blend-multiply group-hover/item:scale-110 transition-transform duration-500"
                   />
                 </div>
-                <span className="text-[11px] lg:text-[12px] font-bold text-gray-700 text-center leading-[1.3] line-clamp-2 max-w-[90px] md:max-w-full group-hover/item:text-[#0c831f] transition-colors">
+                <span className="text-[10px] lg:text-[12px] font-bold text-gray-700 text-center leading-tight line-clamp-2 max-w-[70px] md:max-w-full group-hover/item:text-[#0c831f] transition-colors">
                   {cat.name}
                 </span>
               </motion.div>
@@ -562,6 +602,68 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile Banner Carousel - Mobile Only (Below Category Slider) */}
+      <div className="block md:hidden mb-10 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div
+            ref={mobileBannerRef}
+            className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4"
+          >
+            {/* Banner 1: Get Products (Green) */}
+            <motion.div
+              onClick={() => navigate('/category/all')}
+              whileTap={{ scale: 0.96 }}
+              className="min-w-[85vw] h-[190px] bg-[#E6F5EC] rounded-[2rem] p-6 relative overflow-hidden flex items-center snap-center border border-[#0c831f]/10 shadow-[0_4px_15px_rgba(0,0,0,0.05)]"
+            >
+              <div className="relative z-10 w-3/5 flex flex-col items-start gap-2">
+                <div className="flex flex-col gap-0.5">
+                  <h4 className="text-2xl font-[1000] text-[#1A1A1A] tracking-tighter leading-none">
+                    Get <span className="text-[#0c831f]">Products</span>
+                  </h4>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-sm font-black text-gray-700">at</span>
+                    <div className="bg-[#0c831f] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
+                      <VerifiedIcon sx={{ fontSize: 16 }} />
+                      <span className="text-xl font-[1000]">₹0</span>
+                    </div>
+                    <span className="text-sm font-[1000] text-gray-700">Fee</span>
+                  </div>
+                </div>
+                <p className="text-[11px] font-bold text-gray-500 max-w-[150px] leading-tight">
+                  Get groceries delivered in minutes
+                </p>
+                <button className="bg-[#FF1E56] text-white px-6 py-2.5 rounded-2xl font-black text-xs tracking-wide shadow-lg shadow-rose-200 mt-2">
+                  Order now
+                </button>
+              </div>
+
+              <div className="absolute right-[-10px] bottom-0 top-0 w-2/5 flex items-center justify-center">
+                <img
+                  src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400"
+                  alt="Promo"
+                  className="w-full h-full object-contain rotate-3 scale-110"
+                />
+              </div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#0c831f]/5 rounded-full blur-2xl -mt-12 -mr-12" />
+            </motion.div>
+
+            {/* Banner 2: Wholesale (CardBanner Asset) */}
+            <motion.div
+              onClick={() => navigate('/categories')}
+              whileTap={{ scale: 0.96 }}
+              className="min-w-[85vw] h-[190px] bg-white rounded-[2rem] relative overflow-hidden flex snap-center border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.05)] group"
+            >
+              <img
+                src={CardBanner}
+                alt="Promotion"
+                className="w-full h-full object-fill"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
+            </motion.div>
+          </div>
+        </div>
+      </div>
 
 
 
@@ -723,7 +825,6 @@ const Home = () => {
           ))}
         </div>
       </div>
-
     </div >
   );
 };
