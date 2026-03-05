@@ -11,9 +11,9 @@ const NotificationPopup = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClo
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="absolute top-full right-0 mt-4 w-[380px] bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden z-50"
+            className="fixed md:absolute top-14 md:top-full left-0 md:left-auto md:right-0 mt-0 md:mt-4 w-full md:w-[380px] bg-white rounded-b-2xl md:rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] md:border border-gray-100 overflow-hidden z-50 max-h-[80vh] md:h-auto flex flex-col"
         >
-            <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-slate-50/50">
+            <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-slate-50/50 flex-shrink-0">
                 <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                         <HiOutlineBell className="h-4 w-4" />
@@ -30,7 +30,7 @@ const NotificationPopup = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClo
                 )}
             </div>
 
-            <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+            <div className="flex-1 md:max-h-[400px] overflow-y-auto custom-scrollbar">
                 {notifications.length > 0 ? (
                     <div className="divide-y divide-gray-50">
                         {notifications.map((notif) => (
@@ -87,7 +87,7 @@ const NotificationPopup = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClo
                 )}
             </div>
 
-            <div className="p-3 bg-slate-50/50 border-t border-gray-50 text-center">
+            <div className="p-3 bg-slate-50/50 border-t border-gray-50 text-center flex-shrink-0">
                 <button
                     onClick={onClose}
                     className="text-[10px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors"
