@@ -40,14 +40,27 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Request Logger for Debugging
-app.use((req, res, next) => {
-  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.log("Body:", req.body);
-  }
-  next();
-});
+// Lightweight request logger & timing (disabled in production)
+if (NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    const start = Date.now();
+    const hasBody = req.body && Object.keys(req.body).length > 0;
+    res.on("finish", () => {
+      const duration = Date.now() - start;
+      const bodySummary = hasBody ? ` bodyKeys=${Object.keys(req.body).slice(0, 5).join(",")}` : "";
+      if (duration > 500) {
+        console.warn(
+          `[SLOW ${duration}ms] ${req.method} ${req.originalUrl} -> ${res.statusCode}${bodySummary}`
+        );
+      } else {
+        console.log(
+          `[${new Date().toISOString()}] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)${bodySummary}`
+        );
+      }
+    });
+    next();
+  });
+}
 
 // Health Check Endpoint
 app.get('/health', (req, res) => {

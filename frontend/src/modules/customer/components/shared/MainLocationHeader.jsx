@@ -135,12 +135,19 @@ const MainLocationHeader = ({
     value > 200 ? "none" : "flex",
   );
 
+  const activeHeaderColor = activeCategory?.headerColor;
+  const defaultGradient = "linear-gradient(135deg, #065f46, #047857)";
+  const headerGradient = activeHeaderColor
+    ? `linear-gradient(135deg, ${activeHeaderColor}, ${activeHeaderColor})`
+    : defaultGradient;
+
   return (
     <>
-      <div className={cn(
-        "fixed top-0 left-0 right-0 z-[200]",
-        isProductDetailOpen && "hidden md:block"
-      )}>
+      <div
+        className={cn(
+          "fixed top-0 left-0 right-0 z-200",
+          isProductDetailOpen && "hidden md:block",
+        )}>
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -151,8 +158,9 @@ const MainLocationHeader = ({
             borderBottomLeftRadius: headerRoundness,
             borderBottomRightRadius: headerRoundness,
             opacity: bgOpacity,
+            backgroundImage: headerGradient,
           }}
-          className="px-4 shadow-[0_4px_20px_rgba(0,0,0,0.15)] relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-emerald-700 via-green-800 to-emerald-900 border-b border-white/5 sticky top-0">
+          className="px-4 shadow-[0_4px_20px_rgba(0,0,0,0.15)] overflow-hidden transition-all duration-300 border-b border-white/5 sticky top-0">
 
           {/* Subtle Glow Overlay */}
           <div className="absolute inset-0 bg-white/5 pointer-events-none" />
@@ -309,7 +317,7 @@ const MainLocationHeader = ({
                 display: displayNav,
                 overflowY: "hidden",
               }}
-              className="flex items-center md:justify-center gap-2 md:gap-4 lg:gap-8 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 md:-mx-0 md:px-0 relative z-10 snap-x">
+              className="flex items-center md:justify-center gap-2 md:gap-4 lg:gap-8 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 md:mx-0 md:px-0 relative z-10 snap-x">
               {categories.slice(0, 10).map((cat, idx) => {
                 const isActive = activeCategory?.id === cat.id;
                 return (
@@ -318,7 +326,7 @@ const MainLocationHeader = ({
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onCategorySelect && onCategorySelect(cat)}
-                    className="flex flex-col items-center gap-1 group cursor-pointer flex-shrink-0 snap-start min-w-[50px] md:min-w-[65px] transition-all duration-200">
+                    className="flex flex-col items-center gap-1 group cursor-pointer shrink-0 snap-start min-w-[50px] md:min-w-[65px] transition-all duration-200">
                     <div
                       className={`h-9 w-9 md:h-12 md:w-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md ${isActive
                         ? "bg-white text-emerald-800 shadow-lg scale-105"

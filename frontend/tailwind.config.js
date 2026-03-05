@@ -115,6 +115,13 @@ export default {
         float: "float 3s ease-in-out infinite",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
+      zIndex: {
+        160: 160,
+        170: 170,
+        500: 500,
+        600: 600,
+        650: 650,
+      },
     },
   },
   plugins: [tailwindcssAnimate],

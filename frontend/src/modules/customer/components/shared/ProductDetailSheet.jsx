@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, AnimatePresence, useAnimation, useDragControls } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { X, ChevronDown, Share2, Heart, Search, Clock, Minus, Plus, ShoppingBag, Star, MessageSquare, ArrowLeft, ChevronRight } from 'lucide-react';
@@ -202,13 +202,13 @@ const ProductDetailSheet = () => {
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop - sits above header */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={closeProduct}
-                        className="fixed inset-0 bg-black/60 z-[150] backdrop-blur-sm"
+                        className="fixed inset-0 bg-black/60 z-[220] backdrop-blur-sm"
                     />
 
                     {/* ============================================================ */}
@@ -219,7 +219,7 @@ const ProductDetailSheet = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.96, y: 30 }}
                         transition={{ type: 'spring', damping: 28, stiffness: 380 }}
-                        className="hidden md:flex fixed z-[160] top-[72px] bottom-[16px] left-[3%] right-[3%] lg:left-[6%] lg:right-[6%] xl:left-[12%] xl:right-[12%] bg-white rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.25)] overflow-hidden"
+                        className="hidden md:flex fixed z-[230] top-[72px] bottom-[16px] left-[3%] right-[3%] lg:left-[6%] lg:right-[6%] xl:left-[12%] xl:right-[12%] bg-white rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.25)] overflow-hidden"
                     >
                         {/* Left: Image Gallery */}
                         <div className="relative w-[42%] lg:w-[45%] flex-shrink-0 bg-gradient-to-br from-[#fafbfc] via-green-50/20 to-white flex flex-col">
@@ -510,7 +510,7 @@ const ProductDetailSheet = () => {
                             mass: 0.8
                         }}
                         className={cn(
-                            "md:hidden fixed z-[160] bg-white shadow-2xl overflow-hidden flex flex-col",
+                            "md:hidden fixed z-[230] bg-white shadow-2xl overflow-hidden flex flex-col",
                         )}
                         style={{ willChange: "transform, top, bottom, left, width, border-radius" }}
                     >

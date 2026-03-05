@@ -19,6 +19,30 @@ import { toast } from "sonner";
 import IconSelector from "@shared/components/IconSelector";
 import { getIconSvg } from "@shared/constants/categoryIcons";
 
+// MUI icon library (shared with customer app & icon selector)
+import HomeIcon from "@mui/icons-material/Home";
+import DevicesIcon from "@mui/icons-material/Devices";
+import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
+import KitchenIcon from "@mui/icons-material/Kitchen";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import PetsIcon from "@mui/icons-material/Pets";
+import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import SpaIcon from "@mui/icons-material/Spa";
+import ToysIcon from "@mui/icons-material/Toys";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import YardIcon from "@mui/icons-material/Yard";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import CheckroomIcon from "@mui/icons-material/Checkroom";
+import LocalCafeIcon from "@mui/icons-material/LocalCafe";
+import DiamondIcon from "@mui/icons-material/Diamond";
+import ColorLensIcon from "@mui/icons-material/ColorLens";
+import BuildIcon from "@mui/icons-material/Build";
+import LuggageIcon from "@mui/icons-material/Luggage";
+
 const HeaderCategories = () => {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,11 +65,37 @@ const HeaderCategories = () => {
     iconId: "",
     adminCommission: 0,
     handlingFees: 0,
+    headerColor: "#FF1E1E",
   });
 
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Map our icon ids to MUI icon components so admin UI
+  // previews the same icons used in the customer app.
+  const iconComponents = {
+    electronics: DevicesIcon,
+    fashion: CheckroomIcon,
+    home: HomeIcon,
+    food: LocalCafeIcon,
+    sports: SportsSoccerIcon,
+    books: MenuBookIcon,
+    beauty: SpaIcon,
+    toys: ToysIcon,
+    automotive: DirectionsCarIcon,
+    pets: PetsIcon,
+    health: LocalHospitalIcon,
+    garden: YardIcon,
+    office: BusinessCenterIcon,
+    music: MusicNoteIcon,
+    jewelry: DiamondIcon,
+    baby: ChildCareIcon,
+    tools: BuildIcon,
+    luggage: LuggageIcon,
+    art: ColorLensIcon,
+    grocery: LocalGroceryStoreIcon,
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -171,6 +221,7 @@ const HeaderCategories = () => {
       iconId: "",
       adminCommission: 0,
       handlingFees: 0,
+      headerColor: "#FF1E1E",
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -189,6 +240,7 @@ const HeaderCategories = () => {
       iconId: item.iconId || "",
       adminCommission: item.adminCommission || 0,
       handlingFees: item.handlingFees || 0,
+      headerColor: item.headerColor || "#FF1E1E",
     });
     setPreviewUrl(item.image?.url || null);
     setIsAddModalOpen(true);
@@ -299,10 +351,19 @@ const HeaderCategories = () => {
                     </td>
                     <td className="py-3 px-4">
                       <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
-                        {cat.iconId && getIconSvg(cat.iconId) ? (
+                        {cat.iconId && iconComponents[cat.iconId] ? (
+                          <div className="w-6 h-6 text-indigo-600 flex items-center justify-center">
+                            {(() => {
+                              const IconComp = iconComponents[cat.iconId];
+                              return <IconComp fontSize="medium" />;
+                            })()}
+                          </div>
+                        ) : cat.iconId && getIconSvg(cat.iconId) ? (
                           <div
                             className="w-6 h-6 text-indigo-600"
-                            dangerouslySetInnerHTML={{ __html: getIconSvg(cat.iconId) }}
+                            dangerouslySetInnerHTML={{
+                              __html: getIconSvg(cat.iconId),
+                            }}
                           />
                         ) : cat.image?.url || cat.image ? (
                           <img
@@ -359,13 +420,13 @@ const HeaderCategories = () => {
       {/* Add/Edit Modal */}
       <AnimatePresence>
         {isAddModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center flex-shrink-0">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center shrink-0">
                 <h2 className="text-lg font-bold text-gray-900">
                   {editingItem ? "Edit Header Category" : "Add Header Category"}
                 </h2>
@@ -382,11 +443,20 @@ const HeaderCategories = () => {
                   <div className="flex gap-4">
                     {/* SVG Icon Display */}
                     <div className="flex flex-col items-center gap-2">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 flex items-center justify-center">
-                        {formData.iconId && getIconSvg(formData.iconId) ? (
+                      <div className="w-24 h-24 rounded-full bg-linear-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 flex items-center justify-center">
+                        {formData.iconId && iconComponents[formData.iconId] ? (
+                          <div className="w-12 h-12 text-indigo-600 flex items-center justify-center">
+                            {(() => {
+                              const IconComp = iconComponents[formData.iconId];
+                              return <IconComp fontSize="large" />;
+                            })()}
+                          </div>
+                        ) : formData.iconId && getIconSvg(formData.iconId) ? (
                           <div
                             className="w-12 h-12 text-indigo-600"
-                            dangerouslySetInnerHTML={{ __html: getIconSvg(formData.iconId) }}
+                            dangerouslySetInnerHTML={{
+                              __html: getIconSvg(formData.iconId),
+                            }}
                           />
                         ) : (
                           <Sparkles className="w-10 h-10 text-indigo-300" />
@@ -438,6 +508,50 @@ const HeaderCategories = () => {
                   <p className="text-xs text-gray-500 text-center">
                     Choose an SVG icon or upload a custom image
                   </p>
+                </div>
+
+                {/* Header Color Picker */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">
+                      Header Color
+                    </label>
+                    <span className="text-xs text-gray-400">
+                      Used for this header&apos;s theme
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="flex-1 h-10 rounded-lg border border-gray-200 shadow-inner"
+                      style={{
+                        background:
+                          formData.headerColor || "#FF1E1E",
+                      }}
+                    />
+                    <input
+                      type="color"
+                      value={formData.headerColor || "#FF1E1E"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          headerColor: e.target.value,
+                        })
+                      }
+                      className="w-12 h-10 rounded-md border border-gray-300 cursor-pointer bg-transparent p-0"
+                    />
+                    <input
+                      type="text"
+                      value={formData.headerColor || "#FF1E1E"}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          headerColor: e.target.value,
+                        })
+                      }
+                      className="w-28 px-2 py-2 rounded-lg border border-gray-300 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      placeholder="#FF1E1E"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -520,7 +634,7 @@ const HeaderCategories = () => {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 flex-shrink-0">
+              <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 shrink-0">
                 <button
                   onClick={() => setIsAddModalOpen(false)}
                   className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">

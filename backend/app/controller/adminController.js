@@ -8,6 +8,7 @@ import Product from "../models/product.js";
 import Transaction from "../models/transaction.js";
 import Notification from "../models/notification.js";
 import handleResponse from "../utils/helper.js";
+import getPagination from "../utils/pagination.js";
 
 /* ===============================
    GET ADMIN DASHBOARD STATS
@@ -389,11 +390,26 @@ export const getAdminWalletData = async (req, res) => {
 ================================ */
 export const getDeliveryTransactions = async (req, res) => {
     try {
-        const transactions = await Transaction.find({ userModel: "Delivery" })
-            .populate("user", "name phone documents")
-            .sort({ createdAt: -1 });
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
 
-        return handleResponse(res, 200, "Delivery transactions fetched", transactions);
+        const query = { userModel: "Delivery" };
+
+        const transactions = await Transaction.find(query)
+            .populate("user", "name phone documents")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const total = await Transaction.countDocuments(query);
+
+        return handleResponse(res, 200, "Delivery transactions fetched", {
+            items: transactions,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -420,7 +436,11 @@ export const getSellerWithdrawals = async (req, res) => {
 ================================ */
 export const getSellerTransactions = async (req, res) => {
     try {
-        const transactions = await Transaction.find({ userModel: "Seller" })
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
+
+        const query = { userModel: "Seller" };
+
+        const transactions = await Transaction.find(query)
             .populate("user", "name shopName phone bankDetails")
             .populate({
                 path: "order",
@@ -430,9 +450,20 @@ export const getSellerTransactions = async (req, res) => {
                     select: "name"
                 }
             })
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
-        return handleResponse(res, 200, "Seller transactions fetched", transactions);
+        const total = await Transaction.countDocuments(query);
+
+        return handleResponse(res, 200, "Seller transactions fetched", {
+            items: transactions,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

@@ -33,14 +33,18 @@ const OrdersList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [dateRange, setDateRange] = useState('All Time');
     const [orders, setOrders] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (requestedPage = 1) => {
         setIsLoading(true);
         try {
-            const response = await adminApi.getOrders();
+            const response = await adminApi.getOrders({ page: requestedPage, limit: pageSize });
             if (response.data.success) {
-                const dbOrders = response.data.results || response.data.result || [];
+                const payload = response.data.result || {};
+                const dbOrders = Array.isArray(payload.items) ? payload.items : (response.data.results || []);
                 const formatted = dbOrders.map(o => ({
                     id: o.orderId,
                     _id: o._id,
@@ -53,6 +57,16 @@ const OrdersList = () => {
                     payment: o.payment?.method === 'cod' ? 'COD' : 'Digital',
                 }));
                 setOrders(formatted);
+                if (typeof payload.total === 'number') {
+                    setTotal(payload.total);
+                } else {
+                    setTotal(formatted.length);
+                }
+                if (typeof payload.page === 'number') {
+                    setPage(payload.page);
+                } else {
+                    setPage(requestedPage);
+                }
             }
         } catch (error) {
             console.error("Fetch orders error:", error);
@@ -74,8 +88,9 @@ const OrdersList = () => {
     };
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        fetchOrders(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
     const stats = useMemo(() => {
         const totalEarnings = orders.reduce((sum, o) => sum + o.amount, 0);
@@ -319,12 +334,26 @@ const OrdersList = () => {
 
                 <div className="p-4 border-t border-slate-50 flex items-center justify-between">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Showing <span className="text-slate-900 font-black">{filteredOrders.length}</span> of {orders.length} Orders
+                        Showing <span className="text-slate-900 font-black">{filteredOrders.length}</span> of {total} Orders
                     </p>
                     <div className="flex items-center gap-2">
-                        <button className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100">Prev</button>
-                        <button className="px-4 py-2 bg-fuchsia-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-fuchsia-100">1</button>
-                        <button className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100">Next</button>
+                        <button
+                            disabled={page <= 1 || isLoading}
+                            onClick={() => page > 1 && fetchOrders(page - 1)}
+                            className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 disabled:opacity-50"
+                        >
+                            Prev
+                        </button>
+                        <span className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                            Page {page}
+                        </span>
+                        <button
+                            disabled={orders.length < pageSize || isLoading}
+                            onClick={() => fetchOrders(page + 1)}
+                            className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 disabled:opacity-50"
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
             </Card>

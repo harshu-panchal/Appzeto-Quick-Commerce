@@ -7,7 +7,10 @@ import handleResponse from "../utils/helper.js";
 export const getCart = async (req, res) => {
     try {
         const customerId = req.user.id;
-        let cart = await Cart.findOne({ customerId }).populate("items.productId");
+        let cart = await Cart.findOne({ customerId }).populate(
+          "items.productId",
+          "name slug price salePrice mainImage stock status headerId categoryId subcategoryId sellerId"
+        );
 
         if (!cart) {
             cart = await Cart.create({ customerId, items: [] });
@@ -42,7 +45,10 @@ export const addToCart = async (req, res) => {
         }
 
         await cart.save();
-        const updatedCart = await Cart.findById(cart._id).populate("items.productId");
+        const updatedCart = await Cart.findById(cart._id).populate(
+          "items.productId",
+          "name slug price salePrice mainImage stock status headerId categoryId subcategoryId sellerId"
+        );
 
         return handleResponse(res, 200, "Item added to cart", updatedCart);
     } catch (error) {
@@ -76,7 +82,10 @@ export const updateQuantity = async (req, res) => {
         }
 
         await cart.save();
-        const updatedCart = await Cart.findById(cart._id).populate("items.productId");
+        const updatedCart = await Cart.findById(cart._id).populate(
+          "items.productId",
+          "name slug price salePrice mainImage stock status headerId categoryId subcategoryId sellerId"
+        );
 
         return handleResponse(res, 200, "Cart updated successfully", updatedCart);
     } catch (error) {
@@ -101,7 +110,10 @@ export const removeFromCart = async (req, res) => {
         cart.items = cart.items.filter((item) => item.productId.toString() !== productId);
 
         await cart.save();
-        const updatedCart = await Cart.findById(cart._id).populate("items.productId");
+        const updatedCart = await Cart.findById(cart._id).populate(
+          "items.productId",
+          "name slug price salePrice mainImage stock status headerId categoryId subcategoryId sellerId"
+        );
 
         return handleResponse(res, 200, "Item removed from cart", updatedCart);
     } catch (error) {

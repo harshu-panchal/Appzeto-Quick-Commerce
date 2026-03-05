@@ -7,46 +7,7 @@ import Notification from "../models/notification.js";
 import Seller from "../models/seller.js";
 import Delivery from "../models/delivery.js";
 import handleResponse from "../utils/helper.js";
-
-// Periodic job to auto-cancel expired pending orders instead of per-request timeouts
-const AUTO_CANCEL_INTERVAL_MS = 10000; // runs every 10 seconds
-
-const autoCancelExpiredOrders = async () => {
-    try {
-        const now = new Date();
-        const expiredOrders = await Order.find({
-            status: "pending",
-            expiresAt: { $lte: now },
-        });
-
-        for (const order of expiredOrders) {
-            order.status = "cancelled";
-            order.cancelledBy = "system";
-            order.cancelReason = "Seller timeout (60s)";
-            await order.save();
-
-            if (order.seller) {
-                await Notification.create({
-                    recipient: order.seller,
-                    recipientModel: "Seller",
-                    title: "Order Timed Out",
-                    message: `Order #${order.orderId} was cancelled because it wasn't accepted within 60 seconds.`,
-                    type: "order",
-                    data: { orderId: order._id },
-                });
-            }
-
-            console.log(`Order ${order.orderId} auto-cancelled due to timeout.`);
-        }
-    } catch (err) {
-        console.error("Auto-cancel job error:", err);
-    }
-};
-
-if (!globalThis.__ORDER_AUTO_CANCEL_STARTED__) {
-    globalThis.__ORDER_AUTO_CANCEL_STARTED__ = true;
-    setInterval(autoCancelExpiredOrders, AUTO_CANCEL_INTERVAL_MS);
-}
+import getPagination from "../utils/pagination.js";
 
 /* ===============================
    PLACE ORDER
@@ -342,17 +303,34 @@ export const getSellerOrders = async (req, res) => {
         const query = role === 'admin' ? {} : { seller: userId };
         console.log("Fetching Orders - User role:", role, "User ID:", userId);
 
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 100 });
+
         const orders = await Order.find(query)
             .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
             .populate("customer", "name phone")
-            .populate("items.product")
-            .populate("deliveryBoy")
-            .populate("seller", "shopName name");
+            .populate("items.product", "name mainImage price salePrice")
+            .populate("deliveryBoy", "name phone")
+            .populate("seller", "shopName name")
+            .lean();
 
-        console.log("Fetched Orders Count:", orders.length);
-        console.log("Latest Order ID:", orders[0]?.orderId, "Status:", orders[0]?.status);
+        const total = await Order.countDocuments(query);
 
-        return handleResponse(res, 200, role === 'admin' ? "All orders fetched" : "Seller orders fetched", orders);
+        console.log("Fetched Orders Page:", page, "Count:", orders.length);
+
+        return handleResponse(
+            res,
+            200,
+            role === "admin" ? "All orders fetched" : "Seller orders fetched",
+            {
+                items: orders,
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit) || 1,
+            }
+        );
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -396,6 +374,13 @@ export const getAvailableOrders = async (req, res) => {
 
         // 3. Fetch confirmed/packed orders from these sellers with no delivery boy
         // AND exclude orders already skipped by this partner
+        const maxLimit = 50;
+        const requestedLimit = parseInt(req.query.limit, 10);
+        const limit =
+            Number.isFinite(requestedLimit) && requestedLimit > 0
+                ? Math.min(requestedLimit, maxLimit)
+                : 20;
+
         const orders = await Order.find({
             status: { $in: ["confirmed", "packed"] }, // Seller has accepted
             deliveryBoy: null,
@@ -403,8 +388,10 @@ export const getAvailableOrders = async (req, res) => {
             skippedBy: { $nin: [userId] } // Exclude if already skipped by this user
         })
             .sort({ createdAt: -1 })
+            .limit(limit)
             .populate("customer", "name phone")
-            .populate("seller", "shopName address name location");
+            .populate("seller", "shopName address name location")
+            .lean();
 
         console.log(`Delivery Partner (${userId}) - Available orders found: ${orders.length}`);
 

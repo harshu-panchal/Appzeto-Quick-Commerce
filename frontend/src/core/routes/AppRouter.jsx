@@ -1,4 +1,4 @@
-import React, { lazy, useMemo } from 'react';
+import React, { lazy, useMemo, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Outlet, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../guards/ProtectedRoute';
 import RoleGuard from '../guards/RoleGuard';
@@ -19,28 +19,28 @@ import AdminAuth from '../../modules/admin/pages/AdminAuth';
 import DeliveryAuth from '../../modules/delivery/pages/DeliveryAuth';
 import CustomerAuth from '../../modules/customer/pages/CustomerAuth';
 
-// Customer Pages
-import Home from '../../modules/customer/pages/Home';
-import CategoriesPage from '../../modules/customer/pages/CategoriesPage';
-import CategoryProductsPage from '../../modules/customer/pages/CategoryProductsPage';
-import WishlistPage from '../../modules/customer/pages/WishlistPage';
-import CartPage from '../../modules/customer/pages/CartPage';
-import OffersPage from '../../modules/customer/pages/OffersPage';
-import ProfilePage from '../../modules/customer/pages/ProfilePage';
-import OrdersPage from '../../modules/customer/pages/OrdersPage';
-import AddressesPage from '../../modules/customer/pages/AddressesPage';
-import WalletPage from '../../modules/customer/pages/WalletPage';
-import SettingsPage from '../../modules/customer/pages/SettingsPage';
-import SupportPage from '../../modules/customer/pages/SupportPage';
-import ChatPage from '../../modules/customer/pages/ChatPage';
-import TermsPage from '../../modules/customer/pages/TermsPage';
-import PrivacyPage from '../../modules/customer/pages/PrivacyPage';
-import AboutPage from '../../modules/customer/pages/AboutPage';
-import EditProfilePage from '../../modules/customer/pages/EditProfilePage';
-import OrderDetailPage from '../../modules/customer/pages/OrderDetailPage';
-import ProductDetailPage from '../../modules/customer/pages/ProductDetailPage';
-import CheckoutPage from '../../modules/customer/pages/CheckoutPage';
-import SearchPage from '../../modules/customer/pages/SearchPage';
+// Customer Pages (lazy-loaded)
+const Home = lazy(() => import('../../modules/customer/pages/Home'));
+const CategoriesPage = lazy(() => import('../../modules/customer/pages/CategoriesPage'));
+const CategoryProductsPage = lazy(() => import('../../modules/customer/pages/CategoryProductsPage'));
+const WishlistPage = lazy(() => import('../../modules/customer/pages/WishlistPage'));
+const CartPage = lazy(() => import('../../modules/customer/pages/CartPage'));
+const OffersPage = lazy(() => import('../../modules/customer/pages/OffersPage'));
+const ProfilePage = lazy(() => import('../../modules/customer/pages/ProfilePage'));
+const OrdersPage = lazy(() => import('../../modules/customer/pages/OrdersPage'));
+const AddressesPage = lazy(() => import('../../modules/customer/pages/AddressesPage'));
+const WalletPage = lazy(() => import('../../modules/customer/pages/WalletPage'));
+const SettingsPage = lazy(() => import('../../modules/customer/pages/SettingsPage'));
+const SupportPage = lazy(() => import('../../modules/customer/pages/SupportPage'));
+const ChatPage = lazy(() => import('../../modules/customer/pages/ChatPage'));
+const TermsPage = lazy(() => import('../../modules/customer/pages/TermsPage'));
+const PrivacyPage = lazy(() => import('../../modules/customer/pages/PrivacyPage'));
+const AboutPage = lazy(() => import('../../modules/customer/pages/AboutPage'));
+const EditProfilePage = lazy(() => import('../../modules/customer/pages/EditProfilePage'));
+const OrderDetailPage = lazy(() => import('../../modules/customer/pages/OrderDetailPage'));
+const ProductDetailPage = lazy(() => import('../../modules/customer/pages/ProductDetailPage'));
+const CheckoutPage = lazy(() => import('../../modules/customer/pages/CheckoutPage'));
+const SearchPage = lazy(() => import('../../modules/customer/pages/SearchPage'));
 
 // Lazy load heavy modules
 const SellerModule = lazy(() => import('../../modules/seller/routes/index'));
@@ -57,7 +57,9 @@ const CustomerLayoutWrapper = () => (
                     <ProductDetailProvider>
                         <ScrollToTop />
                         <CustomerLayout>
-                            <Outlet />
+                            <Suspense fallback={<div className="flex h-screen items-center justify-center font-outfit">Loading...</div>}>
+                                <Outlet />
+                            </Suspense>
                         </CustomerLayout>
                     </ProductDetailProvider>
                 </CartAnimationProvider>

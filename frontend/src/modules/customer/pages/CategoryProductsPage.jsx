@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, Heart, Search, Minus, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -12,12 +12,15 @@ import ProductDetailSheet from '../components/shared/ProductDetailSheet';
 import { useProductDetail } from '../context/ProductDetailContext';
 import { customerApi } from '../services/customerApi';
 import MiniCart from '../components/shared/MiniCart';
+import SectionRenderer from "../components/experience/SectionRenderer";
 
 const CategoryProductsPage = () => {
     const { categoryName: catId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const initialSubcategoryId = location.state?.activeSubcategoryId || 'all';
     const { isOpen: isProductDetailOpen } = useProductDetail();
-    const [selectedSubCategory, setSelectedSubCategory] = useState('all');
+    const [selectedSubCategory, setSelectedSubCategory] = useState(initialSubcategoryId);
     const [category, setCategory] = useState(null);
     const [subCategories, setSubCategories] = useState([{ id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' }]);
     const [products, setProducts] = useState([]);
@@ -29,7 +32,15 @@ const CategoryProductsPage = () => {
             // Fetch products for this category
             const prodRes = await customerApi.getProducts({ categoryId: catId });
             if (prodRes.data.success) {
-                const dbProds = prodRes.data.results || prodRes.data.result || [];
+                const rawResult = prodRes.data.result;
+                const dbProds = Array.isArray(prodRes.data.results)
+                    ? prodRes.data.results
+                    : Array.isArray(rawResult?.items)
+                    ? rawResult.items
+                    : Array.isArray(rawResult)
+                    ? rawResult
+                    : [];
+
                 const formattedProds = dbProds.map(p => ({
                     ...p,
                     id: p._id,
@@ -42,16 +53,18 @@ const CategoryProductsPage = () => {
                 setProducts(formattedProds);
             }
 
-            // Fetch subcategories
+            // Fetch subcategories & header mapping
             const catRes = await customerApi.getCategories({ tree: true });
             if (catRes.data.success) {
                 const tree = catRes.data.results || catRes.data.result || [];
                 // Find current category in tree
                 let currentCat = null;
+                let headerForCat = null;
                 for (const header of tree) {
                     const found = (header.children || []).find(c => c._id === catId);
                     if (found) {
                         currentCat = found;
+                        headerForCat = header;
                         break;
                     }
                 }
@@ -75,11 +88,20 @@ const CategoryProductsPage = () => {
 
     useEffect(() => {
         fetchData();
-    }, [catId]);
+        setSelectedSubCategory(location.state?.activeSubcategoryId || 'all');
+    }, [catId, location.state?.activeSubcategoryId]);
 
     const filteredProducts = products.filter(p =>
         selectedSubCategory === 'all' || p.subcategoryId?._id === selectedSubCategory || p.subcategoryId === selectedSubCategory
     );
+
+    const productsById = React.useMemo(() => {
+        const map = {};
+        products.forEach(p => {
+            map[p._id || p.id] = p;
+        });
+        return map;
+    }, [products]);
 
     return (
         <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative font-sans">
@@ -89,7 +111,10 @@ const CategoryProductsPage = () => {
                 isProductDetailOpen && "hidden md:flex"
             )}>
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="p-1 hover:bg-gray-50 rounded-full transition-colors">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="p-1 hover:bg-gray-50 rounded-full transition-colors"
+                    >
                         <ChevronLeft size={24} className="text-gray-900" />
                     </button>
                     <h1 className="text-[18px] font-bold text-gray-800 tracking-tight">
@@ -101,7 +126,7 @@ const CategoryProductsPage = () => {
 
             <div className="flex flex-1 relative items-start">
                 {/* Sidebar */}
-                <aside className="w-[80px] border-r border-gray-50 flex flex-col bg-white overflow-y-auto hide-scrollbar sticky top-[60px] h-[calc(100vh-60px)]">
+                <aside className="w-[80px] border-r border-gray-50 flex flex-col bg-white overflow-y-auto hide-scrollbar sticky top-[60px] h-[calc(100vh-60px)] pb-32">
                     {subCategories.map((cat) => (
                         <button
                             key={cat.id}
@@ -130,7 +155,7 @@ const CategoryProductsPage = () => {
                 </aside>
 
                 {/* Content */}
-                <main className="flex-1 p-3 pb-24 bg-white">
+                <main className="flex-1 p-3 pb-24 bg-white space-y-4">
                     <div className="grid grid-cols-2 gap-x-2 gap-y-4">
                         {filteredProducts.map((product) => (
                             <ProductCard key={product.id} product={product} compact={true} />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles, Tag, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import heroVideo from '@/assets/hero_video.mp4';
+import LazyImage from '@/shared/components/LazyImage';
 
 const banners = [
     {
@@ -57,15 +58,15 @@ const Hero = () => {
 
             {/* --- Corner Decorations (Leaves/Flowers) --- */}
             <div className="absolute top-0 left-0 w-64 h-64 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
-                <img src="https://pngimg.com/uploads/leaves/leaves_PNG10756.png" className="w-full h-full object-contain rotate-180" alt="" />
+                <LazyImage src="https://pngimg.com/uploads/leaves/leaves_PNG10756.png" className="w-full h-full object-contain rotate-180" alt="" />
             </div>
 
             <div className="absolute bottom-20 left-10 w-32 h-32 opacity-80 pointer-events-none hidden md:block animate-pulse duration-[4000ms]">
-                <img src="https://uploads-ssl.webflow.com/646f04c6439a8234388365f5/6470659779df3a0c2049d562_flower-white.svg" className="w-full h-full object-contain invert hue-rotate-180 brightness-200" alt="" />
+                <LazyImage src="https://uploads-ssl.webflow.com/646f04c6439a8234388365f5/6470659779df3a0c2049d562_flower-white.svg" className="w-full h-full object-contain invert hue-rotate-180 brightness-200" alt="" />
             </div>
 
             <div className="absolute top-10 right-0 w-48 h-48 translate-x-1/3 opacity-30 pointer-events-none rotate-45">
-                <img src="https://pngimg.com/uploads/spinach/spinach_PNG10.png" className="w-full h-full object-contain" alt="" />
+                <LazyImage src="https://pngimg.com/uploads/spinach/spinach_PNG10.png" className="w-full h-full object-contain" alt="" />
             </div>
 
 
@@ -82,7 +83,7 @@ const Hero = () => {
                                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                             >
                                 {/* Background Image */}
-                                <img
+                                <LazyImage
                                     src={banner.image}
                                     alt={banner.title}
                                     className={`w-full h-full object-cover transition-transform duration-[5000ms] ${index === current ? 'scale-110' : 'scale-100'}`}

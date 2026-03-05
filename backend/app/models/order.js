@@ -123,4 +123,7 @@ const orderSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+orderSchema.index({ status: 1, seller: 1, deliveryBoy: 1, createdAt: -1 });
+orderSchema.index({ status: 1, expiresAt: 1 });
+
 export default mongoose.model("Order", orderSchema);

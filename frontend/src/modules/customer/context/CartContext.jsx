@@ -62,9 +62,31 @@ export const CartProvider = ({ children }) => {
     }, [cart, isAuthenticated]);
 
     const addToCart = async (product) => {
+        const id = product.id || product._id;
+
+        // Optimistic UI update for instant feedback
+        setCart((prev) => {
+            const existingItem = prev.find((item) => (item.id || item._id) === id);
+            if (existingItem) {
+                return prev.map((item) =>
+                    (item.id || item._id) === id ? { ...item, quantity: item.quantity + 1 } : item
+                );
+            }
+
+            return [
+                ...prev,
+                {
+                    ...product,
+                    id,
+                    quantity: 1,
+                    image: product.image || product.mainImage
+                }
+            ];
+        });
+
         if (isAuthenticated) {
             try {
-                const response = await customerApi.addToCart({ productId: product.id || product._id, quantity: 1 });
+                const response = await customerApi.addToCart({ productId: id, quantity: 1 });
                 const backendCart = response.data.result.items.map(item => ({
                     ...item.productId,
                     id: item.productId._id,
@@ -75,17 +97,6 @@ export const CartProvider = ({ children }) => {
             } catch (error) {
                 console.error("Error adding to cart on backend", error);
             }
-        } else {
-            setCart((prev) => {
-                const id = product.id || product._id;
-                const existingItem = prev.find((item) => (item.id || item._id) === id);
-                if (existingItem) {
-                    return prev.map((item) =>
-                        (item.id || item._id) === id ? { ...item, quantity: item.quantity + 1 } : item
-                    );
-                }
-                return [...prev, { ...product, id, quantity: 1 }];
-            });
         }
     };
 
