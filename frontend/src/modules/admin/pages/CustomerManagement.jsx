@@ -27,18 +27,34 @@ const CustomerManagement = () => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [isExporting, setIsExporting] = useState(false);
     const [customers, setCustomers] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchCustomers();
-    }, []);
+        fetchCustomers(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
-    const fetchCustomers = async () => {
+    const fetchCustomers = async (requestedPage = 1) => {
         try {
             setLoading(true);
-            const { data } = await adminApi.getUsers();
+            const { data } = await adminApi.getUsers({ page: requestedPage, limit: pageSize });
             if (data.success) {
-                setCustomers(Array.isArray(data.results) ? data.results : []);
+                const payload = data.result || {};
+                const list = Array.isArray(payload.items) ? payload.items : (data.results || []);
+                setCustomers(list);
+                if (typeof payload.total === 'number') {
+                    setTotal(payload.total);
+                } else {
+                    setTotal(list.length);
+                }
+                if (typeof payload.page === 'number') {
+                    setPage(payload.page);
+                } else {
+                    setPage(requestedPage);
+                }
             }
         } catch (error) {
             console.error("Error fetching customers:", error);
@@ -279,6 +295,30 @@ const CustomerManagement = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+                <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+                    <p className="ds-caption text-gray-500">
+                        Showing <span className="font-semibold text-gray-900">{filteredCustomers.length}</span> of {total} customers
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <button
+                            disabled={page <= 1 || loading}
+                            onClick={() => page > 1 && fetchCustomers(page - 1)}
+                            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest bg-gray-50 text-gray-400 border border-gray-100 disabled:opacity-50"
+                        >
+                            Prev
+                        </button>
+                        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">
+                            Page {page}
+                        </span>
+                        <button
+                            disabled={customers.length < pageSize || loading}
+                            onClick={() => fetchCustomers(page + 1)}
+                            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest bg-gray-50 text-gray-400 border border-gray-100 disabled:opacity-50"
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             </Card>
         </div>

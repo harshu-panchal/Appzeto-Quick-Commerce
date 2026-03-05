@@ -58,7 +58,7 @@ export const CartAnimationProvider = ({ children }) => {
 
 const FlyingItemsOverlay = ({ items }) => {
     return (
-        <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-600 overflow-hidden">
             <AnimatePresence>
                 {items.map(item => (
                     <FlyingItem key={item.id} item={item} />
@@ -145,14 +145,14 @@ const FlyingItem = ({ item }) => {
                 times: [0, 0.2, 0.8, 1], // Timing for opacity/scale keyframes
                 ease: "easeInOut",
             }}
-            className="object-cover bg-white pointer-events-none z-[100]"
+            className="object-cover bg-white pointer-events-none z-650"
         />
     );
 }
 
 const DroppingItemsOverlay = ({ items }) => {
     return (
-        <div className="fixed inset-0 pointer-events-none z-[100] overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-600 overflow-hidden">
             <AnimatePresence>
                 {items.map(item => (
                     <DroppingItem key={item.id} item={item} />
@@ -191,7 +191,7 @@ const DroppingItem = ({ item }) => {
                 duration: 0.5,
                 ease: "easeIn",
             }}
-            className="object-cover bg-white pointer-events-none z-[100]"
+            className="object-cover bg-white pointer-events-none z-650"
         />
     );
 }

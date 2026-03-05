@@ -48,6 +48,10 @@ const categorySchema = new mongoose.Schema(
             type: Number,
             default: 0, // Flat amount
         },
+        headerColor: {
+            type: String,
+            trim: true, // Hex color selected in admin panel (e.g. #ff0000)
+        },
     },
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

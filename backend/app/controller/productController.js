@@ -2,13 +2,14 @@ import Product from "../models/product.js";
 import handleResponse from "../utils/helper.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 import { slugify } from "../utils/slugify.js";
+import getPagination from "../utils/pagination.js";
 
 /* ===============================
    GET ALL PRODUCTS (Public/Admin)
 ================================ */
 export const getProducts = async (req, res) => {
     try {
-        const { search, category, subcategory, header, status, sellerId, featured, limit, categoryId, subcategoryId, headerId } = req.query;
+        const { search, category, subcategory, header, status, sellerId, featured, categoryId, subcategoryId, headerId } = req.query;
 
         const query = {};
         if (search) {
@@ -28,20 +29,28 @@ export const getProducts = async (req, res) => {
         if (sellerId) query.sellerId = sellerId;
         if (featured !== undefined) query.isFeatured = featured === 'true';
 
-        let productsQuery = Product.find(query)
-            .populate('headerId', 'name')
-            .populate('categoryId', 'name')
-            .populate('subcategoryId', 'name')
-            .populate('sellerId', 'shopName')
-            .sort({ createdAt: -1 });
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 24, maxLimit: 100 });
 
-        if (limit) {
-            productsQuery = productsQuery.limit(parseInt(limit));
-        }
+        const products = await Product.find(query)
+            .select("name slug description price salePrice stock brand weight tags mainImage galleryImages variants headerId categoryId subcategoryId sellerId status isFeatured createdAt")
+            .populate("headerId", "name")
+            .populate("categoryId", "name")
+            .populate("subcategoryId", "name")
+            .populate("sellerId", "shopName")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
 
-        const products = await productsQuery;
+        const total = await Product.countDocuments(query);
 
-        return handleResponse(res, 200, "Products fetched successfully", products);
+        return handleResponse(res, 200, "Products fetched successfully", {
+            items: products,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -53,14 +62,30 @@ export const getProducts = async (req, res) => {
 export const getSellerProducts = async (req, res) => {
     try {
         const sellerId = req.user.id;
-        const products = await Product.find({ sellerId })
-            .populate('headerId', 'name')
-            .populate('categoryId', 'name')
-            .populate('subcategoryId', 'name')
-            .populate('sellerId', 'shopName')
-            .sort({ createdAt: -1 });
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 20, maxLimit: 100 });
 
-        return handleResponse(res, 200, "Seller products fetched", products);
+        const query = { sellerId };
+
+        const products = await Product.find(query)
+            .select("name slug description price salePrice stock brand weight tags mainImage galleryImages variants headerId categoryId subcategoryId sellerId status isFeatured createdAt")
+            .populate("headerId", "name")
+            .populate("categoryId", "name")
+            .populate("subcategoryId", "name")
+            .populate("sellerId", "shopName")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+        const total = await Product.countDocuments(query);
+
+        return handleResponse(res, 200, "Seller products fetched", {
+            items: products,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

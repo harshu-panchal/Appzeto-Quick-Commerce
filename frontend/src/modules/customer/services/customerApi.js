@@ -38,4 +38,7 @@ export const customerApi = {
     submitReview: (data) => axiosInstance.post('/reviews/submit', data),
     createTicket: (data) => axiosInstance.post('/tickets/create', data),
     getMyTickets: () => axiosInstance.get('/tickets/my-tickets'),
+
+    // Experience sections (home / header pages)
+    getExperienceSections: (params) => axiosInstance.get('/experience', { params }),
 };

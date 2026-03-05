@@ -12,6 +12,7 @@ import notificationRoute from "./notificationRoutes.js";
 import ticketRoute from "./ticketRoutes.js";
 import reviewRoute from "./reviewRoutes.js";
 import faqRoute from "./faqRoutes.js";
+import experienceRoute from "./experienceRoutes.js";
 
 import express from "express";
 
@@ -30,6 +31,7 @@ const setupRoutes = (app) => {
     router.use("/wishlist", wishlistRoute);
     router.use("/orders", orderRoute);
     router.use("/payments", paymentRoute);
+    router.use("/", experienceRoute);
     router.use("/notifications", notificationRoute);
     router.use("/tickets", ticketRoute);
     router.use("/reviews", reviewRoute);

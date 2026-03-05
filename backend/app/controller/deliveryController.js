@@ -12,28 +12,6 @@ export const getDeliveryStats = async (req, res) => {
         const deliveryBoyId = new mongoose.Types.ObjectId(req.user.id);
         console.log(`[Stats] Fetching for Partner: ${deliveryBoyId}`);
 
-        // Auto-init test funds for target account if missing
-        try {
-            const deliveryBoy = await Delivery.findById(deliveryBoyId);
-            if (deliveryBoy && deliveryBoy.phone === "6263514141") {
-                console.log("[Stats] Target test account detected: 6263514141");
-                const existing = await Transaction.findOne({ user: deliveryBoyId, reference: "TEST-INIT-FUNDS" });
-                if (!existing) {
-                    await Transaction.create({
-                        user: deliveryBoyId, userModel: "Delivery", type: "Delivery Earning",
-                        amount: 500, status: "Settled", reference: "TEST-INIT-FUNDS"
-                    });
-                    await Transaction.create({
-                        user: deliveryBoyId, userModel: "Delivery", type: "Incentive",
-                        amount: 50, status: "Settled", reference: "TEST-INIT-INC"
-                    });
-                    console.log("[Stats] Initialized test funds for 6263514141");
-                } else {
-                    console.log("[Stats] Test funds already exist for 6263514141");
-                }
-            }
-        } catch (e) { console.error("[Stats] Init Error:", e.message); }
-
         const orders = await Order.find({ deliveryBoy: deliveryBoyId, status: 'delivered' });
         const totalDeliveries = orders.length;
         console.log(`[Stats] Delivered Orders found: ${totalDeliveries}`);
@@ -88,39 +66,6 @@ export const getDeliveryStats = async (req, res) => {
 export const getDeliveryEarnings = async (req, res) => {
     try {
         const deliveryBoyId = new mongoose.Types.ObjectId(req.user.id);
-
-        // TEMP: Add funds to target test account (6263514141) for demo/testing
-        try {
-            const deliveryBoy = await Delivery.findById(deliveryBoyId);
-            if (deliveryBoy && deliveryBoy.phone === "6263514141") {
-                const existingTestFunds = await Transaction.findOne({
-                    user: deliveryBoyId,
-                    reference: "TEST-INIT-FUNDS"
-                });
-                if (!existingTestFunds) {
-                    await Transaction.create({
-                        user: deliveryBoyId,
-                        userModel: "Delivery",
-                        type: "Delivery Earning",
-                        amount: 500,
-                        status: "Settled",
-                        reference: "TEST-INIT-FUNDS"
-                    });
-
-                    await Transaction.create({
-                        user: deliveryBoyId,
-                        userModel: "Delivery",
-                        type: "Incentive",
-                        amount: 50,
-                        status: "Settled",
-                        reference: "TEST-INIT-INC"
-                    });
-                }
-            }
-        } catch (e) {
-            console.error("Temp Fund Err:", e.message);
-        }
-
         const transactions = await Transaction.find({ user: deliveryBoyId, userModel: 'Delivery' })
             .sort({ createdAt: -1 })
             .populate("order", "orderId pricing");

@@ -29,10 +29,6 @@ export const signupDelivery = async (req, res) => {
             accountHolder, accountNumber, ifsc
         } = req.body;
 
-        import('fs').then(fs => {
-            fs.appendFileSync('signup_debug.json', JSON.stringify({ timestamp: new Date(), body: req.body }, null, 2) + '\n');
-        });
-
         if (!name || !phone) {
             return handleResponse(res, 400, "Name and phone are required");
         }

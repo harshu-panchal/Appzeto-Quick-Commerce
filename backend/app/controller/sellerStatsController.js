@@ -319,15 +319,15 @@ export const getSellerEarnings = async (req, res) => {
             .reduce((acc, t) => acc + t.amount, 0);
 
         const pendingPayouts = transactions
-            .filter(t => t.status === 'Pending' || t.status === 'Processing')
-            .reduce((acc, t) => acc + t.amount, 0);
+            .filter(t => t.type === 'Withdrawal' && (t.status === 'Pending' || t.status === 'Processing'))
+            .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
         const totalRevenue = transactions
             .filter(t => t.type === 'Order Payment')
             .reduce((acc, t) => acc + t.amount, 0);
 
         const totalWithdrawn = transactions
-            .filter(t => t.type === 'Withdrawal' && t.status === 'Completed')
+            .filter(t => t.type === 'Withdrawal' && t.status === 'Settled')
             .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
         // Monthly Revenue Aggregation (Last 6 Months)

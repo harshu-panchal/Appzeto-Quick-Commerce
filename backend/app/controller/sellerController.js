@@ -24,10 +24,10 @@ export const requestWithdrawal = async (req, res) => {
             .reduce((acc, t) => acc + t.amount, 0);
 
         const pendingPayouts = transactions
-            .filter(t => (t.status === 'Pending' || t.status === 'Processing'))
-            .reduce((acc, t) => acc + t.amount, 0);
+            .filter(t => t.type === 'Withdrawal' && (t.status === 'Pending' || t.status === 'Processing'))
+            .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
-        const availableBalance = settledBalance + pendingPayouts;
+        const availableBalance = settledBalance - pendingPayouts;
 
         if (amount > availableBalance) {
             return handleResponse(res, 400, `Insufficient balance. Available: ₹${availableBalance}`);

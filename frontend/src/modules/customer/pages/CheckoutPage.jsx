@@ -124,9 +124,9 @@ const CheckoutPage = () => {
         { id: '2hours', label: '2 hours', sublabel: 'Scheduled' }
     ];
 
+    // Only Cash on Delivery is currently enabled; Razorpay/online is disabled.
     const paymentMethods = [
         { id: 'cash', label: 'Cash on Delivery', icon: Banknote, sublabel: 'Pay after delivery' },
-        { id: 'online', label: 'Online Payment', icon: CreditCard, sublabel: 'UPI, Cards, Wallets' }
     ];
 
     const tipAmounts = [
@@ -226,83 +226,17 @@ const CheckoutPage = () => {
             if (response.data.success) {
                 const order = response.data.result;
 
-                if (selectedPayment === 'online') {
-                    // 1. Create Razorpay order
-                    try {
-                        const rpResponse = await customerApi.createPaymentOrder({
-                            amount: totalAmount,
-                            currency: 'INR'
-                        });
+                // Only Cash on Delivery is supported; online (Razorpay) is disabled.
+                clearCart();
 
-                        const rpOrder = rpResponse.data.result;
+                showToast(`Order Confirmed! Order ID: ${order.orderId}`, 'success');
+                setOrderId(order.orderId);
+                setShowSuccess(true);
 
-                        // 2. Open Razorpay Checkout
-                        const options = {
-                            key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_b0PSRa7kNhbHj3',
-                            amount: rpOrder.amount,
-                            currency: rpOrder.currency,
-                            name: "Appzeto",
-                            description: "Payment for Order #" + order.orderId,
-                            order_id: rpOrder.id,
-                            handler: async (response) => {
-                                // 3. Verify Payment
-                                try {
-                                    await customerApi.verifyPayment({
-                                        razorpay_order_id: response.razorpay_order_id,
-                                        razorpay_payment_id: response.razorpay_payment_id,
-                                        razorpay_signature: response.razorpay_signature,
-                                        orderId: order.orderId
-                                    });
-
-                                    // Clear cart locally
-                                    clearCart();
-
-                                    showToast(`Payment successful! Order Confirmed!`, 'success');
-                                    setOrderId(order.orderId);
-                                    setShowSuccess(true);
-
-                                    // Redirect to Order Tracking page
-                                    setTimeout(() => {
-                                        navigate(`/orders/${order.orderId}`);
-                                    }, 3000);
-                                } catch (err) {
-                                    showToast("Payment verification failed!", "error");
-                                }
-                            },
-                            prefill: {
-                                name: user?.name || "Customer",
-                                email: user?.email || "",
-                                contact: user?.phone || ""
-                            },
-                            theme: {
-                                color: "#0c831f"
-                            }
-                        };
-
-                        const rzp = new window.Razorpay(options);
-                        rzp.on('payment.failed', function (response) {
-                            showToast("Payment failed! Please try again.", "error");
-                        });
-                        rzp.open();
-
-                    } catch (err) {
-                        console.error("Razorpay error:", err);
-                        showToast("Failed to initiate payment.", "error");
-                    }
-                } else {
-                    // For Cash Payment
-                    // Clear cart locally
-                    clearCart();
-
-                    showToast(`Order Confirmed! Order ID: ${order.orderId}`, 'success');
-                    setOrderId(order.orderId);
-                    setShowSuccess(true);
-
-                    // Redirect to Order Tracking page after 3 seconds
-                    setTimeout(() => {
-                        navigate(`/orders/${order.orderId}`);
-                    }, 3000);
-                }
+                // Redirect to Order Tracking page after 3 seconds
+                setTimeout(() => {
+                    navigate(`/orders/${order.orderId}`);
+                }, 3000);
             }
         } catch (error) {
             console.error("Failed to place order:", error);
@@ -448,7 +382,7 @@ const CheckoutPage = () => {
 
                         {/* Delivery Time Banner */}
                         <motion.div
-                            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"
+                            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mt-3"
                         >
                             <div className="flex items-center gap-3">
                                 <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">

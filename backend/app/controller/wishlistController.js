@@ -7,7 +7,10 @@ import handleResponse from "../utils/helper.js";
 export const getWishlist = async (req, res) => {
     try {
         const customerId = req.user.id;
-        let wishlist = await Wishlist.findOne({ customerId }).populate("products");
+        let wishlist = await Wishlist.findOne({ customerId }).populate(
+          "products",
+          "name slug price salePrice mainImage stock status headerId categoryId subcategoryId sellerId"
+        );
 
         if (!wishlist) {
             wishlist = await Wishlist.create({ customerId, products: [] });
@@ -38,7 +41,10 @@ export const addToWishlist = async (req, res) => {
         }
 
         await wishlist.save();
-        const updatedWishlist = await Wishlist.findById(wishlist._id).populate("products");
+        const updatedWishlist = await Wishlist.findById(wishlist._id).populate(
+          "products",
+          "name slug price salePrice mainImage stock status headerId categoryId subcategoryId sellerId"
+        );
 
         return handleResponse(res, 200, "Product added to wishlist", updatedWishlist);
     } catch (error) {
@@ -63,7 +69,10 @@ export const removeFromWishlist = async (req, res) => {
         wishlist.products = wishlist.products.filter((id) => id.toString() !== productId);
 
         await wishlist.save();
-        const updatedWishlist = await Wishlist.findById(wishlist._id).populate("products");
+        const updatedWishlist = await Wishlist.findById(wishlist._id).populate(
+          "products",
+          "name slug price salePrice mainImage stock status headerId categoryId subcategoryId sellerId"
+        );
 
         return handleResponse(res, 200, "Product removed from wishlist", updatedWishlist);
     } catch (error) {

@@ -76,10 +76,38 @@ const ProfilePage = () => {
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">Personal Account</p>
                         </div>
                         <div className="divide-y divide-slate-50/50">
-                            <MenuItem icon={Package} label="Your Orders" sub="Track, return or buy things again" path="/orders" />
-                            <MenuItem icon={Heart} label="Your Wishlist" sub="Your saved items" path="/wishlist" />
-                            <MenuItem icon={MapPin} label="Saved Addresses" sub="Manage your delivery locations" path="/addresses" />
-                            <MenuItem icon={Wallet} label="Your Wallet" sub="Manage cards, UPI and wallets" path="/wallet" />
+                            <MenuItem
+                                icon={Package}
+                                label="Your Orders"
+                                sub="Track, return or buy things again"
+                                path="/orders"
+                                color="#0c831f"
+                                bg="rgba(16,185,129,0.10)"
+                            />
+                            <MenuItem
+                                icon={Heart}
+                                label="Your Wishlist"
+                                sub="Your saved items"
+                                path="/wishlist"
+                                color="#fb7185"
+                                bg="rgba(248,113,113,0.08)"
+                            />
+                            <MenuItem
+                                icon={MapPin}
+                                label="Saved Addresses"
+                                sub="Manage your delivery locations"
+                                path="/addresses"
+                                color="#0ea5e9"
+                                bg="rgba(56,189,248,0.10)"
+                            />
+                            <MenuItem
+                                icon={Wallet}
+                                label="Your Wallet"
+                                sub="Manage cards, UPI and wallets"
+                                path="/wallet"
+                                color="#f59e0b"
+                                bg="rgba(251,191,36,0.10)"
+                            />
                         </div>
                     </div>
 
@@ -89,9 +117,27 @@ const ProfilePage = () => {
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.1em]">Help & Settings</p>
                         </div>
                         <div className="divide-y divide-slate-50/50">
-                            <MenuItem icon={HelpCircle} label="Help & Support" path="/support" />
-                            <MenuItem icon={ShieldCheck} label="Privacy Policy" path="/privacy" />
-                            <MenuItem icon={Info} label="About Us" path="/about" />
+                            <MenuItem
+                                icon={HelpCircle}
+                                label="Help & Support"
+                                path="/support"
+                                color="#3b82f6"
+                                bg="rgba(59,130,246,0.08)"
+                            />
+                            <MenuItem
+                                icon={ShieldCheck}
+                                label="Privacy Policy"
+                                path="/privacy"
+                                color="#a855f7"
+                                bg="rgba(168,85,247,0.08)"
+                            />
+                            <MenuItem
+                                icon={Info}
+                                label="About Us"
+                                path="/about"
+                                color="#14b8a6"
+                                bg="rgba(45,212,191,0.08)"
+                            />
                         </div>
                     </div>
                 </div>
@@ -134,11 +180,18 @@ const ProfilePage = () => {
     );
 };
 
-const MenuItem = ({ icon: Icon, label, sub, path, color, bg }) => (
+const MenuItem = ({ icon: Icon, label, sub, path, color = '#0c831f', bg = 'rgba(16,185,129,0.08)' }) => (
     <Link to={path || '#'} className="px-8 py-5.5 flex items-center justify-between hover:bg-slate-50/80 cursor-pointer transition-all group">
         <div className="flex items-center gap-4">
-            <div className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-all bg-emerald-50/50 group-hover:bg-[#0c831f] group-hover:shadow-[0_8px_20px_rgba(12,131,31,0.2)]`}>
-                <Icon size={22} className="text-[#0c831f] group-hover:text-white transition-colors" />
+            <div
+                className="h-11 w-11 rounded-2xl flex items-center justify-center transition-all shadow-[0_10px_28px_rgba(15,23,42,0.06)] group-hover:shadow-[0_14px_38px_rgba(15,23,42,0.12)]"
+                style={{ backgroundColor: bg }}
+            >
+                <Icon
+                    size={22}
+                    className="transition-colors"
+                    style={{ color }}
+                />
             </div>
             <div>
                 <h3 className="text-[15px] font-black text-slate-800 tracking-tight">{label}</h3>
