@@ -26,6 +26,14 @@ const SearchPage = () => {
         return saved ? JSON.parse(saved) : [];
     });
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Fetch products
     useEffect(() => {
         const fetchProducts = async () => {
@@ -116,15 +124,15 @@ const SearchPage = () => {
                     </button>
                 </div>
 
-                <div className="px-4 pb-4 flex items-center gap-3">
+                <div className="relative px-4 pb-5 flex items-center md:justify-center gap-3">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors"
+                        className="p-2 -ml-2 hover:bg-slate-50 rounded-full transition-colors flex-shrink-0 md:absolute md:left-4 z-10"
                     >
                         <ArrowLeft size={24} className="text-slate-800" />
                     </button>
 
-                    <div className="flex-1 relative">
+                    <div className="flex-1 relative md:flex-none md:w-[500px] lg:w-[600px]">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2">
                             <Search size={20} className="text-slate-400" />
                         </div>
@@ -161,10 +169,10 @@ const SearchPage = () => {
                         </div>
 
                         {results.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-7">
+                            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-2 md:gap-x-3 gap-y-5 md:gap-y-7">
                                 {results.map((product) => (
                                     <div key={product.id} onClick={() => saveSearch(query)}>
-                                        <ProductCard product={product} />
+                                        <ProductCard product={product} compact={isMobile} />
                                     </div>
                                 ))}
                             </div>
@@ -215,14 +223,14 @@ const SearchPage = () => {
                                     See All <ChevronRight size={16} />
                                 </button>
                             </div>
-                            <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-5 px-5 pb-4 snap-x">
+                            <div className="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar -mx-5 px-5 pb-4 snap-x">
                                 {isLoading && allProducts.length === 0 ? (
                                     [...Array(4)].map((_, i) => (
-                                        <div key={i} className="min-w-[170px] h-64 bg-slate-50 rounded-2xl animate-pulse" />
+                                        <div key={i} className="min-w-[130px] md:min-w-[170px] h-52 md:h-64 bg-slate-50 rounded-2xl animate-pulse" />
                                     ))
                                 ) : lowestPriceProducts.map((product) => (
-                                    <div key={product.id} className="min-w-[180px] snap-start">
-                                        <ProductCard product={product} />
+                                    <div key={product.id} className="min-w-[130px] md:min-w-[180px] snap-start">
+                                        <ProductCard product={product} compact={isMobile} />
                                     </div>
                                 ))}
                             </div>

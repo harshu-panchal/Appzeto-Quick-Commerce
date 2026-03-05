@@ -229,7 +229,7 @@ const MainLocationHeader = ({
               <motion.button
                 whileHover={{ scale: 1.15, rotate: -5 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => navigate('/cart')}
+                onClick={() => navigate('/checkout')}
                 className="text-white hover:text-yellow-300 transition-all relative group"
               >
                 <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />

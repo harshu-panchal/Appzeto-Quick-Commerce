@@ -378,7 +378,7 @@ const CustomerAuth = () => {
                                                     key={i}
                                                     type="tel"
                                                     maxLength={1}
-                                                    className="w-14 h-16 bg-gray-50 border-2 border-transparent rounded-2xl text-center text-2xl font-black outline-none focus:bg-white focus:shadow-xl transition-all"
+                                                    className="w-14 h-16 bg-gray-50 border-2 border-gray-200 rounded-2xl text-center text-2xl font-black outline-none focus:bg-white focus:shadow-xl transition-all shadow-sm"
                                                     style={{ color: activeCategory.theme }}
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Backspace' && !e.target.value && i > 0) {
@@ -393,7 +393,7 @@ const CustomerAuth = () => {
                                                         setFormData({ ...formData, otp: otpArr.join('') });
                                                     }}
                                                     onFocus={(e) => e.target.style.borderColor = activeCategory.theme}
-                                                    onBlur={(e) => e.target.style.borderColor = 'transparent'}
+                                                    onBlur={(e) => e.target.style.borderColor = ''}
                                                 />
                                             ))}
                                         </div>
