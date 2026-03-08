@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     User, MapPin, Package, CreditCard, Settings, ChevronRight,
-    LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, Wallet, ChevronLeft,
+    LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, ChevronLeft,
     ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useAuth } from '@core/context/AuthContext';
@@ -18,7 +18,9 @@ const ProfilePage = () => {
         const fetchFaqs = async () => {
             try {
                 const response = await axiosInstance.get('/public/faqs', { params: { category: 'Customer', status: 'published' } });
-                setFaqs(response.data.results || []);
+                const data = response.data?.result ?? response.data;
+                const list = Array.isArray(data?.items) ? data.items : Array.isArray(data?.results) ? data.results : [];
+                setFaqs(list);
             } catch (error) {
                 console.error("Error fetching FAQs:", error);
             }
@@ -85,6 +87,14 @@ const ProfilePage = () => {
                                 bg="rgba(16,185,129,0.10)"
                             />
                             <MenuItem
+                                icon={CreditCard}
+                                label="Order Transactions"
+                                sub="View all payments & refunds"
+                                path="/transactions"
+                                color="#f97316"
+                                bg="rgba(249,115,22,0.10)"
+                            />
+                            <MenuItem
                                 icon={Heart}
                                 label="Your Wishlist"
                                 sub="Your saved items"
@@ -99,14 +109,6 @@ const ProfilePage = () => {
                                 path="/addresses"
                                 color="#0ea5e9"
                                 bg="rgba(56,189,248,0.10)"
-                            />
-                            <MenuItem
-                                icon={Wallet}
-                                label="Your Wallet"
-                                sub="Manage cards, UPI and wallets"
-                                path="/wallet"
-                                color="#f59e0b"
-                                bg="rgba(251,191,36,0.10)"
                             />
                         </div>
                     </div>
@@ -139,26 +141,6 @@ const ProfilePage = () => {
                                 bg="rgba(45,212,191,0.08)"
                             />
                         </div>
-                    </div>
-                </div>
-
-                {/* FAQ Section */}
-                <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
-                    <div className="px-6 py-4 bg-slate-50/50 border-b border-slate-100">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Common Questions</p>
-                    </div>
-                    <div className="divide-y divide-slate-50">
-                        {faqs.length > 0 ? (
-                            faqs.map((faq) => (
-                                <FAQItem
-                                    key={faq._id}
-                                    question={faq.question}
-                                    answer={faq.answer}
-                                />
-                            ))
-                        ) : (
-                            <div className="p-6 text-center text-xs text-slate-400">No FAQs available</div>
-                        )}
                     </div>
                 </div>
 

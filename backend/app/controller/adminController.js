@@ -204,9 +204,20 @@ export const getDeliveryPartners = async (req, res) => {
             query.isVerified = false;
         }
 
-        const deliveryPartners = await Delivery.find(query).sort({ createdAt: -1 });
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
 
-        return handleResponse(res, 200, "Delivery partners fetched successfully", deliveryPartners);
+        const [deliveryPartners, total] = await Promise.all([
+            Delivery.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+            Delivery.countDocuments(query)
+        ]);
+
+        return handleResponse(res, 200, "Delivery partners fetched successfully", {
+            items: deliveryPartners,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -257,16 +268,24 @@ export const rejectDeliveryPartner = async (req, res) => {
 ================================ */
 export const getActiveFleet = async (req, res) => {
     try {
-        // Fetch orders that are currently being handled by a delivery partner
-        // Statuses: confirmed (if assigned), packed, shipped, out_for_delivery
-        const activeOrders = await Order.find({
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
+
+        const query = {
             deliveryBoy: { $ne: null },
             status: { $in: ["confirmed", "packed", "shipped", "out_for_delivery"] }
-        })
-            .sort({ updatedAt: -1 })
-            .populate("deliveryBoy", "name phone documents vehicleType")
-            .populate("seller", "shopName address name")
-            .populate("customer", "name phone");
+        };
+
+        const [activeOrders, total] = await Promise.all([
+            Order.find(query)
+                .sort({ updatedAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate("deliveryBoy", "name phone documents vehicleType")
+                .populate("seller", "shopName address name")
+                .populate("customer", "name phone")
+                .lean(),
+            Order.countDocuments(query)
+        ]);
 
         const fleetData = activeOrders.map(order => ({
             id: order.orderId,
@@ -288,7 +307,13 @@ export const getActiveFleet = async (req, res) => {
             lastUpdate: order.updatedAt
         }));
 
-        return handleResponse(res, 200, "Active fleet fetched successfully", fleetData);
+        return handleResponse(res, 200, "Active fleet fetched successfully", {
+            items: fleetData,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -299,6 +324,8 @@ export const getActiveFleet = async (req, res) => {
 ================================ */
 export const getAdminWalletData = async (req, res) => {
     try {
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 100 });
+
         // 1. Aggregate Order Data for Earning Stats
         const orderStats = await Order.aggregate([
             { $match: { status: 'delivered' } },
@@ -354,21 +381,18 @@ export const getAdminWalletData = async (req, res) => {
         const sellerStats = payoutStats.find(s => s._id === 'Seller') || { pendingPayouts: 0 };
         const deliveryStats = payoutStats.find(s => s._id === 'Delivery') || { pendingPayouts: 0, systemFloat: 0 };
 
-        // 3. Fetch Recent Transactions
-        const recentTransactions = await Transaction.find()
-            .populate("user", "name shopName")
-            .sort({ createdAt: -1 })
-            .limit(50);
+        // 3. Fetch Transactions (paginated)
+        const [recentTransactions, totalTransactions] = await Promise.all([
+            Transaction.find()
+                .populate("user", "name shopName")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Transaction.countDocuments()
+        ]);
 
-        return handleResponse(res, 200, "Admin wallet data fetched", {
-            stats: {
-                totalPlatformEarning: stats.totalPlatformEarning,
-                totalAdminEarning: stats.totalAdminEarning,
-                sellerPendingPayouts: sellerStats.pendingPayouts,
-                deliveryPendingPayouts: deliveryStats.pendingPayouts,
-                systemFloat: Math.abs(deliveryStats.systemFloat)
-            },
-            transactions: recentTransactions.map(t => ({
+        const transactionItems = recentTransactions.map(t => ({
                 id: (t.reference || t._id).toString(),
                 type: t.type,
                 amount: t.amount,
@@ -378,7 +402,23 @@ export const getAdminWalletData = async (req, res) => {
                 date: t.createdAt.toLocaleDateString(),
                 time: t.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 notes: t.type
-            }))
+            }));
+
+        return handleResponse(res, 200, "Admin wallet data fetched", {
+            stats: {
+                totalPlatformEarning: stats.totalPlatformEarning,
+                totalAdminEarning: stats.totalAdminEarning,
+                sellerPendingPayouts: sellerStats.pendingPayouts,
+                deliveryPendingPayouts: deliveryStats.pendingPayouts,
+                systemFloat: Math.abs(deliveryStats.systemFloat)
+            },
+            transactions: {
+                items: transactionItems,
+                page,
+                limit,
+                total: totalTransactions,
+                totalPages: Math.ceil(totalTransactions / limit) || 1,
+            }
         });
     } catch (error) {
         return handleResponse(res, 500, error.message);
@@ -420,12 +460,27 @@ export const getDeliveryTransactions = async (req, res) => {
 ================================ */
 export const getSellerWithdrawals = async (req, res) => {
     try {
-        const transactions = await Transaction.find({
-            userModel: "Seller",
-            type: "Withdrawal"
-        }).populate("user", "name shopName phone");
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
 
-        return handleResponse(res, 200, "Seller withdrawals fetched", transactions);
+        const query = { userModel: "Seller", type: "Withdrawal" };
+
+        const [transactions, total] = await Promise.all([
+            Transaction.find(query)
+                .populate("user", "name shopName phone")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Transaction.countDocuments(query)
+        ]);
+
+        return handleResponse(res, 200, "Seller withdrawals fetched", {
+            items: transactions,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -474,12 +529,27 @@ export const getSellerTransactions = async (req, res) => {
 ================================ */
 export const getDeliveryWithdrawals = async (req, res) => {
     try {
-        const transactions = await Transaction.find({
-            userModel: "Delivery",
-            type: "Withdrawal"
-        }).populate("user", "name phone");
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
 
-        return handleResponse(res, 200, "Delivery withdrawals fetched", transactions);
+        const query = { userModel: "Delivery", type: "Withdrawal" };
+
+        const [transactions, total] = await Promise.all([
+            Transaction.find(query)
+                .populate("user", "name phone")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Transaction.countDocuments(query)
+        ]);
+
+        return handleResponse(res, 200, "Delivery withdrawals fetched", {
+            items: transactions,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -566,7 +636,9 @@ export const bulkSettleDelivery = async (req, res) => {
 
 export const getDeliveryCashBalances = async (req, res) => {
     try {
-        const riders = await Delivery.aggregate([
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
+
+        const ridersPipeline = [
             // 1. Join Transactions (Cash Collection & Settlement)
             {
                 $lookup: {
@@ -681,14 +753,29 @@ export const getDeliveryCashBalances = async (req, res) => {
                     totalOrders: 1,
                     lastSettlement: { $ifNull: ["$lastSettlementTxn.createdAt", "Never"] }
                 }
+            },
+            {
+                $facet: {
+                    meta: [{ $count: "total" }],
+                    items: [{ $skip: skip }, { $limit: limit }]
+                }
             }
-        ]);
+        ];
 
-        const totalInHand = riders.reduce((acc, r) => acc + r.currentCash, 0);
-        const overLimitCount = riders.filter(r => r.currentCash >= r.limit).length;
+        const [aggregateResult] = await Delivery.aggregate(ridersPipeline);
+        const meta = aggregateResult?.meta?.[0];
+        const riders = aggregateResult?.items ?? [];
+        const total = meta?.total ?? 0;
+
+        const totalInHand = riders.reduce((acc, r) => acc + (r.currentCash || 0), 0);
+        const overLimitCount = riders.filter(r => (r.currentCash || 0) >= (r.limit || 5000)).length;
 
         return handleResponse(res, 200, "Cash balances fetched", {
-            riders,
+            items: riders,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
             stats: {
                 totalInHand,
                 overLimitCount,
@@ -773,13 +860,19 @@ export const getRiderCashDetails = async (req, res) => {
 ================================ */
 export const getCashSettlementHistory = async (req, res) => {
     try {
-        const history = await Transaction.find({
-            userModel: "Delivery",
-            type: "Cash Settlement"
-        })
-            .populate("user", "name")
-            .sort({ createdAt: -1 })
-            .limit(100);
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
+
+        const query = { userModel: "Delivery", type: "Cash Settlement" };
+
+        const [history, total] = await Promise.all([
+            Transaction.find(query)
+                .populate("user", "name")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Transaction.countDocuments(query)
+        ]);
 
         const mappedHistory = history.map(h => ({
             id: (h.reference || h._id).toString(),
@@ -790,7 +883,13 @@ export const getCashSettlementHistory = async (req, res) => {
             status: "completed"
         }));
 
-        return handleResponse(res, 200, "Settlement history fetched", mappedHistory);
+        return handleResponse(res, 200, "Settlement history fetched", {
+            items: mappedHistory,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -801,7 +900,9 @@ export const getCashSettlementHistory = async (req, res) => {
 ================================ */
 export const getUsers = async (req, res) => {
     try {
-        const users = await User.aggregate([
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
+
+        const pipeline = [
             { $match: { role: "user" } },
             {
                 $lookup: {
@@ -826,9 +927,29 @@ export const getUsers = async (req, res) => {
                 }
             },
             { $sort: { totalOrders: -1 } }
+        ];
+
+        const [result] = await User.aggregate([
+            ...pipeline,
+            { $facet: {
+                totalCount: [{ $count: "count" }],
+                items: [
+                    { $skip: skip },
+                    { $limit: limit }
+                ]
+            }}
         ]);
 
-        return handleResponse(res, 200, "Users fetched successfully", users);
+        const total = result?.totalCount?.[0]?.count ?? 0;
+        const items = result?.items ?? [];
+
+        return handleResponse(res, 200, "Users fetched successfully", {
+            items,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }
@@ -877,8 +998,11 @@ export const getUserById = async (req, res) => {
             .limit(10)
             .populate("items.product", "name mainImage");
 
+        const u = user[0];
+        const addresses = Array.isArray(u.addresses) ? u.addresses : [];
         const responseData = {
-            ...user[0],
+            ...u,
+            addresses,
             recentOrders: recentOrders.map(o => ({
                 id: o.orderId,
                 _id: o._id,

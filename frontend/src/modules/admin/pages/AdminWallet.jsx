@@ -28,13 +28,16 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '@shared/components/ui/Modal';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from "../services/adminApi";
 import { toast } from "sonner";
 
 const AdminWallet = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [walletData, setWalletData] = useState({ stats: {}, transactions: [] });
+    const [walletData, setWalletData] = useState({ stats: {}, transactions: {} });
+    const [txnPage, setTxnPage] = useState(1);
+    const [txnPageSize, setTxnPageSize] = useState(25);
     const [sellerRequests, setSellerRequests] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('all'); // all, earnings, payouts, seller_requests
@@ -42,16 +45,24 @@ const AdminWallet = () => {
     const [isExporting, setIsExporting] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const fetchData = async () => {
+    const fetchData = async (page = 1) => {
         try {
             setLoading(true);
             const [walletRes, requestsRes] = await Promise.all([
-                adminApi.getAdminWalletData(),
+                adminApi.getAdminWalletData({ page, limit: txnPageSize }),
                 adminApi.getSellerWithdrawals()
             ]);
 
-            if (walletRes.data.success) setWalletData(walletRes.data.result || {});
-            if (requestsRes.data.success) setSellerRequests(requestsRes.data.results || requestsRes.data.result || []);
+            if (walletRes.data.success) {
+                setWalletData(walletRes.data.result || {});
+                const txns = walletRes.data.result?.transactions;
+                if (txns && typeof txns.page === 'number') setTxnPage(txns.page);
+            }
+            if (requestsRes.data.success) {
+                const payload = requestsRes.data.result || {};
+                const list = Array.isArray(payload.items) ? payload.items : (requestsRes.data.results || []);
+                setSellerRequests(list);
+            }
         } catch (error) {
             console.error("Admin Wallet Fetch Error:", error);
             toast.error("Failed to load finance data");
@@ -61,15 +72,16 @@ const AdminWallet = () => {
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchData(txnPage);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [txnPage, txnPageSize]);
 
     const handleUpdateStatus = async (id, status, reason = "") => {
         try {
             const res = await adminApi.updateWithdrawalStatus(id, { status, reason });
             if (res.data.success) {
                 toast.success(`Request ${status} successfully`);
-                fetchData();
+                fetchData(txnPage);
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Action failed");
@@ -133,7 +145,10 @@ const AdminWallet = () => {
         }
     ];
 
-    const filteredTransactions = (walletData.transactions || []).filter(txn => {
+    const transactionsList = Array.isArray(walletData.transactions?.items) ? walletData.transactions.items : (Array.isArray(walletData.transactions) ? walletData.transactions : []);
+    const txnTotal = typeof walletData.transactions?.total === 'number' ? walletData.transactions.total : transactionsList.length;
+
+    const filteredTransactions = transactionsList.filter(txn => {
         const matchesSearch = txn.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             txn.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
             txn.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -146,7 +161,8 @@ const AdminWallet = () => {
         return matchesSearch && matchesTab;
     });
 
-    const pendingRequests = sellerRequests.filter(req => req.status === 'Pending' || req.status === 'Processing');
+    const requestsList = Array.isArray(sellerRequests) ? sellerRequests : [];
+    const pendingRequests = requestsList.filter(req => req.status === 'Pending' || req.status === 'Processing');
 
     const handleExport = () => {
         setIsExporting(true);
@@ -309,7 +325,7 @@ const AdminWallet = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50">
-                                            {sellerRequests.map((req) => (
+                                            {requestsList.map((req) => (
                                                 <tr key={req._id} className="group hover:bg-slate-50/50 transition-all">
                                                     <td className="px-6 py-5 pl-8">
                                                         <div className="flex items-center gap-3">
@@ -421,7 +437,7 @@ const AdminWallet = () => {
                                                     </td>
                                                 </tr>
                                             ))}
-                                            {(activeTab === 'seller_requests' ? sellerRequests.length === 0 : filteredTransactions.length === 0) && (
+                                            {(activeTab === 'seller_requests' ? requestsList.length === 0 : filteredTransactions.length === 0) && (
                                                 <tr>
                                                     <td colSpan="5" className="px-6 py-20 text-center">
                                                         <div className="flex flex-col items-center">
@@ -438,6 +454,22 @@ const AdminWallet = () => {
                                 )}
                             </table>
                         </div>
+                        {activeTab !== 'seller_requests' && txnTotal > 0 && (
+                            <div className="px-6 py-3 border-t border-slate-100">
+                                <Pagination
+                                    page={txnPage}
+                                    totalPages={Math.ceil(txnTotal / txnPageSize) || 1}
+                                    total={txnTotal}
+                                    pageSize={txnPageSize}
+                                    onPageChange={(p) => { setTxnPage(p); fetchData(p); }}
+                                    onPageSizeChange={(newSize) => {
+                                        setTxnPageSize(newSize);
+                                        setTxnPage(1);
+                                    }}
+                                    loading={loading}
+                                />
+                            </div>
+                        )}
                     </Card>
                 </div>
 

@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const CouponManagement = () => {
     const { showToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
     const [editingCoupon, setEditingCoupon] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -142,10 +143,9 @@ const CouponManagement = () => {
     };
 
     const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to deactivate this coupon?')) {
-            setCoupons(coupons.filter(c => c.id !== id));
-            showToast('Coupon removed', 'warning');
-        }
+        setCoupons(coupons.filter(c => c.id !== id));
+        setDeleteTarget(null);
+        showToast('Coupon removed', 'warning');
     };
 
     return (
@@ -294,7 +294,7 @@ const CouponManagement = () => {
                                                 <HiOutlinePencilSquare className="h-5 w-5" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(c.id)}
+                                                onClick={() => setDeleteTarget(c)}
                                                 className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                                             >
                                                 <HiOutlineTrash className="h-5 w-5" />
@@ -317,6 +317,45 @@ const CouponManagement = () => {
                     </div>
                 )}
             </Card>
+
+            {/* Delete confirmation dialog */}
+            <AnimatePresence>
+                {deleteTarget && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden"
+                        >
+                            <div className="p-6 text-center">
+                                <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-4">
+                                    <HiOutlineTrash className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900 mb-2">Delete coupon?</h3>
+                                <p className="text-slate-500 text-sm mb-6">
+                                    Are you sure you want to remove{' '}
+                                    <span className="font-semibold text-slate-900">{deleteTarget.code}</span>? This action cannot be undone.
+                                </p>
+                                <div className="flex gap-3 justify-center">
+                                    <button
+                                        onClick={() => setDeleteTarget(null)}
+                                        className="px-4 py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(deleteTarget.id)}
+                                        className="px-4 py-2.5 bg-rose-600 text-white rounded-xl font-medium hover:bg-rose-700 transition-colors"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Modal for Create/Edit */}
             <Modal

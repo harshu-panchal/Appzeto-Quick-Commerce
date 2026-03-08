@@ -223,56 +223,8 @@ const ProductDetailSheet = () => {
                         transition={{ type: 'spring', damping: 28, stiffness: 380 }}
                         className="hidden md:flex fixed z-[230] top-[72px] bottom-[16px] left-[3%] right-[3%] lg:left-[6%] lg:right-[6%] xl:left-[12%] xl:right-[12%] bg-white rounded-3xl shadow-[0_40px_100px_rgba(0,0,0,0.25)] overflow-hidden"
                     >
-                        {/* Left: Image Gallery */}
-                        <div className="relative w-[42%] lg:w-[45%] flex-shrink-0 bg-gradient-to-br from-[#fafbfc] via-green-50/20 to-white flex flex-col">
-                            {/* Back Button */}
-                            <button
-                                onClick={closeProduct}
-                                className="absolute top-5 left-5 z-20 w-11 h-11 bg-white/90 backdrop-blur rounded-2xl shadow-md flex items-center justify-center hover:bg-white transition-all active:scale-90 border border-gray-100"
-                            >
-                                <ArrowLeft size={22} className="text-[#0c831f]" strokeWidth={3} />
-                            </button>
-                            {/* Wishlist */}
-                            <button
-                                onClick={toggleWishlist}
-                                className="absolute top-5 right-5 z-20 w-11 h-11 bg-white/90 backdrop-blur rounded-2xl shadow-md flex items-center justify-center hover:bg-white transition-all border border-gray-100"
-                            >
-                                <Heart size={18} className={cn(isWishlisted ? 'text-red-500 fill-red-500' : 'text-gray-400')} />
-                            </button>
-
-                            {/* Discount Badge */}
-                            {(selectedProduct.originalPrice > selectedProduct.price) && (
-                                <div className="absolute top-5 left-1/2 -translate-x-1/2 z-10 bg-[#0c831f] text-white text-xs font-[900] px-3 py-1.5 rounded-xl uppercase tracking-widest shadow-md">
-                                    {Math.round(((selectedProduct.originalPrice - selectedProduct.price) / selectedProduct.originalPrice) * 100)}% OFF
-                                </div>
-                            )}
-
-                            {/* Main image carousel */}
-                            <div
-                                ref={scrollRef}
-                                className="flex-1 flex overflow-x-auto snap-x snap-mandatory no-scrollbar mt-16"
-                                onScroll={(e) => {
-                                    const index = Math.round(e.currentTarget.scrollLeft / e.currentTarget.offsetWidth);
-                                    setActiveImageIndex(index);
-                                }}
-                            >
-                                {allImages.map((img, i) => (
-                                    <div key={i} className="flex-shrink-0 w-full h-full snap-center flex items-center justify-center p-12">
-                                        <img
-                                            src={img}
-                                            alt={`${selectedProduct.name} ${i + 1}`}
-                                            className="w-full h-full object-contain mix-blend-multiply drop-shadow-2xl"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                            exit={{ opacity: 0, scale: 0.96, y: 20 }}
-                            transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-                            className="hidden md:flex fixed z-[160] inset-0 m-auto w-[92vw] lg:w-[85vw] xl:w-[75vw] max-w-[1000px] h-[75vh] min-h-[500px] max-h-[700px] bg-white rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-y-auto overflow-x-hidden overscroll-contain border border-gray-100"
-                            style={{ fontFamily: "'Outfit', 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif" }}
-                    >
-                            {/* Parent flex container that holds both sides together so the whole modal scrolls */}
-                            <div className="flex w-full min-h-full">
+                        {/* Parent flex container that holds both sides together so the whole modal scrolls */}
+                        <div className="flex w-full min-h-full">
                                 {/* Left: Image Gallery — sticky to window so it doesn't scroll out of view if you want */}
                                 <div className="relative w-[42%] lg:w-[44%] flex-shrink-0 flex flex-col min-h-full sticky top-0" style={{ background: 'linear-gradient(145deg, #f9fafb 0%, #f1f8f2 50%, #fafbfc 100%)' }}>
                                     {/* Top bar with back + wishlist */}

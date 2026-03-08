@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import Modal from '@shared/components/ui/Modal';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -42,18 +43,23 @@ const SellerTransactions = () => {
     const [selectedTxn, setSelectedTxn] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
     const [transactions, setTransactions] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchTransactions();
-    }, []);
+        fetchTransactions(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = async (requestedPage = 1) => {
         try {
             setLoading(true);
-            const res = await adminApi.getSellerTransactions();
+            const res = await adminApi.getSellerTransactions({ page: requestedPage, limit: pageSize });
             if (res.data.success) {
-                const data = res.data.results || [];
+                const payload = res.data.result || {};
+                const data = Array.isArray(payload.items) ? payload.items : (res.data.results || []);
                 const mapped = data.map(t => ({
                     id: t.reference || t._id,
                     orderId: t.order?.orderId || null,
@@ -83,6 +89,8 @@ const SellerTransactions = () => {
                     })) || []
                 }));
                 setTransactions(mapped);
+                setTotal(typeof payload.total === 'number' ? payload.total : mapped.length);
+                setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
             }
         } catch (error) {
             toast.error("Failed to fetch transactions");
@@ -343,6 +351,20 @@ const SellerTransactions = () => {
                         </tbody>
                     </table>
                 </div>
+                <div className="px-6 py-3 border-t border-slate-100">
+                    <Pagination
+                        page={page}
+                        totalPages={Math.ceil(total / pageSize) || 1}
+                        total={total}
+                        pageSize={pageSize}
+                        onPageChange={(p) => fetchTransactions(p)}
+                        onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setPage(1);
+                        }}
+                        loading={loading}
+                    />
+                </div>
             </Card>
 
             {/* Drill-down Detail Modal */}
@@ -445,7 +467,84 @@ const SellerTransactions = () => {
                             )}
 
                             <div className="pt-4 flex gap-3">
-                                <button className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all">
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const { default: jsPDF } = await import('jspdf');
+                                            const doc = new jsPDF();
+                                            const safeId = (selectedTxn.id || 'txn').replace(/[/\\?%*:|"<>]/g, '-');
+                                            const margin = 25;
+                                            const pageWidth = doc.internal.pageSize.getWidth();
+                                            let y = 28;
+
+                                            // Title
+                                            doc.setFontSize(22);
+                                            doc.setFont(undefined, 'bold');
+                                            doc.text('Transaction Voucher', margin, y);
+                                            y += 16;
+
+                                            // Separator line
+                                            doc.setDrawColor(200, 200, 200);
+                                            doc.setLineWidth(0.5);
+                                            doc.line(margin, y, pageWidth - margin, y);
+                                            y += 14;
+
+                                            // Transaction Details section
+                                            const typeLabel = selectedTxn.type === 'sale' ? 'ORDER PAYMENT' : selectedTxn.type === 'payout' ? 'PAYOUT' : (selectedTxn.type || '').toUpperCase();
+                                            const row = (label, value, labelBold = false) => {
+                                                doc.setFont(undefined, labelBold ? 'bold' : 'normal');
+                                                doc.setFontSize(10);
+                                                doc.text(label, margin, y);
+                                                doc.setFont(undefined, 'normal');
+                                                doc.text(String(value), margin + 55, y);
+                                                y += 8;
+                                            };
+
+                                            doc.setFont(undefined, 'bold');
+                                            doc.text('Transaction ID:', margin, y);
+                                            doc.setFont(undefined, 'normal');
+                                            doc.text(selectedTxn.id || 'N/A', margin + 55, y);
+                                            y += 10;
+
+                                            row('Amount:', `Rs. ${Math.abs(selectedTxn.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`);
+                                            row('Date:', selectedTxn.date || 'N/A');
+                                            row('Type:', typeLabel);
+                                            row('Status:', (selectedTxn.status || '').toUpperCase());
+
+                                            y += 8;
+                                            doc.setDrawColor(220, 220, 220);
+                                            doc.line(margin, y, pageWidth - margin, y);
+                                            y += 14;
+
+                                            // Merchant & Payment section
+                                            doc.setFont(undefined, 'bold');
+                                            doc.text('Merchant:', margin, y);
+                                            doc.setFont(undefined, 'normal');
+                                            doc.text(selectedTxn.seller || 'N/A', margin + 55, y);
+                                            y += 10;
+
+                                            row('Payment:', selectedTxn.paymentMethod || 'N/A');
+                                            if (selectedTxn.referenceId) row('Reference:', selectedTxn.referenceId);
+                                            row('Bank:', selectedTxn.bankDetails || 'N/A');
+
+                                            // Footer
+                                            y = doc.internal.pageSize.getHeight() - 20;
+                                            doc.setDrawColor(240, 240, 240);
+                                            doc.line(margin, y - 8, pageWidth - margin, y - 8);
+                                            doc.setFontSize(8);
+                                            doc.setTextColor(120, 120, 120);
+                                            doc.text(`Generated on ${new Date().toLocaleString()} • Voucher ID: ${safeId}`, pageWidth / 2, y, { align: 'center' });
+                                            doc.setTextColor(0, 0, 0);
+
+                                            doc.save(`transaction-voucher-${safeId}.pdf`);
+                                            toast.success('Voucher downloaded as PDF');
+                                        } catch (err) {
+                                            console.error('PDF generation error:', err);
+                                            toast.error('Failed to download voucher');
+                                        }
+                                    }}
+                                    className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all hover:bg-slate-800"
+                                >
                                     Download Voucher
                                 </button>
                                 <button className="p-4 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center hover:bg-slate-200 transition-all">

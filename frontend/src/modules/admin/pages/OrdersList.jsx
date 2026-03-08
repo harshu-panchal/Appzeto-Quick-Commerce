@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import {
     Search,
@@ -41,7 +42,9 @@ const OrdersList = () => {
     const fetchOrders = async (requestedPage = 1) => {
         setIsLoading(true);
         try {
-            const response = await adminApi.getOrders({ page: requestedPage, limit: pageSize });
+            const params = { page: requestedPage, limit: pageSize };
+            if (status !== 'all') params.status = status;
+            const response = await adminApi.getOrders(params);
             if (response.data.success) {
                 const payload = response.data.result || {};
                 const dbOrders = Array.isArray(payload.items) ? payload.items : (response.data.results || []);
@@ -90,7 +93,7 @@ const OrdersList = () => {
     useEffect(() => {
         fetchOrders(1);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pageSize]);
+    }, [pageSize, status]);
 
     const stats = useMemo(() => {
         const totalEarnings = orders.reduce((sum, o) => sum + o.amount, 0);
@@ -332,29 +335,19 @@ const OrdersList = () => {
                     </table>
                 </div>
 
-                <div className="p-4 border-t border-slate-50 flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        Showing <span className="text-slate-900 font-black">{filteredOrders.length}</span> of {total} Orders
-                    </p>
-                    <div className="flex items-center gap-2">
-                        <button
-                            disabled={page <= 1 || isLoading}
-                            onClick={() => page > 1 && fetchOrders(page - 1)}
-                            className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 disabled:opacity-50"
-                        >
-                            Prev
-                        </button>
-                        <span className="px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                            Page {page}
-                        </span>
-                        <button
-                            disabled={orders.length < pageSize || isLoading}
-                            onClick={() => fetchOrders(page + 1)}
-                            className="px-4 py-2 bg-slate-50 text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-100 disabled:opacity-50"
-                        >
-                            Next
-                        </button>
-                    </div>
+                <div className="p-4 border-t border-slate-50">
+                    <Pagination
+                        page={page}
+                        totalPages={Math.ceil(total / pageSize) || 1}
+                        total={total}
+                        pageSize={pageSize}
+                        onPageChange={(p) => fetchOrders(p)}
+                        onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setPage(1);
+                        }}
+                        loading={isLoading}
+                    />
                 </div>
             </Card>
         </div>

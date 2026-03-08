@@ -28,8 +28,8 @@ const CartPage = lazy(() => import('../../modules/customer/pages/CartPage'));
 const OffersPage = lazy(() => import('../../modules/customer/pages/OffersPage'));
 const ProfilePage = lazy(() => import('../../modules/customer/pages/ProfilePage'));
 const OrdersPage = lazy(() => import('../../modules/customer/pages/OrdersPage'));
+const OrderTransactionsPage = lazy(() => import('../../modules/customer/pages/OrderTransactionsPage'));
 const AddressesPage = lazy(() => import('../../modules/customer/pages/AddressesPage'));
-const WalletPage = lazy(() => import('../../modules/customer/pages/WalletPage'));
 const SettingsPage = lazy(() => import('../../modules/customer/pages/SettingsPage'));
 const SupportPage = lazy(() => import('../../modules/customer/pages/SupportPage'));
 const ChatPage = lazy(() => import('../../modules/customer/pages/ChatPage'));
@@ -143,8 +143,8 @@ const AppRouter = () => {
                         { path: 'wishlist', element: <ProtectedRoute><WishlistPage /></ProtectedRoute> },
                         { path: 'orders', element: <ProtectedRoute><OrdersPage /></ProtectedRoute> },
                         { path: 'orders/:orderId', element: <ProtectedRoute><OrderDetailPage /></ProtectedRoute> },
+                        { path: 'transactions', element: <ProtectedRoute><OrderTransactionsPage /></ProtectedRoute> },
                         { path: 'addresses', element: <ProtectedRoute><AddressesPage /></ProtectedRoute> },
-                        { path: 'wallet', element: <ProtectedRoute><WalletPage /></ProtectedRoute> },
                         { path: 'settings', element: <ProtectedRoute><SettingsPage /></ProtectedRoute> },
                         { path: 'support', element: <ProtectedRoute><SupportPage /></ProtectedRoute> },
                         { path: 'chat', element: <ProtectedRoute><ChatPage /></ProtectedRoute> },

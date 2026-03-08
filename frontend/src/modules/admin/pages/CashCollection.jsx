@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import { toast } from 'sonner';
 import Card from '@shared/components/ui/Card';
@@ -34,25 +35,36 @@ const CashCollection = () => {
 
     const [ridersCashData, setRidersCashData] = useState([]);
     const [historyData, setHistoryData] = useState([]);
-    const [riderDetails, setRiderDetails] = useState([]); // Real orders for selected rider
+    const [riderDetails, setRiderDetails] = useState([]);
+    const [ridersPage, setRidersPage] = useState(1);
+    const [historyPage, setHistoryPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [ridersTotal, setRidersTotal] = useState(0);
+    const [historyTotal, setHistoryTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [detailsLoading, setDetailsLoading] = useState(false);
 
-    const fetchData = async () => {
+    const fetchData = async (cashPage = 1, histPage = 1) => {
         try {
             setLoading(true);
             const [cashRes, historyRes] = await Promise.all([
-                adminApi.getDeliveryCashBalances(),
-                adminApi.getCashSettlementHistory()
+                adminApi.getDeliveryCashBalances({ page: cashPage, limit: pageSize }),
+                adminApi.getCashSettlementHistory({ page: histPage, limit: pageSize })
             ]);
 
             if (cashRes.data.success) {
-                setRidersCashData(cashRes.data.result.riders || []);
+                const payload = cashRes.data.result || {};
+                const riders = Array.isArray(payload.items) ? payload.items : (payload.riders || []);
+                setRidersCashData(riders);
+                setRidersTotal(typeof payload.total === 'number' ? payload.total : riders.length);
+                setRidersPage(typeof payload.page === 'number' ? payload.page : cashPage);
             }
             if (historyRes.data.success) {
-                // Adjust for result vs results
-                const history = historyRes.data.results || historyRes.data.result || [];
+                const payload = historyRes.data.result || {};
+                const history = Array.isArray(payload.items) ? payload.items : (historyRes.data.results || historyRes.data.result || []);
                 setHistoryData(Array.isArray(history) ? history : []);
+                setHistoryTotal(typeof payload.total === 'number' ? payload.total : history.length);
+                setHistoryPage(typeof payload.page === 'number' ? payload.page : histPage);
             }
         } catch (error) {
             console.error("Failed to fetch cash collection data:", error);
@@ -63,8 +75,20 @@ const CashCollection = () => {
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        setRidersPage(1);
+        setHistoryPage(1);
+        fetchData(1, 1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
+
+    const fetchRidersPage = (p) => {
+        setRidersPage(p);
+        fetchData(p, historyPage);
+    };
+    const fetchHistoryPage = (p) => {
+        setHistoryPage(p);
+        fetchData(ridersPage, p);
+    };
 
     // Fetch deep dive details when a rider is selected
     useEffect(() => {
@@ -74,7 +98,10 @@ const CashCollection = () => {
                 setDetailsLoading(true);
                 const res = await adminApi.getRiderCashDetails(selectedRider.id);
                 if (res.data.success) {
-                    setRiderDetails(res.data.result);
+                    const data = res.data.results ?? res.data.result;
+                    setRiderDetails(Array.isArray(data) ? data : []);
+                } else {
+                    setRiderDetails([]);
                 }
             } catch (error) {
                 console.error("Failed to fetch rider details:", error);
@@ -121,7 +148,7 @@ const CashCollection = () => {
 
             if (response.data.success) {
                 toast.success(`Settlement of ₹${settlementData.amount} for ${settlementData.rider.name} processed successfully.`);
-                fetchData(); // Refresh both lists
+                fetchData(ridersPage, historyPage);
                 setIsSettleModalOpen(false);
             }
         } catch (error) {
@@ -340,6 +367,21 @@ const CashCollection = () => {
                         </table>
                     )}
                 </div>
+                <div className="px-6 py-3 border-t border-slate-100">
+                    <Pagination
+                        page={activeTab === 'live_balances' ? ridersPage : historyPage}
+                        totalPages={Math.ceil((activeTab === 'live_balances' ? ridersTotal : historyTotal) / pageSize) || 1}
+                        total={activeTab === 'live_balances' ? ridersTotal : historyTotal}
+                        pageSize={pageSize}
+                        onPageChange={activeTab === 'live_balances' ? fetchRidersPage : fetchHistoryPage}
+                        onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setRidersPage(1);
+                            setHistoryPage(1);
+                        }}
+                        loading={loading}
+                    />
+                </div>
             </Card>
 
             {/* Rider Deep Dive Modal */}
@@ -394,8 +436,8 @@ const CashCollection = () => {
                                         <RotateCw className="h-6 w-6 animate-spin mx-auto text-emerald-500 mb-2" />
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fetching Ledger...</p>
                                     </div>
-                                ) : riderDetails.length > 0 ? (
-                                    riderDetails.map((item, i) => (
+                                ) : (Array.isArray(riderDetails) ? riderDetails : []).length > 0 ? (
+                                    (Array.isArray(riderDetails) ? riderDetails : []).map((item, i) => (
                                         <div key={i} className="flex items-center justify-between p-4 bg-white ring-1 ring-slate-100 rounded-2xl hover:ring-emerald-200 transition-all group">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-2 w-2 rounded-full bg-emerald-500 group-hover:scale-125 transition-transform" />

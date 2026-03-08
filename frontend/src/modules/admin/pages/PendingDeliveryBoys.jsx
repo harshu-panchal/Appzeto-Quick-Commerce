@@ -36,10 +36,11 @@ const PendingDeliveryBoys = () => {
         try {
             // verified=false fetches riders waiting for review
             const response = await adminApi.getDeliveryPartners({ verified: 'false' });
-            const data = response.data.results || response.data.result || [];
+            const payload = response.data.result || {};
+            const list = Array.isArray(payload.items) ? payload.items : (response.data.results || []);
 
             // Map backend data to frontend format
-            const mappedRiders = data.map(r => ({
+            const mappedRiders = list.map(r => ({
                 id: r._id,
                 name: r.name,
                 phone: r.phone,

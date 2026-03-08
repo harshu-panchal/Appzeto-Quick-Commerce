@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
 import {
@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { adminApi } from "../../services/adminApi";
 import { toast } from "sonner";
 import IconSelector from "@shared/components/IconSelector";
+import Pagination from "@shared/components/ui/Pagination";
 import { getIconSvg } from "@shared/constants/categoryIcons";
 
 // MUI icon library (shared with customer app & icon selector)
@@ -45,6 +46,9 @@ import LuggageIcon from "@mui/icons-material/Luggage";
 
 const HeaderCategories = () => {
   const [categories, setCategories] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -98,18 +102,24 @@ const HeaderCategories = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    const timer = setTimeout(() => fetchCategories(1), 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm, pageSize]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = async (requestedPage = 1) => {
     setIsLoading(true);
     try {
-      const res = await adminApi.getCategories();
+      const params = { type: "header", page: requestedPage, limit: pageSize };
+      if (searchTerm) params.search = searchTerm;
+      const res = await adminApi.getCategories(params);
       if (res.data.success) {
-        // Filter only header categories
-        const allCats = res.data.results || res.data.result || [];
-        const headers = allCats.filter((c) => c.type === "header");
+        const payload = res.data.result || {};
+        const list = Array.isArray(payload.items) ? payload.items : [];
+        const allCats = res.data.results || [];
+        const headers = list.length > 0 ? list : allCats.filter((c) => c.type === "header");
         setCategories(headers);
+        setTotal(typeof payload.total === "number" ? payload.total : headers.length);
+        setPage(typeof payload.page === "number" ? payload.page : requestedPage);
       }
     } catch (error) {
       toast.error("Failed to fetch header categories");
@@ -118,15 +128,9 @@ const HeaderCategories = () => {
     }
   };
 
-  const filteredCategories = useMemo(() => {
-    return categories.filter((cat) =>
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
-  }, [categories, searchTerm]);
-
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedItems(filteredCategories.map((c) => c._id || c.id));
+      setSelectedItems(categories.map((c) => c._id || c.id));
     } else {
       setSelectedItems([]);
     }
@@ -186,7 +190,7 @@ const HeaderCategories = () => {
       }
       setIsAddModalOpen(false);
       setEditingItem(null);
-      fetchCategories();
+      fetchCategories(page);
     } catch (error) {
       console.error(error);
       toast.error(editingItem ? "Failed to update" : "Failed to create");
@@ -203,7 +207,7 @@ const HeaderCategories = () => {
       toast.success("Header category deleted");
       setIsDeleteModalOpen(false);
       setDeleteTarget(null);
-      fetchCategories();
+      fetchCategories(page);
     } catch (error) {
       toast.error("Failed to delete category");
     }
@@ -295,7 +299,8 @@ const HeaderCategories = () => {
                     className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     checked={
                       selectedItems.length > 0 &&
-                      selectedItems.length === filteredCategories.length
+                      categories.length > 0 &&
+                      selectedItems.length === categories.length
                     }
                     onChange={handleSelectAll}
                   />
@@ -330,14 +335,14 @@ const HeaderCategories = () => {
                     Loading...
                   </td>
                 </tr>
-              ) : filteredCategories.length === 0 ? (
+              ) : categories.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-gray-500">
                     No header categories found
                   </td>
                 </tr>
               ) : (
-                filteredCategories.map((cat) => (
+                categories.map((cat) => (
                   <tr
                     key={cat._id || cat.id}
                     className="hover:bg-gray-50/50 transition-colors">
@@ -415,6 +420,20 @@ const HeaderCategories = () => {
             </tbody>
           </table>
         </div>
+        <div className="px-4 py-3 border-t border-gray-100">
+          <Pagination
+            page={page}
+            totalPages={Math.ceil(total / pageSize) || 1}
+            total={total}
+            pageSize={pageSize}
+            onPageChange={(p) => fetchCategories(p)}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+            loading={isLoading}
+          />
+        </div>
       </Card>
 
       {/* Add/Edit Modal */}
@@ -437,7 +456,12 @@ const HeaderCategories = () => {
                 </button>
               </div>
 
-              <div className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0">
+              <div
+                className="p-6 space-y-4 overflow-y-auto flex-1 min-h-0 overscroll-contain touch-pan-y"
+                tabIndex={0}
+                onWheel={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
+              >
                 {/* Icon/Image Selection */}
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex gap-4">

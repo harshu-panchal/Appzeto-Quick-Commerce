@@ -24,12 +24,16 @@ import {
     HiOutlineSquaresPlus
 } from 'react-icons/hi2';
 import Modal from '@shared/components/ui/Modal';
+import Pagination from '@shared/components/ui/Pagination';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductManagement = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]); // All categories for dropdowns
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -86,17 +90,21 @@ const ProductManagement = () => {
         }
     };
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (requestedPage = 1) => {
         setIsLoading(true);
         try {
-            const params = {};
+            const params = { page: requestedPage, limit: pageSize };
             if (searchTerm) params.search = searchTerm;
             if (filterCategory !== 'all') params.category = filterCategory;
             if (filterStatus !== 'all') params.status = filterStatus;
 
             const response = await adminApi.getProducts(params);
             if (response.data.success) {
-                setProducts(response.data.results || response.data.result || []);
+                const payload = response.data.result || {};
+                const list = Array.isArray(payload.items) ? payload.items : (response.data.results || []);
+                setProducts(list);
+                setTotal(typeof payload.total === 'number' ? payload.total : list.length);
+                setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
             }
         } catch (error) {
             toast.error('Failed to fetch products');
@@ -111,10 +119,10 @@ const ProductManagement = () => {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchProducts();
+            fetchProducts(1);
         }, 500); // Debounce search
         return () => clearTimeout(timer);
-    }, [searchTerm, filterCategory, filterStatus]);
+    }, [searchTerm, filterCategory, filterStatus, pageSize]);
 
     const handleSave = async () => {
         if (!editingItem) {
@@ -157,7 +165,7 @@ const ProductManagement = () => {
             await adminApi.updateProduct(editingItem._id, data);
             toast.success('Product updated successfully');
             setIsProductModalOpen(false);
-            fetchProducts();
+            fetchProducts(page);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to save product');
         } finally {
@@ -170,7 +178,7 @@ const ProductManagement = () => {
             await adminApi.deleteProduct(itemToDelete._id);
             toast.success('Product deleted');
             setIsDeleteModalOpen(false);
-            fetchProducts();
+            fetchProducts(page);
         } catch (error) {
             toast.error('Failed to delete product');
         }
@@ -260,12 +268,13 @@ const ProductManagement = () => {
         setIsProductModalOpen(true);
     };
 
+    const productsList = Array.isArray(products) ? products : [];
     const stats = useMemo(() => ({
-        total: products.length,
-        lowStock: products.filter(p => p.stock > 0 && p.stock <= 10).length,
-        outOfStock: products.filter(p => p.stock === 0).length,
-        active: products.filter(p => p.status === 'active').length
-    }), [products]);
+        total: total,
+        lowStock: productsList.filter(p => p.stock > 0 && p.stock <= 10).length,
+        outOfStock: productsList.filter(p => p.stock === 0).length,
+        active: productsList.filter(p => p.status === 'active').length
+    }), [productsList, total]);
 
     const StatusBadge = ({ status, stock }) => {
         if (stock === 0) return <Badge variant="error" className="text-[10px] px-1.5 py-0">Out of Stock</Badge>;
@@ -388,11 +397,11 @@ const ProductManagement = () => {
                                         </div>
                                     </td>
                                 </tr>
-                            ) : products.length === 0 ? (
+                            ) : productsList.length === 0 ? (
                                 <tr>
                                     <td colSpan="9" className="px-6 py-20 text-center text-slate-400 font-bold text-xs uppercase tracking-widest">No products found</td>
                                 </tr>
-                            ) : products.map((p) => (
+                            ) : productsList.map((p) => (
                                 <tr key={p._id} className="hover:bg-slate-50/30 transition-colors group">
                                     {/* Product Column */}
                                     <td className="px-6 py-4">
@@ -485,6 +494,20 @@ const ProductManagement = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+                <div className="px-6 py-3 border-t border-slate-100">
+                    <Pagination
+                        page={page}
+                        totalPages={Math.ceil(total / pageSize) || 1}
+                        total={total}
+                        pageSize={pageSize}
+                        onPageChange={(p) => fetchProducts(p)}
+                        onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setPage(1);
+                        }}
+                        loading={isLoading}
+                    />
                 </div>
             </Card>
 

@@ -13,6 +13,7 @@ import {
     HiOutlineTruck
 } from 'react-icons/hi2';
 import { motion, AnimatePresence } from 'framer-motion';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import { toast } from 'sonner';
 
@@ -27,15 +28,22 @@ const formatTimeDistance = (date) => {
 
 const FleetTrackingTable = () => {
     const [fleet, setFleet] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBoy, setSelectedBoy] = useState(null);
 
-    const fetchFleet = async () => {
+    const fetchFleet = async (requestedPage = 1) => {
         setIsLoading(true);
         try {
-            const response = await adminApi.getActiveFleet();
-            setFleet(response.data.results || []);
+            const response = await adminApi.getActiveFleet({ page: requestedPage, limit: pageSize });
+            const payload = response.data.result || {};
+            const data = Array.isArray(payload.items) ? payload.items : (response.data.results || []);
+            setFleet(data);
+            setTotal(typeof payload.total === 'number' ? payload.total : data.length);
+            setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
         } catch (error) {
             console.error('Fetch Fleet Error:', error);
             toast.error('Failed to fetch live fleet data');
@@ -45,11 +53,15 @@ const FleetTrackingTable = () => {
     };
 
     useEffect(() => {
-        fetchFleet();
-        // Refresh every 30 seconds for live feel
-        const interval = setInterval(fetchFleet, 30000);
+        fetchFleet(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
+
+    useEffect(() => {
+        const interval = setInterval(() => fetchFleet(page), 30000);
         return () => clearInterval(interval);
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page]);
 
     const filteredFleet = fleet.filter(item =>
         item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -133,6 +145,20 @@ const FleetTrackingTable = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+                <div className="px-6 py-3 border-t border-slate-100">
+                    <Pagination
+                        page={page}
+                        totalPages={Math.ceil(total / pageSize) || 1}
+                        total={total}
+                        pageSize={pageSize}
+                        onPageChange={(p) => fetchFleet(p)}
+                        onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setPage(1);
+                        }}
+                        loading={isLoading}
+                    />
                 </div>
 
                 {filteredFleet.length === 0 && (

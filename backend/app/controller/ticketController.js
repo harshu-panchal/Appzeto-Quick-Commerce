@@ -1,5 +1,6 @@
 import Ticket from "../models/ticket.js";
 import handleResponse from "../utils/helper.js";
+import getPagination from "../utils/pagination.js";
 
 // Create a new ticket (Customer/Seller/Rider)
 export const createTicket = async (req, res) => {
@@ -44,8 +45,20 @@ export const getMyTickets = async (req, res) => {
 // Admin: Get all tickets
 export const getAllTickets = async (req, res) => {
     try {
-        const tickets = await Ticket.find().populate("userId", "name email").sort({ createdAt: -1 });
-        return handleResponse(res, 200, "All tickets fetched successfully", tickets);
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
+
+        const [tickets, total] = await Promise.all([
+            Ticket.find().populate("userId", "name email").sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+            Ticket.countDocuments()
+        ]);
+
+        return handleResponse(res, 200, "All tickets fetched successfully", {
+            items: tickets,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

@@ -236,7 +236,13 @@ const SellerLocations = () => {
                             </div>
                         </div>
 
-                        <div className="overflow-y-auto px-1 pb-10" style={{ height: '400px', display: 'block' }}>
+                        <div
+                            className="overflow-y-auto overscroll-contain touch-pan-y px-1 pb-10"
+                            style={{ height: '400px', display: 'block' }}
+                            tabIndex={0}
+                            onWheel={(e) => e.stopPropagation()}
+                            onTouchMove={(e) => e.stopPropagation()}
+                        >
                             <div className="flex flex-col gap-2">
                                 {filteredSellers.map(s => (
                                     <button

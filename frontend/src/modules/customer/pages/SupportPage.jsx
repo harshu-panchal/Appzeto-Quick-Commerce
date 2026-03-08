@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MessageCircle, Phone, Mail, ChevronDown, ChevronUp, FileText, ChevronLeft, PlusCircle, X, Send } from 'lucide-react';
 import { useToast } from '@shared/components/ui/Toast';
@@ -6,6 +6,7 @@ import { customerApi } from '../services/customerApi';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import axiosInstance from '@core/api/axios';
 
 const SupportPage = () => {
     const navigate = useNavigate();
@@ -17,13 +18,24 @@ const SupportPage = () => {
         description: '',
         priority: 'medium'
     });
+    const [faqs, setFaqs] = useState([]);
 
-    const faqs = [
-        { q: 'How do I check my order status?', a: 'You can check your order status in the "My Orders" section of your profile.' },
-        { q: 'What is the refund policy?', a: 'We offer a no-questions-asked refund policy for damaged or incorrect items within 24 hours of delivery.' },
-        { q: 'How do I change my delivery address?', a: 'You can manage your delivery addresses in the "Saved Addresses" section under your profile.' },
-        { q: 'Do you deliver to my location?', a: 'We currently serve select areas in Delhi NCR. You can check availability by entering your pincode on the home page.' },
-    ];
+    useEffect(() => {
+        const fetchFaqs = async () => {
+            try {
+                const response = await axiosInstance.get('/public/faqs', {
+                    params: { category: 'Customer', status: 'published' }
+                });
+                const data = response.data?.result ?? response.data;
+                const list = Array.isArray(data?.items) ? data.items : Array.isArray(data?.results) ? data.results : [];
+                setFaqs(list);
+            } catch (error) {
+                console.error('Error fetching FAQs:', error);
+            }
+        };
+
+        fetchFaqs();
+    }, []);
 
     const handleTicketSubmit = async (e) => {
         e.preventDefault();
@@ -81,9 +93,19 @@ const SupportPage = () => {
                 <div>
                     <h2 className="text-xl font-black text-slate-800 mb-4 px-2">Frequently Asked Questions</h2>
                     <div className="space-y-3">
-                        {faqs.map((faq, idx) => (
-                            <FAQItem key={idx} question={faq.q} answer={faq.a} />
-                        ))}
+                        {faqs.length > 0 ? (
+                            faqs.map((faq) => (
+                                <FAQItem
+                                    key={faq._id}
+                                    question={faq.question}
+                                    answer={faq.answer}
+                                />
+                            ))
+                        ) : (
+                            <div className="bg-white rounded-2xl shadow-[0_4px_10px_rgb(0,0,0,0.02)] border border-slate-100 px-5 py-4 text-sm text-slate-400 text-center">
+                                No FAQs available right now.
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -104,7 +126,7 @@ const SupportPage = () => {
             {/* Ticket Creation Modal */}
             <AnimatePresence>
                 {isTicketModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+                    <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}

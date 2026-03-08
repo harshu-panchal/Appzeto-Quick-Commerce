@@ -205,9 +205,9 @@ const CategoryHierarchy = () => {
       </div>
 
       {/* Miller Columns View */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
+      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 md:grid-rows-[minmax(0,1fr)] gap-4 overflow-hidden">
         {/* Column 1: Headers */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden min-h-0 h-full">
           <ColumnHeader
             title="Header Categories"
             icon={LayoutGrid}
@@ -228,7 +228,12 @@ const CategoryHierarchy = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+          <div
+            className="flex-1 min-h-0 overflow-y-auto py-2 custom-scrollbar overscroll-contain touch-pan-y"
+            tabIndex={0}
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+          >
             {isLoading ? (
               <div className="p-8 text-center text-gray-400 text-sm">
                 Loading structure...
@@ -257,7 +262,7 @@ const CategoryHierarchy = () => {
         </div>
 
         {/* Column 2: Level 2 */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full transition-all duration-300">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden min-h-0 h-full transition-all duration-300">
           <ColumnHeader
             title="Level 2 Categories"
             icon={Folder}
@@ -275,7 +280,12 @@ const CategoryHierarchy = () => {
               </p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+            <div
+              className="flex-1 min-h-0 overflow-y-auto py-2 custom-scrollbar overscroll-contain touch-pan-y"
+              tabIndex={0}
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               {activeLevel2.length === 0 ? (
                 <div className="p-8 text-center text-gray-400 text-sm">
                   No Level 2 categories in <br />
@@ -304,7 +314,7 @@ const CategoryHierarchy = () => {
         </div>
 
         {/* Column 3: Subcategories */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden h-full">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col overflow-hidden min-h-0 h-full">
           <ColumnHeader
             title="Subcategories"
             icon={Tag}
@@ -322,7 +332,12 @@ const CategoryHierarchy = () => {
               </p>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+            <div
+              className="flex-1 min-h-0 overflow-y-auto py-2 custom-scrollbar overscroll-contain touch-pan-y"
+              tabIndex={0}
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
               {activeSubs.length === 0 ? (
                 <div className="p-8 text-center text-gray-400 text-sm">
                   No subcategories in <br />

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import { toast } from 'sonner';
 
@@ -67,7 +68,7 @@ const CustomerManagement = () => {
     const stats = useMemo(() => {
         const safeCustomers = Array.isArray(customers) ? customers : [];
         return {
-            total: safeCustomers.length,
+            total: total,
             active: safeCustomers.filter(c => c.status === 'active').length,
             newToday: safeCustomers.filter(c => {
                 const today = new Date().toISOString().split('T')[0];
@@ -75,7 +76,7 @@ const CustomerManagement = () => {
                 return joined === today;
             }).length
         };
-    }, [customers]);
+    }, [customers, total]);
 
     const filteredCustomers = useMemo(() => {
         const safeCustomers = Array.isArray(customers) ? customers : [];
@@ -296,29 +297,19 @@ const CustomerManagement = () => {
                         </tbody>
                     </table>
                 </div>
-                <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
-                    <p className="ds-caption text-gray-500">
-                        Showing <span className="font-semibold text-gray-900">{filteredCustomers.length}</span> of {total} customers
-                    </p>
-                    <div className="flex items-center gap-2">
-                        <button
-                            disabled={page <= 1 || loading}
-                            onClick={() => page > 1 && fetchCustomers(page - 1)}
-                            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest bg-gray-50 text-gray-400 border border-gray-100 disabled:opacity-50"
-                        >
-                            Prev
-                        </button>
-                        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">
-                            Page {page}
-                        </span>
-                        <button
-                            disabled={customers.length < pageSize || loading}
-                            onClick={() => fetchCustomers(page + 1)}
-                            className="px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-widest bg-gray-50 text-gray-400 border border-gray-100 disabled:opacity-50"
-                        >
-                            Next
-                        </button>
-                    </div>
+                <div className="px-6 py-3 border-t border-gray-100">
+                    <Pagination
+                        page={page}
+                        totalPages={Math.ceil(total / pageSize) || 1}
+                        total={total}
+                        pageSize={pageSize}
+                        onPageChange={(p) => fetchCustomers(p)}
+                        onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setPage(1);
+                        }}
+                        loading={loading}
+                    />
                 </div>
             </Card>
         </div>

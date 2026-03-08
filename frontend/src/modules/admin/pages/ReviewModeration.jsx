@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import {
     HiOutlineStar,
@@ -24,17 +25,23 @@ const ReviewModeration = () => {
     const [replyText, setReplyText] = useState('');
     const [loading, setLoading] = useState(true);
     const [reviews, setReviews] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        fetchReviews();
-    }, []);
+        fetchReviews(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
-    const fetchReviews = async () => {
+    const fetchReviews = async (requestedPage = 1) => {
         try {
             setLoading(true);
-            const res = await adminApi.getPendingReviews();
+            const res = await adminApi.getPendingReviews({ page: requestedPage, limit: pageSize });
             if (res.data.success) {
-                setReviews(res.data.results.map(r => ({
+                const payload = res.data.result || {};
+                const data = Array.isArray(payload.items) ? payload.items : (res.data.results || []);
+                setReviews(data.map(r => ({
                     ...r,
                     id: r._id,
                     user: r.userId?.name || "Anonymous",
@@ -43,6 +50,8 @@ const ReviewModeration = () => {
                     date: new Date(r.createdAt).toLocaleString(),
                     tags: [] // Tags can be empty or logic-based
                 })));
+                setTotal(typeof payload.total === 'number' ? payload.total : data.length);
+                setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
             }
         } catch (error) {
             console.error("Fetch Reviews Error:", error);
@@ -57,6 +66,7 @@ const ReviewModeration = () => {
             const res = await adminApi.updateReviewStatus(id, 'approved');
             if (res.data.success) {
                 setReviews(reviews.filter(r => r.id !== id));
+                fetchReviews(page);
                 showToast('Review approved and published', 'success');
             }
         } catch (error) {
@@ -70,6 +80,7 @@ const ReviewModeration = () => {
             const res = await adminApi.updateReviewStatus(id, 'rejected');
             if (res.data.success) {
                 setReviews(reviews.filter(r => r.id !== id));
+                fetchReviews(page);
                 showToast('Review rejected and removed', 'warning');
             }
         } catch (error) {
@@ -187,6 +198,20 @@ const ReviewModeration = () => {
                         </div>
                     </Card>
                 ))}
+            </div>
+            <div className="mt-6 flex justify-center">
+                <Pagination
+                    page={page}
+                    totalPages={Math.ceil(total / pageSize) || 1}
+                    total={total}
+                    pageSize={pageSize}
+                    onPageChange={(p) => fetchReviews(p)}
+                    onPageSizeChange={(newSize) => {
+                        setPageSize(newSize);
+                        setPage(1);
+                    }}
+                    loading={loading}
+                />
             </div>
 
             <Modal

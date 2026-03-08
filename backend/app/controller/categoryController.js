@@ -1,5 +1,6 @@
 import Category from "../models/category.js";
 import handleResponse from "../utils/helper.js";
+import getPagination from "../utils/pagination.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 /* ===============================
@@ -7,7 +8,7 @@ import { uploadToCloudinary } from "../utils/cloudinary.js";
 ================================ */
 export const getCategories = async (req, res) => {
     try {
-        const { flat, tree } = req.query;
+        const { flat, tree, type } = req.query;
 
         // If tree structure is requested (for hierarchy explorer)
         if (tree === 'true') {
@@ -22,8 +23,41 @@ export const getCategories = async (req, res) => {
             return handleResponse(res, 200, "Category tree fetched", categories);
         }
 
-        // Default or explicit flat: return all categories for table views
-        const categories = await Category.find().sort({ name: 1 });
+        // Paginated flat list (for table views)
+        const pageParam = req.query.page;
+        const limitParam = req.query.limit;
+        if (pageParam != null || limitParam != null) {
+            const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 100 });
+            const query = {};
+            if (type === "header" || type === "category" || type === "subcategory") {
+                query.type = type;
+            }
+            const search = (req.query.search || "").trim();
+            if (search) {
+                query.$or = [
+                    { name: { $regex: search, $options: "i" } },
+                    { slug: { $regex: search, $options: "i" } }
+                ];
+            }
+            const [items, total] = await Promise.all([
+                Category.find(query).sort({ name: 1 }).skip(skip).limit(limit).lean(),
+                Category.countDocuments(query)
+            ]);
+            return handleResponse(res, 200, "Categories fetched successfully", {
+                items,
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit) || 1,
+            });
+        }
+
+        // Default flat: return all categories (no pagination)
+        const query = {};
+        if (type === "header" || type === "category" || type === "subcategory") {
+            query.type = type;
+        }
+        const categories = await Category.find(query).sort({ name: 1 });
         return handleResponse(res, 200, "Categories fetched successfully", categories);
     } catch (error) {
         return handleResponse(res, 500, error.message);

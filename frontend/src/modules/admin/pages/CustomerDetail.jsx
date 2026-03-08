@@ -230,18 +230,18 @@ const CustomerDetail = () => {
 
                 {/* Quick Stats */}
                 <div className="space-y-4">
-                    <Card className="p-6 bg-sky-600 text-white rounded-xl border-none shadow-lg shadow-sky-200 relative overflow-hidden group">
+                    <Card className="p-6 !bg-sky-600 text-white rounded-xl border-none shadow-lg shadow-sky-200 relative overflow-hidden group">
                         <div className="relative z-10">
-                            <p className="text-[10px] font-black opacity-60 uppercase tracking-widest mb-1">Lifetime Value</p>
-                            <h4 className="text-3xl font-black">₹{(customer.totalSpent || 0).toLocaleString()}</h4>
+                            <p className="text-[10px] font-black opacity-90 uppercase tracking-widest mb-1">Lifetime Value</p>
+                            <h4 className="text-3xl font-black text-white">₹{(customer.totalSpent || 0).toLocaleString()}</h4>
                             <div className="mt-4 flex items-center gap-2">
-                                <div className="p-1 px-2 rounded-full bg-white/20 text-[10px] font-black uppercase tracking-tighter">
+                                <div className="p-1 px-2 rounded-full bg-white/25 text-white text-[10px] font-black uppercase tracking-tighter">
                                     {customer.totalOrders} Orders
                                 </div>
-                                <TrendingUp className="h-4 w-4 text-sky-200" />
+                                <TrendingUp className="h-4 w-4 text-white/90" />
                             </div>
                         </div>
-                        <ShoppingBag className="absolute -bottom-4 -right-4 h-24 w-24 opacity-10 group-hover:scale-110 transition-transform" />
+                        <ShoppingBag className="absolute -bottom-4 -right-4 h-24 w-24 text-white/10 group-hover:scale-110 transition-transform" />
                     </Card>
 
                     <Card className="p-6 bg-white rounded-xl border-none shadow-md ring-1 ring-slate-100">
@@ -273,20 +273,33 @@ const CustomerDetail = () => {
                             </h4>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {customer.addresses.map((addr) => (
-                                <div key={addr.id} className={cn(
-                                    "p-5 rounded-2xl ring-1 transition-all",
-                                    addr.isDefault ? "bg-slate-50 ring-slate-200 shadow-sm" : "bg-white ring-slate-100 hover:ring-sky-100"
-                                )}>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <Badge variant={addr.isDefault ? 'primary' : 'secondary'} className="text-[9px] font-black">
-                                            {addr.type.toUpperCase()}
-                                        </Badge>
-                                        <MapPin className="h-3.5 w-3.5 text-slate-300" />
-                                    </div>
-                                    <p className="text-xs font-bold text-slate-600 leading-relaxed">{addr.address}</p>
+                            {(Array.isArray(customer.addresses) ? customer.addresses : []).length > 0 ? (
+                                (Array.isArray(customer.addresses) ? customer.addresses : []).map((addr, idx) => {
+                                    const type = (addr.label || addr.type || 'other').toUpperCase();
+                                    const parts = [addr.fullAddress || addr.address, addr.landmark, addr.city, addr.state, addr.pincode].filter(Boolean);
+                                    const fullAddress = parts.length > 0 ? parts.join(', ') : 'No address';
+                                    const isDefault = addr.isDefault ?? (idx === 0);
+                                    return (
+                                        <div key={addr._id || addr.id || idx} className={cn(
+                                            "p-5 rounded-2xl ring-1 transition-all",
+                                            isDefault ? "bg-slate-50 ring-slate-200 shadow-sm" : "bg-white ring-slate-100 hover:ring-sky-100"
+                                        )}>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <Badge variant={isDefault ? 'primary' : 'secondary'} className="text-[9px] font-black">
+                                                    {type}
+                                                </Badge>
+                                                <MapPin className="h-3.5 w-3.5 text-slate-300" />
+                                            </div>
+                                            <p className="text-xs font-bold text-slate-600 leading-relaxed whitespace-pre-wrap break-words">{fullAddress}</p>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="col-span-2 py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                    <MapPin className="h-10 w-10 text-slate-200 mx-auto mb-3" />
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No saved addresses</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </Card>
 
@@ -427,15 +440,6 @@ const CustomerDetail = () => {
                                 type="text"
                                 value={editForm.name}
                                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                                className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                value={editForm.email}
-                                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                                 className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
                             />
                         </div>

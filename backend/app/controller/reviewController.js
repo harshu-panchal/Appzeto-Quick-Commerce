@@ -1,5 +1,6 @@
 import Review from "../models/review.js";
 import handleResponse from "../utils/helper.js";
+import getPagination from "../utils/pagination.js";
 
 // Submit a review (Customer)
 export const submitReview = async (req, res) => {
@@ -45,12 +46,28 @@ export const getProductReviews = async (req, res) => {
 // Admin: Get all pending reviews
 export const getPendingReviews = async (req, res) => {
     try {
-        const reviews = await Review.find({ status: "pending" })
-            .populate("userId", "name email")
-            .populate("productId", "name images")
-            .sort({ createdAt: -1 });
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
 
-        return handleResponse(res, 200, "Pending reviews fetched successfully", reviews);
+        const query = { status: "pending" };
+
+        const [reviews, total] = await Promise.all([
+            Review.find(query)
+                .populate("userId", "name email")
+                .populate("productId", "name images")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Review.countDocuments(query)
+        ]);
+
+        return handleResponse(res, 200, "Pending reviews fetched successfully", {
+            items: reviews,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

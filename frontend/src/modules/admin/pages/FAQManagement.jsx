@@ -29,6 +29,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@shared/components/ui/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import { useEffect } from 'react';
 
@@ -62,16 +63,24 @@ const FAQManagement = () => {
     ]);
 
     const [faqs, setFaqs] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        fetchFaqs();
-    }, []);
+        fetchFaqs(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
-    const fetchFaqs = async () => {
+    const fetchFaqs = async (requestedPage = 1) => {
         setIsLoading(true);
         try {
-            const response = await adminApi.getFAQs();
-            setFaqs(response.data.results || []);
+            const response = await adminApi.getFAQs({ page: requestedPage, limit: pageSize });
+            const payload = response.data.result || {};
+            const data = Array.isArray(payload.items) ? payload.items : (response.data.results || []);
+            setFaqs(data);
+            setTotal(typeof payload.total === 'number' ? payload.total : data.length);
+            setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
         } catch (error) {
             showToast('Failed to fetch FAQs', 'error');
         } finally {
@@ -126,7 +135,7 @@ const FAQManagement = () => {
                 await adminApi.createFAQ(newFaq);
                 showToast(`FAQ created successfully`, 'success');
             }
-            fetchFaqs();
+            fetchFaqs(page);
             setIsAddModalOpen(false);
             setEditingFaqId(null);
             setNewFaq({ question: '', answer: '', category: 'Customer', status: 'published' });
@@ -149,7 +158,7 @@ const FAQManagement = () => {
     const handleDeleteFaq = async (id) => {
         try {
             await adminApi.deleteFAQ(id);
-            fetchFaqs();
+            fetchFaqs(page);
             showToast('FAQ deleted successfully', 'warning');
         } catch (error) {
             showToast('Failed to delete FAQ', 'error');
@@ -160,7 +169,7 @@ const FAQManagement = () => {
         try {
             const newStatus = faq.status === 'published' ? 'draft' : 'published';
             await adminApi.updateFAQ(faq._id, { status: newStatus });
-            fetchFaqs();
+            fetchFaqs(page);
             showToast('Visibility state updated', 'info');
         } catch (error) {
             showToast('Failed to update status', 'error');
@@ -405,6 +414,20 @@ const FAQManagement = () => {
                         </AnimatePresence>
                     </div>
                 </div>
+            </div>
+            <div className="mt-6 flex justify-center">
+                <Pagination
+                    page={page}
+                    totalPages={Math.ceil(total / pageSize) || 1}
+                    total={total}
+                    pageSize={pageSize}
+                    onPageChange={(p) => fetchFaqs(p)}
+                    onPageSizeChange={(newSize) => {
+                        setPageSize(newSize);
+                        setPage(1);
+                    }}
+                    loading={isLoading}
+                />
             </div>
 
             {/* Modals */}

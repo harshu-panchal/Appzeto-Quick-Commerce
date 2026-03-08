@@ -147,8 +147,8 @@ const AdminDashboard = () => {
                         subtitle="Monthly revenue trends"
                         className="h-full"
                     >
-                        <div className="ds-chart-container">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="ds-chart-container min-h-[250px]">
+                            <ResponsiveContainer width="100%" height={250}>
                                 <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -201,8 +201,8 @@ const AdminDashboard = () => {
                         subtitle="Sales breakdown by category"
                         className="h-full border-none shadow-sm ring-1 ring-gray-100"
                     >
-                        <div className="h-[250px] relative">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-[250px] min-h-[250px] relative">
+                            <ResponsiveContainer width="100%" height={250}>
                                 <PieChart>
                                     <Pie
                                         data={categoryData}

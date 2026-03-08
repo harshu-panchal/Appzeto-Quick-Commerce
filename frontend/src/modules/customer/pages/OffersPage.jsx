@@ -22,8 +22,8 @@ const OffersPage = () => {
         {
             id: 3,
             title: "Flat ₹100 Cashback",
-            description: "Pay using Appzeto Wallet and get ₹100 flat cashback on orders above ₹1000.",
-            code: "WALLETSAVE",
+            description: "Pay using any online payment method and get ₹100 flat cashback on orders above ₹1000.",
+            code: "CASHBACK100",
             bg: "bg-orange-500",
             icon: <Tag className="text-white" size={32} />
         }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import {
     HiOutlineChatBubbleLeftRight,
@@ -28,27 +29,36 @@ const SupportTickets = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [tickets, setTickets] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        fetchTickets();
-    }, []);
+        fetchTickets(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
-    const fetchTickets = async () => {
+    const fetchTickets = async (requestedPage = 1) => {
         try {
             setLoading(true);
-            const res = await adminApi.getTickets();
+            const res = await adminApi.getTickets({ page: requestedPage, limit: pageSize });
             if (res.data.success) {
-                setTickets(res.data.results.map(t => ({
+                const payload = res.data.result || {};
+                const data = Array.isArray(payload.items) ? payload.items : (res.data.results || []);
+                setTickets(data.map(t => ({
                     ...t,
                     id: t._id,
                     ticketCode: t._id.slice(-6).toUpperCase(),
                     user: t.userId?.name || "Unknown",
                     date: new Date(t.createdAt).toLocaleString(),
-                    messages: t.messages.map(m => ({
+                    messages: (t.messages || []).map((m, i) => ({
                         ...m,
-                        time: new Date(m.createdAt).toLocaleTimeString()
+                        id: m._id || m.id || `msg-${t._id}-${i}`,
+                        time: new Date(m.createdAt || Date.now()).toLocaleTimeString()
                     }))
                 })));
+                setTotal(typeof payload.total === 'number' ? payload.total : data.length);
+                setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
             }
         } catch (error) {
             console.error("Fetch Tickets Error:", error);
@@ -172,6 +182,21 @@ const SupportTickets = () => {
                                 </div>
                             </button>
                         ))}
+                    </div>
+                    <div className="p-4 border-t border-slate-100">
+                        <Pagination
+                            page={page}
+                            totalPages={Math.ceil(total / pageSize) || 1}
+                            total={total}
+                            pageSize={pageSize}
+                            onPageChange={(p) => fetchTickets(p)}
+                            onPageSizeChange={(newSize) => {
+                                setPageSize(newSize);
+                                setPage(1);
+                            }}
+                            loading={loading}
+                            compact
+                        />
                     </div>
                 </Card>
             </div>

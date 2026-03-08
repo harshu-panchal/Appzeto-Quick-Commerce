@@ -375,8 +375,8 @@ const ContentManager = () => {
             <div className="flex flex-wrap gap-4 items-center mt-6">
                 <div className="flex p-1.5 bg-slate-100 rounded-xl">
                     {[
-                        { id: 'header', label: 'Header Category Pages' },
                         { id: 'home', label: 'Home Page' },
+                        { id: 'header', label: 'Header Category Pages' },
                     ].map((opt) => (
                         <button
                             key={opt.id}

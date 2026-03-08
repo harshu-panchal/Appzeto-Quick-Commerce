@@ -26,10 +26,14 @@ import {
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 
 const ActiveDeliveryBoys = () => {
     const [riders, setRiders] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -44,14 +48,13 @@ const ActiveDeliveryBoys = () => {
     });
 
     // Fetch Riders
-    const fetchRiders = async () => {
+    const fetchRiders = async (requestedPage = 1) => {
         setIsLoading(true);
         try {
-            // Always fetch all riders so stats are accurate
-            const response = await adminApi.getDeliveryPartners();
-            const data = response.data.results || response.data.result || [];
+            const response = await adminApi.getDeliveryPartners({ page: requestedPage, limit: pageSize });
+            const payload = response.data.result || {};
+            const data = Array.isArray(payload.items) ? payload.items : (response.data.results || response.data.result || []);
 
-            // Map backend data to frontend format
             const mappedRiders = data.map(r => ({
                 id: r._id,
                 name: r.name,
@@ -69,6 +72,8 @@ const ActiveDeliveryBoys = () => {
             }));
 
             setRiders(mappedRiders);
+            setTotal(typeof payload.total === 'number' ? payload.total : mappedRiders.length);
+            setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
         } catch (error) {
             console.error('Fetch Riders Error:', error);
             toast.error('Failed to fetch delivery partners');
@@ -78,8 +83,9 @@ const ActiveDeliveryBoys = () => {
     };
 
     React.useEffect(() => {
-        fetchRiders();
-    }, []);
+        fetchRiders(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
     // Filtering logic
     const filteredRiders = useMemo(() => {
@@ -330,6 +336,20 @@ const ActiveDeliveryBoys = () => {
                         ))
                     }
                 </AnimatePresence>
+            </div>
+            <div className="mt-6 flex justify-center">
+                <Pagination
+                    page={page}
+                    totalPages={Math.ceil(total / pageSize) || 1}
+                    total={total}
+                    pageSize={pageSize}
+                    onPageChange={(p) => fetchRiders(p)}
+                    onPageSizeChange={(newSize) => {
+                        setPageSize(newSize);
+                        setPage(1);
+                    }}
+                    loading={isLoading}
+                />
             </div>
 
             {/* Profile Detail Modal */}

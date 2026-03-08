@@ -24,11 +24,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from "../services/adminApi";
 import { toast } from "sonner";
 
 const WithdrawalRequests = () => {
-    const [activeTab, setActiveTab] = useState('sellers'); // sellers or delivery
+    const [activeTab, setActiveTab] = useState('sellers');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [selectedRequest, setSelectedRequest] = useState(null);
@@ -37,17 +38,34 @@ const WithdrawalRequests = () => {
 
     const [sellerRequests, setSellerRequests] = useState([]);
     const [deliveryRequests, setDeliveryRequests] = useState([]);
+    const [sellerPage, setSellerPage] = useState(1);
+    const [deliveryPage, setDeliveryPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [sellerTotal, setSellerTotal] = useState(0);
+    const [deliveryTotal, setDeliveryTotal] = useState(0);
 
-    const fetchData = async () => {
+    const fetchData = async (sellerPageNum = 1, deliveryPageNum = 1) => {
         try {
             setLoading(true);
             const [sellerRes, deliveryRes] = await Promise.all([
-                adminApi.getSellerWithdrawals().catch(err => ({ data: { success: false, result: [] } })),
-                adminApi.getDeliveryWithdrawals().catch(err => ({ data: { success: false, result: [] } }))
+                adminApi.getSellerWithdrawals({ page: sellerPageNum, limit: pageSize }).catch(err => ({ data: { success: false, result: {} } })),
+                adminApi.getDeliveryWithdrawals({ page: deliveryPageNum, limit: pageSize }).catch(err => ({ data: { success: false, result: {} } }))
             ]);
 
-            if (sellerRes.data.success) setSellerRequests(sellerRes.data.results || sellerRes.data.result || []);
-            if (deliveryRes.data.success) setDeliveryRequests(deliveryRes.data.results || deliveryRes.data.result || []);
+            if (sellerRes.data.success) {
+                const payload = sellerRes.data.result || {};
+                const items = Array.isArray(payload.items) ? payload.items : (sellerRes.data.results || []);
+                setSellerRequests(items);
+                setSellerTotal(typeof payload.total === 'number' ? payload.total : items.length);
+                setSellerPage(typeof payload.page === 'number' ? payload.page : sellerPageNum);
+            }
+            if (deliveryRes.data.success) {
+                const payload = deliveryRes.data.result || {};
+                const items = Array.isArray(payload.items) ? payload.items : (deliveryRes.data.results || []);
+                setDeliveryRequests(items);
+                setDeliveryTotal(typeof payload.total === 'number' ? payload.total : items.length);
+                setDeliveryPage(typeof payload.page === 'number' ? payload.page : deliveryPageNum);
+            }
         } catch (error) {
             console.error("Fetch error:", error);
             toast.error("Failed to fetch requests");
@@ -57,8 +75,18 @@ const WithdrawalRequests = () => {
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchData(sellerPage, deliveryPage);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
+
+    const fetchSellerPage = (p) => {
+        fetchData(p, deliveryPage);
+        setSellerPage(p);
+    };
+    const fetchDeliveryPage = (p) => {
+        fetchData(sellerPage, p);
+        setDeliveryPage(p);
+    };
 
     const stats = useMemo(() => {
         const sData = Array.isArray(sellerRequests) ? sellerRequests : [];
@@ -100,7 +128,7 @@ const WithdrawalRequests = () => {
             const res = await adminApi.updateWithdrawalStatus(actionModal.request._id, { status });
             if (res.data.success) {
                 toast.success(`Request ${status} successfully`);
-                fetchData();
+                fetchData(sellerPage, deliveryPage);
                 setActionModal({ isOpen: false, type: null, request: null });
             }
         } catch (error) {
@@ -123,7 +151,7 @@ const WithdrawalRequests = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={fetchData}
+                        onClick={() => fetchData(sellerPage, deliveryPage)}
                         className="p-2.5 bg-white ring-1 ring-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"
                     >
                         <RotateCw className={cn("h-4 w-4", loading && "animate-spin")} />
@@ -310,6 +338,21 @@ const WithdrawalRequests = () => {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                    <div className="px-6 py-3 border-t border-slate-100">
+                        <Pagination
+                            page={activeTab === 'sellers' ? sellerPage : deliveryPage}
+                            totalPages={Math.ceil((activeTab === 'sellers' ? sellerTotal : deliveryTotal) / pageSize) || 1}
+                            total={activeTab === 'sellers' ? sellerTotal : deliveryTotal}
+                            pageSize={pageSize}
+                            onPageChange={activeTab === 'sellers' ? fetchSellerPage : fetchDeliveryPage}
+                            onPageSizeChange={(newSize) => {
+                                setPageSize(newSize);
+                                setSellerPage(1);
+                                setDeliveryPage(1);
+                            }}
+                            loading={loading}
+                        />
                     </div>
                 </Card>
             </div>

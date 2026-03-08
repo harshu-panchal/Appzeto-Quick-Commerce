@@ -1,5 +1,6 @@
 import FAQ from '../models/faq.js';
 import { handleResponse } from '../utils/helper.js';
+import getPagination from '../utils/pagination.js';
 
 export const getFAQs = async (req, res) => {
     try {
@@ -8,8 +9,20 @@ export const getFAQs = async (req, res) => {
         if (category) query.category = category;
         if (status) query.status = status;
 
-        const faqs = await FAQ.find(query).sort({ createdAt: -1 });
-        return handleResponse(res, 200, "FAQs fetched successfully", faqs);
+        const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 200 });
+
+        const [faqs, total] = await Promise.all([
+            FAQ.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+            FAQ.countDocuments(query)
+        ]);
+
+        return handleResponse(res, 200, "FAQs fetched successfully", {
+            items: faqs,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

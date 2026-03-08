@@ -8,8 +8,8 @@ import CartPage from '../pages/CartPage';
 import OffersPage from '../pages/OffersPage';
 import ProfilePage from '../pages/ProfilePage';
 import OrdersPage from '../pages/OrdersPage';
+import OrderTransactionsPage from '../pages/OrderTransactionsPage';
 import AddressesPage from '../pages/AddressesPage';
-import WalletPage from '../pages/WalletPage';
 import SettingsPage from '../pages/SettingsPage';
 import SupportPage from '../pages/SupportPage';
 import ChatPage from '../pages/ChatPage';
@@ -49,8 +49,8 @@ const CustomerRoutes = () => {
                             <Route path="wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
                             <Route path="orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
                             <Route path="orders/:orderId" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+                            <Route path="transactions" element={<ProtectedRoute><OrderTransactionsPage /></ProtectedRoute>} />
                             <Route path="addresses" element={<ProtectedRoute><AddressesPage /></ProtectedRoute>} />
-                            <Route path="wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
                             <Route path="settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                             <Route path="support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
                             <Route path="chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

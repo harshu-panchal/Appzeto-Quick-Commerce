@@ -23,22 +23,27 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import Pagination from '@shared/components/ui/Pagination';
 import { adminApi } from '../services/adminApi';
 import { toast } from 'sonner';
 
 const DeliveryFunds = () => {
     const [transfers, setTransfers] = useState([]);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(25);
+    const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [viewingTxn, setViewingTxn] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
-    const fetchTransactions = async () => {
+    const fetchTransactions = async (requestedPage = 1) => {
         setIsLoading(true);
         try {
-            const response = await adminApi.getDeliveryTransactions();
-            const data = response.data.result || response.data.results || [];
+            const response = await adminApi.getDeliveryTransactions({ page: requestedPage, limit: pageSize });
+            const payload = response.data.result || {};
+            const data = Array.isArray(payload.items) ? payload.items : (response.data.results || []);
 
             // Map backend Transaction model to frontend format
             const mapped = data.map(tx => ({
@@ -47,14 +52,16 @@ const DeliveryFunds = () => {
                 riderName: tx.user?.name || 'Unknown',
                 riderId: tx.user?._id?.slice(-6).toUpperCase() || 'N/A',
                 amount: Math.abs(tx.amount),
-                status: tx.status.toLowerCase(), // Completed, Pending, Failed
-                paymentMethod: 'Bank Transfer', // Default for now
+                status: tx.status?.toLowerCase() || 'pending',
+                paymentMethod: 'Bank Transfer',
                 accountInfo: tx.user?.documents?.bankDetails || 'No details',
-                dateTime: new Date(tx.date).toLocaleString(),
+                dateTime: new Date(tx.createdAt || tx.date).toLocaleString(),
                 referenceId: tx.reference,
                 type: tx.type
             }));
             setTransfers(mapped);
+            setTotal(typeof payload.total === 'number' ? payload.total : mapped.length);
+            setPage(typeof payload.page === 'number' ? payload.page : requestedPage);
         } catch (error) {
             console.error("Fetch Transactions Error:", error);
             toast.error("Failed to load transactions");
@@ -64,8 +71,9 @@ const DeliveryFunds = () => {
     };
 
     useEffect(() => {
-        fetchTransactions();
-    }, []);
+        fetchTransactions(1);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageSize]);
 
     const handleBulkSettle = async () => {
         if (!window.confirm("Are you sure you want to settle all pending transactions?")) return;
@@ -73,7 +81,7 @@ const DeliveryFunds = () => {
         try {
             await adminApi.bulkSettleDelivery();
             toast.success("Bulk settlement processed");
-            fetchTransactions();
+            fetchTransactions(page);
         } catch (error) {
             toast.error("Bulk settlement failed");
         } finally {
@@ -85,7 +93,7 @@ const DeliveryFunds = () => {
         try {
             await adminApi.settleTransaction(id);
             toast.success("Transaction settled");
-            fetchTransactions();
+            fetchTransactions(page);
         } catch (error) {
             toast.error("Settlement failed");
         }
@@ -296,6 +304,20 @@ const DeliveryFunds = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+                <div className="px-6 py-3 border-t border-slate-100">
+                    <Pagination
+                        page={page}
+                        totalPages={Math.ceil(total / pageSize) || 1}
+                        total={total}
+                        pageSize={pageSize}
+                        onPageChange={(p) => fetchTransactions(p)}
+                        onPageSizeChange={(newSize) => {
+                            setPageSize(newSize);
+                            setPage(1);
+                        }}
+                        loading={isLoading}
+                    />
                 </div>
             </Card>
 
