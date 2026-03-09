@@ -48,8 +48,15 @@ const Dashboard = () => {
         if (statsRes.data.success) {
           setStatsData(statsRes.data.result);
         }
+
         if (ordersRes.data.success) {
-          setOrders(ordersRes.data.results || ordersRes.data.result || []);
+          // Backend returns handleResponse(..., { items, page, limit, total, totalPages })
+          const payload = ordersRes.data.result || {};
+          const rawOrders = Array.isArray(payload.items)
+            ? payload.items
+            : (ordersRes.data.results || []);
+
+          setOrders(Array.isArray(rawOrders) ? rawOrders : []);
         }
       } catch (error) {
         console.error("Dashboard Fetch Error:", error);
@@ -61,6 +68,8 @@ const Dashboard = () => {
 
     fetchDashboardData();
   }, []); // Only fetch on mount
+
+  const safeOrders = Array.isArray(orders) ? orders : [];
 
   const stats = [
     {
@@ -95,7 +104,7 @@ const Dashboard = () => {
     },
     {
       label: "Pending Orders",
-      value: orders.filter(o => o.status === 'pending').length.toString(),
+      value: safeOrders.filter(o => o.status === 'pending').length.toString(),
       change: "-3",
       changeType: "decrease",
       icon: Clock,
@@ -339,7 +348,7 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {orders.slice(0, 5).map((order) => (
+              {safeOrders.slice(0, 5).map((order) => (
                 <tr key={order.orderId} className="hover:bg-gray-50/50 transition-colors">
                   <td className="py-4 px-4">
                     <span className="text-sm font-semibold text-gray-900">{order.orderId}</span>

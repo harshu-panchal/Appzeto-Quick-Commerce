@@ -45,13 +45,25 @@ const StockManagement = () => {
         try {
             const res = await sellerApi.getProducts();
             if (res.data.success) {
-                const products = res.data.results || res.data.result || [];
-                setInventory(products.map(p => ({
-                    ...p,
-                    id: p._id,
-                    threshold: p.lowStockAlert || 5,
-                    status: p.stock === 0 ? 'Out of Stock' : (p.stock <= (p.lowStockAlert || 5) ? 'Low Stock' : 'In Stock')
-                })));
+                // Backend returns handleResponse(..., { items, page, limit, total, totalPages })
+                const payload = res.data.result || {};
+                const rawProducts = Array.isArray(payload.items)
+                    ? payload.items
+                    : (res.data.results || []);
+
+                const safeProducts = Array.isArray(rawProducts) ? rawProducts : [];
+
+                setInventory(
+                    safeProducts.map(p => ({
+                        ...p,
+                        id: p._id,
+                        threshold: p.lowStockAlert || 5,
+                        status:
+                            p.stock === 0
+                                ? 'Out of Stock'
+                                : (p.stock <= (p.lowStockAlert || 5) ? 'Low Stock' : 'In Stock')
+                    }))
+                );
             }
         } catch (error) {
             toast.error("Failed to load inventory");

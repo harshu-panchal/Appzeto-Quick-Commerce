@@ -95,9 +95,14 @@ const OrdersList = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pageSize, status]);
 
+    const safeOrders = useMemo(
+        () => (Array.isArray(orders) ? orders : []),
+        [orders]
+    );
+
     const stats = useMemo(() => {
-        const totalEarnings = orders.reduce((sum, o) => sum + o.amount, 0);
-        const activeOrders = orders.filter(o => ['pending', 'processed', 'out-for-delivery'].includes(o.status)).length;
+        const totalEarnings = safeOrders.reduce((sum, o) => sum + o.amount, 0);
+        const activeOrders = safeOrders.filter(o => ['pending', 'processed', 'out-for-delivery'].includes(o.status)).length;
 
         return [
             { label: 'Total Earnings', value: `₹${totalEarnings.toLocaleString('en-IN')}`, trend: '+12.5%', icon: IndianRupee, color: 'emerald' },
@@ -105,10 +110,10 @@ const OrdersList = () => {
             { label: 'Average Prep Time', value: '18m', trend: '-2m', icon: Clock, color: 'amber' },
             { label: 'Delivery Rate', value: '98.2%', trend: '+0.4%', icon: CheckCircle2, color: 'fuchsia' },
         ];
-    }, [orders]);
+    }, [safeOrders]);
 
     const filteredOrders = useMemo(() => {
-        return orders.filter(order => {
+        return safeOrders.filter(order => {
             const matchesSearch =
                 order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,7 +123,7 @@ const OrdersList = () => {
 
             return matchesSearch && matchesStatus;
         });
-    }, [orders, searchTerm, status]);
+    }, [safeOrders, searchTerm, status]);
 
     const getStatusStyles = (status) => {
         switch (status.toLowerCase()) {

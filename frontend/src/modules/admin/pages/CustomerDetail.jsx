@@ -118,12 +118,17 @@ const CustomerDetail = () => {
     };
 
 
+    const safeOrders = useMemo(
+        () => (Array.isArray(orders) ? orders : []),
+        [orders]
+    );
+
     const filteredOrders = useMemo(() => {
-        return orders.filter(o =>
+        return safeOrders.filter(o =>
             (o.id || '').toLowerCase().includes(orderSearch.toLowerCase()) ||
             (o.status || '').toLowerCase().includes(orderSearch.toLowerCase())
         ).slice(0, visibleOrders);
-    }, [orders, orderSearch, visibleOrders]);
+    }, [safeOrders, orderSearch, visibleOrders]);
 
     if (loading) {
         return (
@@ -374,10 +379,10 @@ const CustomerDetail = () => {
                                 </tbody>
                             </table>
                         </div>
-                        {visibleOrders < orders.length && (
+                        {visibleOrders < safeOrders.length && (
                             <div className="p-4 bg-slate-50/50 flex justify-center border-t border-slate-50">
                                 <button
-                                    onClick={() => setVisibleOrders(orders.length)}
+                                    onClick={() => setVisibleOrders(safeOrders.length)}
                                     className="text-[10px] font-black text-sky-600 uppercase hover:underline flex items-center gap-2"
                                 >
                                     SHOW ALL ORDERS

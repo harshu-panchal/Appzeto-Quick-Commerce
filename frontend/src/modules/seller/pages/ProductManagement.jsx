@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import { MagicCard } from "@/components/ui/magic-card";
 import { BlurFade } from "@/components/ui/blur-fade";
 import ShimmerButton from "@/components/ui/shimmer-button";
+import Pagination from "@shared/components/ui/Pagination";
 
 const ProductManagement = () => {
   const navigate = useNavigate();
@@ -40,13 +41,32 @@ const ProductManagement = () => {
   const [products, setProducts] = useState([]);
   const [dbCategories, setDbCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [total, setTotal] = useState(0);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (requestedPage = 1) => {
     setIsLoading(true);
     try {
-      const res = await sellerApi.getProducts();
+      const res = await sellerApi.getProducts({ page: requestedPage, limit: pageSize });
       if (res.data.success) {
-        setProducts(res.data.results || res.data.result || []);
+        // Backend returns handleResponse(..., { items, page, limit, total, totalPages })
+        const payload = res.data.result || {};
+        const rawProducts = Array.isArray(payload.items)
+          ? payload.items
+          : (res.data.results || []);
+        const safe = Array.isArray(rawProducts) ? rawProducts : [];
+        setProducts(safe);
+        if (typeof payload.total === "number") {
+          setTotal(payload.total);
+        } else {
+          setTotal(safe.length);
+        }
+        if (typeof payload.page === "number") {
+          setPage(payload.page);
+        } else {
+          setPage(requestedPage);
+        }
       }
     } catch (error) {
       toast.error("Failed to fetch products");
@@ -67,7 +87,7 @@ const ProductManagement = () => {
   };
 
   React.useEffect(() => {
-    fetchProducts();
+    fetchProducts(1);
     fetchCategories();
   }, []);
 
@@ -107,8 +127,13 @@ const ProductManagement = () => {
     ],
   });
 
+  const safeProducts = useMemo(
+    () => (Array.isArray(products) ? products : []),
+    [products]
+  );
+
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
+    return safeProducts.filter((p) => {
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -125,16 +150,16 @@ const ProductManagement = () => {
 
       return matchesSearch && matchesCategory && matchesStatus;
     });
-  }, [products, searchTerm, filterCategory, filterStatus]);
+  }, [safeProducts, searchTerm, filterCategory, filterStatus]);
 
   const stats = useMemo(
     () => ({
-      total: products.length,
-      lowStock: products.filter((p) => p.stock > 0 && p.stock <= 10).length,
-      outOfStock: products.filter((p) => p.stock === 0).length,
-      active: products.filter((p) => p.status === "active").length,
+      total: safeProducts.length,
+      lowStock: safeProducts.filter((p) => p.stock > 0 && p.stock <= 10).length,
+      outOfStock: safeProducts.filter((p) => p.stock === 0).length,
+      active: safeProducts.filter((p) => p.status === "active").length,
     }),
-    [products],
+    [safeProducts],
   );
 
   const handleSave = async () => {
@@ -205,7 +230,7 @@ const ProductManagement = () => {
 
   const exportProducts = () => {
     console.log("Exporting products...");
-    alert("Exporting " + products.length + " products as CSV (Simulation)");
+    alert("Exporting " + safeProducts.length + " products as CSV (Simulation)");
   };
 
   const handleDeleteClick = (product) => {
@@ -581,6 +606,22 @@ const ProductManagement = () => {
           </div>
         </Card>
       </BlurFade>
+
+      <div className="mt-4">
+        <Pagination
+          page={page}
+          totalPages={Math.ceil(total / pageSize) || 1}
+          total={total}
+          pageSize={pageSize}
+          onPageChange={(p) => fetchProducts(p)}
+          onPageSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setPage(1);
+            fetchProducts(1);
+          }}
+          loading={isLoading}
+        />
+      </div>
 
       {/* Edit Modal (Copy from Admin) */}
       <AnimatePresence>

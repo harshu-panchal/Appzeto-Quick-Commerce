@@ -36,7 +36,10 @@ const DeliveryTracking = () => {
       setLoading(true);
       const response = await sellerApi.getOrders();
       // Only show orders that are confirmed, packed, or out for delivery (Tracking flow)
-      const orderList = response.data.results || [];
+      const payload = response.data.result || {};
+      const orderList = Array.isArray(payload.items)
+        ? payload.items
+        : (response.data.results || []);
 
       const formattedDeliveries = orderList
         .filter(order => order.status !== 'pending' && order.status !== 'cancelled')
@@ -53,7 +56,7 @@ const DeliveryTracking = () => {
             deliveryBoy: order.deliveryBoy ? {
               name: order.deliveryBoy.name,
               phone: order.deliveryBoy.phone,
-              avatar: order.deliveryBoy.name.charAt(0),
+              avatar: order.deliveryBoy.name?.charAt(0) || "?",
               image: order.deliveryBoy.image || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop",
               rating: order.deliveryBoy.rating || 4.5,
             } : {
@@ -63,11 +66,17 @@ const DeliveryTracking = () => {
               image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop",
               rating: 0,
             },
-            location: order.status === 'delivered' ? `Delivered at ${new Date(order.updatedAt).toLocaleTimeString()}` : "In Progress",
-            startTime: new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            location: order.status === 'delivered' && order.updatedAt
+              ? `Delivered at ${new Date(order.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+              : "In Progress",
+            startTime: order.createdAt
+              ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              : "",
             estimatedDelivery: "20-30 mins",
             customerName: order.customer?.name || "Customer",
-            address: `${order.address.address}, ${order.address.city}`,
+            address: order.address
+              ? `${order.address.address || ""}, ${order.address.city || ""}`.trim()
+              : "",
           };
         });
 

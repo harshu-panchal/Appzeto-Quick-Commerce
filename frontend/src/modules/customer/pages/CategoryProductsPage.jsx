@@ -50,7 +50,7 @@ const CategoryProductsPage = () => {
                     weight: p.weight || "1 unit",
                     deliveryTime: "8-15 mins"
                 }));
-                setProducts(formattedProds);
+                setProducts(Array.isArray(formattedProds) ? formattedProds : []);
             }
 
             // Fetch subcategories & header mapping
@@ -91,17 +91,19 @@ const CategoryProductsPage = () => {
         setSelectedSubCategory(location.state?.activeSubcategoryId || 'all');
     }, [catId, location.state?.activeSubcategoryId]);
 
-    const filteredProducts = products.filter(p =>
+    const safeProducts = Array.isArray(products) ? products : [];
+
+    const filteredProducts = safeProducts.filter(p =>
         selectedSubCategory === 'all' || p.subcategoryId?._id === selectedSubCategory || p.subcategoryId === selectedSubCategory
     );
 
     const productsById = React.useMemo(() => {
         const map = {};
-        products.forEach(p => {
+        safeProducts.forEach(p => {
             map[p._id || p.id] = p;
         });
         return map;
-    }, [products]);
+    }, [safeProducts]);
 
     return (
         <div className="flex flex-col min-h-screen bg-white max-w-md mx-auto relative font-sans">

@@ -53,27 +53,43 @@ const Orders = () => {
         try {
             setLoading(true);
             const response = await sellerApi.getOrders();
-            const formattedOrders = (response.data.results || []).map(order => ({
+
+            // Backend returns handleResponse(..., { items, page, limit, total, totalPages })
+            const payload = response.data.result || {};
+            const rawOrders = Array.isArray(payload.items)
+                ? payload.items
+                : (response.data.results || []);
+
+            const formattedOrders = (rawOrders || []).map(order => ({
                 id: order.orderId,
                 _id: order._id,
                 customer: {
-                    name: order.customer.name,
-                    phone: order.customer.phone,
-                    avatar: order.customer.name.charAt(0)
+                    name: order.customer?.name || 'Unknown',
+                    phone: order.customer?.phone || '',
+                    avatar: (order.customer?.name || 'U').charAt(0)
                 },
-                items: order.items.map(item => ({
+                items: (order.items || []).map(item => ({
                     name: item.name,
                     price: item.price,
                     qty: item.quantity,
                     image: item.image
                 })),
-                total: order.pricing.total,
-                status: order.status, // Keep it raw for selection
-                date: new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-                time: new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-                address: `${order.address.address}, ${order.address.city}`,
-                payment: order.payment.method === 'cash' ? 'Cash on Delivery' : 'Online Paid'
+                total: order.pricing?.total || 0,
+                status: order.status || 'pending',
+                date: order.createdAt
+                    ? new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                    : '',
+                time: order.createdAt
+                    ? new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+                    : '',
+                address: order.address
+                    ? `${order.address.address || ''}, ${order.address.city || ''}`.trim()
+                    : '',
+                payment: order.payment?.method === 'cash' || order.payment?.method === 'cod'
+                    ? 'Cash on Delivery'
+                    : 'Online Paid'
             }));
+
             setOrders(formattedOrders);
         } catch (error) {
             console.error("Failed to fetch orders:", error);
@@ -85,46 +101,51 @@ const Orders = () => {
 
     const tabs = ['All', 'Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'];
 
+    const safeOrders = useMemo(
+        () => (Array.isArray(orders) ? orders : []),
+        [orders]
+    );
+
     const filteredOrders = useMemo(() => {
-        return orders.filter(order => {
+        return safeOrders.filter(order => {
             const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
             const statusToMatch = activeTab === 'Out for Delivery' ? 'out_for_delivery' : activeTab.toLowerCase();
             const matchesTab = activeTab === 'All' || order.status.toLowerCase() === statusToMatch;
             return matchesSearch && matchesTab;
         });
-    }, [orders, searchTerm, activeTab]);
+    }, [safeOrders, searchTerm, activeTab]);
 
     const stats = useMemo(() => [
         {
             label: 'Total Orders',
-            value: orders.length,
+            value: safeOrders.length,
             icon: HiOutlineArchiveBoxXMark,
             color: 'text-indigo-600',
             bg: 'bg-indigo-50'
         },
         {
             label: 'Pending',
-            value: orders.filter(o => o.status.toLowerCase() === 'pending').length,
+            value: safeOrders.filter(o => o.status.toLowerCase() === 'pending').length,
             icon: HiOutlineClock,
             color: 'text-amber-600',
             bg: 'bg-amber-50'
         },
         {
             label: 'Confirmed',
-            value: orders.filter(o => o.status.toLowerCase() === 'confirmed').length,
+            value: safeOrders.filter(o => o.status.toLowerCase() === 'confirmed').length,
             icon: HiOutlineCheck,
             color: 'text-blue-600',
             bg: 'bg-blue-50'
         },
         {
             label: 'Delivered',
-            value: orders.filter(o => o.status.toLowerCase() === 'delivered').length,
+            value: safeOrders.filter(o => o.status.toLowerCase() === 'delivered').length,
             icon: HiOutlineCheck,
             color: 'text-emerald-600',
             bg: 'bg-emerald-50'
         }
-    ], [orders]);
+    ], [safeOrders]);
 
     const getStatusColor = (status) => {
         const s = status.toLowerCase();
@@ -451,11 +472,11 @@ const Orders = () => {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
                                                 <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Revenue</p>
-                                                <p className="text-xl font-black text-indigo-700">₹{orders.reduce((acc, o) => acc + o.total, 0).toLocaleString()}</p>
+                                                <p className="text-xl font-black text-indigo-700">₹{safeOrders.reduce((acc, o) => acc + o.total, 0).toLocaleString()}</p>
                                             </div>
                                             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
                                                 <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Avg. Order Value</p>
-                                                <p className="text-xl font-black text-emerald-700">₹{(orders.reduce((acc, o) => acc + o.total, 0) / orders.length).toFixed(0)}</p>
+                                                <p className="text-xl font-black text-emerald-700">₹{safeOrders.length ? (safeOrders.reduce((acc, o) => acc + o.total, 0) / safeOrders.length).toFixed(0) : '0'}</p>
                                             </div>
                                         </div>
 
@@ -463,10 +484,10 @@ const Orders = () => {
                                         <div>
                                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center justify-between">
                                                 Latest Pending Orders
-                                                <span className="text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">{orders.filter(o => o.status === 'Pending').length} Action needed</span>
+                                                <span className="text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">{safeOrders.filter(o => o.status === 'Pending').length} Action needed</span>
                                             </h4>
                                             <div className="space-y-2">
-                                                {orders.filter(o => o.status === 'Pending').slice(0, 3).map((order) => (
+                                                {safeOrders.filter(o => o.status === 'Pending').slice(0, 3).map((order) => (
                                                     <div key={order.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
                                                         <div className="flex items-center gap-3">
                                                             <div className="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-[10px] font-black text-white">
@@ -488,7 +509,7 @@ const Orders = () => {
                                                         </button>
                                                     </div>
                                                 ))}
-                                                {orders.filter(o => o.status === 'Pending').length === 0 && (
+                                                {safeOrders.filter(o => o.status === 'Pending').length === 0 && (
                                                     <p className="text-xs text-center text-slate-400 py-4 font-medium italic">All caught up! No pending orders.</p>
                                                 )}
                                             </div>
