@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
 import {
@@ -26,7 +26,7 @@ import {
 import Modal from "@shared/components/ui/Modal";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
 
@@ -37,6 +37,8 @@ import Pagination from "@shared/components/ui/Pagination";
 
 const ProductManagement = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const qFromUrl = searchParams.get("q") || "";
 
   const [products, setProducts] = useState([]);
   const [dbCategories, setDbCategories] = useState([]);
@@ -93,9 +95,18 @@ const ProductManagement = () => {
 
   const categories = dbCategories;
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(qFromUrl);
+
+  React.useEffect(() => {
+    if (qFromUrl !== searchTerm) setSearchTerm(qFromUrl);
+  }, [qFromUrl]);
+
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterDropdownRef = useRef(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -103,6 +114,21 @@ const ProductManagement = () => {
   const [isVariantsViewModalOpen, setIsVariantsViewModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [modalTab, setModalTab] = useState("general");
+
+  // Close filter dropdown on outside click
+  React.useEffect(() => {
+    if (!isFilterOpen) return;
+    const handleClickOutside = (event) => {
+      if (
+        filterDropdownRef.current &&
+        !filterDropdownRef.current.contains(event.target)
+      ) {
+        setIsFilterOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isFilterOpen]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -133,10 +159,24 @@ const ProductManagement = () => {
   );
 
   const filteredProducts = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    const min = priceMin ? Number(priceMin) : null;
+    const max = priceMax ? Number(priceMax) : null;
+
     return safeProducts.filter((p) => {
+      const variantSkus = Array.isArray(p.variants)
+        ? p.variants
+            .map((v) => (v?.sku || "").toString().toLowerCase())
+            .filter(Boolean)
+        : [];
+      const skuCandidate =
+        (p.sku || "").toString().toLowerCase() ||
+        (variantSkus.length > 0 ? variantSkus[0] : "");
+
       const matchesSearch =
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()));
+        !term ||
+        p.name.toLowerCase().includes(term) ||
+        (!!skuCandidate && skuCandidate.includes(term));
       const matchesCategory =
         filterCategory === "all" ||
         (p.categoryId?._id || p.categoryId) === filterCategory ||
@@ -148,9 +188,18 @@ const ProductManagement = () => {
         matchesStatus = p.stock > 0 && p.stock <= 10;
       if (filterStatus === "Out of Stock") matchesStatus = p.stock === 0;
 
-      return matchesSearch && matchesCategory && matchesStatus;
+      let matchesPrice = true;
+      const effectivePrice = Number(p.salePrice ?? p.price ?? 0);
+      if (min !== null && !Number.isNaN(min)) {
+        matchesPrice = matchesPrice && effectivePrice >= min;
+      }
+      if (max !== null && !Number.isNaN(max)) {
+        matchesPrice = matchesPrice && effectivePrice <= max;
+      }
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesPrice;
     });
-  }, [safeProducts, searchTerm, filterCategory, filterStatus]);
+  }, [safeProducts, searchTerm, filterCategory, filterStatus, priceMin, priceMax]);
 
   const stats = useMemo(
     () => ({
@@ -427,19 +476,29 @@ const ProductManagement = () => {
 
       {/* Toolbox */}
       <BlurFade delay={0.25}>
-        <Card className="border-none shadow-sm ring-1 ring-slate-100 p-3 bg-white/60 backdrop-blur-xl">
+        <Card className="relative z-30 border-none shadow-sm ring-1 ring-slate-100 p-3 bg-white/60 backdrop-blur-xl">
           <div className="flex flex-col lg:flex-row gap-3 items-center">
             <div className="relative flex-1 group w-full">
               <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchTerm(value);
+                  const next = new URLSearchParams(searchParams);
+                  if (value) {
+                    next.set("q", value);
+                  } else {
+                    next.delete("q");
+                  }
+                  setSearchParams(next);
+                }}
                 placeholder="Search by name or SKU..."
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-lg text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
               />
             </div>
-            <div className="flex gap-2 shrink-0 w-full lg:w-auto">
+            <div className="relative flex gap-2 shrink-0 w-full lg:w-auto">
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
@@ -455,7 +514,10 @@ const ProductManagement = () => {
                   </optgroup>
                 ))}
               </select>
-              <button className="flex items-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all">
+              <button
+                onClick={() => setIsFilterOpen((prev) => !prev)}
+                className="flex items-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all"
+              >
                 <HiOutlineFunnel className="h-4 w-4" />
                 <span>Filters</span>
               </button>
@@ -466,13 +528,16 @@ const ProductManagement = () => {
 
       {/* Product Table */}
       <BlurFade delay={0.3}>
-        <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl">
+        <Card className="relative z-10 border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-3xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
                     Product
+                  </th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
+                    Product Code
                   </th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-left">
                     Header
@@ -516,11 +581,15 @@ const ProductManagement = () => {
                           <p className="text-xs font-bold text-slate-900">
                             {p.name}
                           </p>
-                          <p className="text-[9px] font-semibold text-slate-400">
-                            Product Code: {p.sku || "N/A"}
-                          </p>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-[11px] font-semibold text-slate-600">
+                        {p.sku ||
+                          (Array.isArray(p.variants) && p.variants.length > 0 && p.variants[0]?.sku) ||
+                          "—"}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-left">
                       <div className="flex flex-col">
@@ -555,9 +624,6 @@ const ProductManagement = () => {
                           className="flex flex-col items-center cursor-pointer hover:bg-slate-50 p-1.5 rounded-xl transition-all active:scale-95 group"
                         >
                           <Badge variant="indigo" className="text-[9px] px-1.5 py-0 font-bold group-hover:shadow-sm transition-all">{p.variants.length} VARIANTS</Badge>
-                          <span className="text-[9px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">
-                            ₹{Math.min(...p.variants.map(v => v.price))} - ₹{Math.max(...p.variants.map(v => v.price))}
-                          </span>
                         </div>
                       ) : (
                         <span className="text-[10px] font-bold text-slate-300 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded italic">
@@ -586,16 +652,16 @@ const ProductManagement = () => {
                       })()}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end space-x-1.5">
+                      <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100">
-                          <HiOutlinePencilSquare className="h-3.5 w-3.5" />
+                          className="p-2 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100">
+                          <HiOutlinePencilSquare className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteClick(p)}
-                          className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100">
-                          <HiOutlineTrash className="h-3.5 w-3.5" />
+                          className="p-2 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100">
+                          <HiOutlineTrash className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -606,6 +672,78 @@ const ProductManagement = () => {
           </div>
         </Card>
       </BlurFade>
+
+      {isFilterOpen && (
+        <div
+          ref={filterDropdownRef}
+          className="absolute z-[9999] right-36 top-[350px] w-64 rounded-xl border border-slate-200 bg-white shadow-xl p-4 space-y-3"
+        >
+          <div>
+            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.18em] mb-1">
+              Status
+            </p>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-primary/10 outline-none bg-white"
+            >
+              <option value="All">All</option>
+              <option value="Active">Active</option>
+              <option value="Low Stock">Low Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.18em] mb-1">
+                Min Price
+              </p>
+              <input
+                type="number"
+                value={priceMin}
+                onChange={(e) => setPriceMin(e.target.value)}
+                placeholder="e.g. 100"
+                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-primary/10 outline-none bg-white"
+              />
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-[0.18em] mb-1">
+                Max Price
+              </p>
+              <input
+                type="number"
+                value={priceMax}
+                onChange={(e) => setPriceMax(e.target.value)}
+                placeholder="e.g. 1000"
+                className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-primary/10 outline-none bg-white"
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setFilterCategory("all");
+                setFilterStatus("All");
+                setPriceMin("");
+                setPriceMax("");
+                setSearchTerm("");
+                setSearchParams({});
+              }}
+              className="text-[11px] font-bold text-slate-500 hover:text-slate-700"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(false)}
+              className="px-3 py-1.5 text-[11px] font-semibold rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="mt-4">
         <Pagination
@@ -694,11 +832,6 @@ const ProductManagement = () => {
                       icon: HiOutlineFolderOpen,
                     },
                     { id: "media", label: "Photos", icon: HiOutlinePhoto },
-                    {
-                      id: "attributes",
-                      label: "SEO & Details",
-                      icon: HiOutlineScale,
-                    },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -784,7 +917,9 @@ const ProductManagement = () => {
                               description: e.target.value,
                             })
                           }
-                          className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl text-sm font-semibold min-h-[120px] outline-none"
+                          onWheel={(e) => e.stopPropagation()}
+                          onTouchMove={(e) => e.stopPropagation()}
+                          className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl text-sm font-semibold min-h-[160px] max-h-[260px] outline-none resize-none overflow-y-auto custom-scrollbar"
                           placeholder="Describe the item here..."
                         />
                       </div>
@@ -1081,30 +1216,30 @@ const ProductManagement = () => {
         title="Confirm Deletion"
         size="sm"
         footer={
-          <div className="flex gap-3 justify-end w-full">
+          <div className="flex gap-4 justify-end w-full">
             <button
               onClick={() => setIsDeleteModalOpen(false)}
-              className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors">
-              CANCEL
+              className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors">
+              Cancel
             </button>
             <button
               onClick={confirmDelete}
-              className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95">
-              DELETE PRODUCT
+              className="px-6 py-2.5 bg-rose-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95">
+              Delete product
             </button>
           </div>
         }>
-        <div className="p-4 flex flex-col items-center text-center space-y-4">
-          <div className="h-16 w-16 bg-rose-50 rounded-full flex items-center justify-center text-rose-500">
-            <HiOutlineTrash className="h-8 w-8" />
+        <div className="px-6 py-6 flex flex-col items-center text-center space-y-5">
+          <div className="h-18 w-18 md:h-20 md:w-20 bg-rose-50 rounded-full flex items-center justify-center text-rose-500">
+            <HiOutlineTrash className="h-9 w-9 md:h-10 md:w-10" />
           </div>
-          <div className="space-y-1">
-            <h4 className="text-sm font-bold text-slate-900">
+          <div className="space-y-2 max-w-md">
+            <h4 className="text-lg font-semibold text-slate-900">
               Are you absolutely sure?
             </h4>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-slate-600 leading-relaxed">
               This action cannot be undone. This will permanently remove{" "}
-              <span className="font-bold text-slate-900">
+              <span className="font-semibold text-slate-900">
                 {itemToDelete?.name}
               </span>{" "}
               from the catalog.

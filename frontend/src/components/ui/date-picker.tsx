@@ -1,0 +1,90 @@
+import * as React from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import Button from "@shared/components/ui/Button";
+
+interface DatePickerProps {
+  value?: string; // ISO date string yyyy-MM-dd
+  onChange: (value: string | "") => void;
+  min?: string;
+  max?: string;
+  placeholder?: string;
+}
+
+export const DatePicker: React.FC<DatePickerProps> = ({
+  value,
+  onChange,
+  min,
+  max,
+  placeholder = "dd-mm-yyyy",
+}) => {
+  const [open, setOpen] = React.useState(false);
+  const selectedDate = value ? new Date(value) : undefined;
+
+  const isDisabled = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    if (min) {
+      const minDate = new Date(min);
+      minDate.setHours(0, 0, 0, 0);
+      if (d < minDate) return true;
+    }
+    if (max) {
+      const maxDate = new Date(max);
+      maxDate.setHours(23, 59, 59, 999);
+      if (d > maxDate) return true;
+    }
+    return false;
+  };
+
+  const handleSelect = (date?: Date) => {
+    if (!date) {
+      onChange("");
+      setOpen(false);
+      return;
+    }
+    if (isDisabled(date)) {
+      return;
+    }
+    const iso = date.toISOString().split("T")[0];
+    onChange(iso);
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <Button
+        type="button"
+        variant="outline"
+        className={cn(
+          "w-full justify-start text-left font-semibold text-[11px] h-9 px-3 rounded-lg border border-slate-200 bg-slate-50",
+          !value && "text-slate-400"
+        )}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <CalendarIcon className="mr-2 h-3.5 w-3.5 text-slate-400" />
+        {value && selectedDate
+          ? format(selectedDate, "dd MMM yyyy")
+          : placeholder}
+      </Button>
+      {open && (
+        <div className="absolute z-50 mt-2 w-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleSelect}
+            disabled={isDisabled}
+            onDayClick={(_day, _modifiers, e) => {
+              e.preventDefault();
+            }}
+            captionLayout="dropdown"
+            className="rounded-lg border"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+

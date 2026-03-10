@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
 import Input from "@shared/components/ui/Input";
@@ -23,13 +23,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { MagicCard } from "@/components/ui/magic-card";
-import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
 import { exportToCSV } from "@/lib/exportUtils";
+import { useSellerEarnings } from "../context/SellerEarningsContext";
 
 const Transactions = () => {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({ balances: {}, ledger: [] });
+  const { earningsData: data, earningsLoading: loading, refreshEarnings } = useSellerEarnings();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("All");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -37,25 +36,11 @@ const Transactions = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const fetchTransactions = async (silent = false) => {
-    try {
-      if (!silent) setLoading(true);
-      const response = await sellerApi.getEarnings();
-      if (response.data.success) {
-        setData(response.data.result);
-      }
-    } catch (error) {
-      console.error("Transactions Fetch Error:", error);
-      toast.error("Failed to load transactions");
-    } finally {
-      if (!silent) setLoading(false);
-      setIsRefreshing(false);
-    }
+  const onRefresh = () => {
+    setIsRefreshing(true);
+    refreshEarnings();
+    setTimeout(() => setIsRefreshing(false), 500);
   };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
 
   const stats = [
     {
@@ -81,16 +66,20 @@ const Transactions = () => {
     },
   ];
 
+  const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
   const filteredTransactions = useMemo(() => {
-    return (data.ledger || []).filter((txn) => {
+    const term = searchTerm.toLowerCase();
+    return ledger.filter((txn) => {
+      const id = (txn.id ?? txn.ref ?? "").toString().toLowerCase();
+      const customer = (txn.customer ?? "").toString().toLowerCase();
+      const ref = (txn.ref ?? "").toString().toLowerCase();
       const matchesSearch =
-        txn.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        txn.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        txn.ref.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = activeTab === "All" || txn.type === activeTab;
+        id.includes(term) || customer.includes(term) || ref.includes(term);
+      const txnType = (txn.type ?? "").toString();
+      const matchesType = activeTab === "All" || txnType === activeTab;
       return matchesSearch && matchesType;
     });
-  }, [searchTerm, activeTab, data.ledger]);
+  }, [searchTerm, activeTab, ledger]);
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING TRANSACTIONS...</div>;
@@ -116,10 +105,7 @@ const Transactions = () => {
           </div>
           <div className="flex items-center gap-3">
             <Button
-              onClick={() => {
-                setIsRefreshing(true);
-                fetchTransactions(true);
-              }}
+              onClick={onRefresh}
               variant="outline"
               className="rounded-lg px-4 py-2 border-slate-200 text-slate-600 bg-white disabled:opacity-50"
               disabled={isRefreshing}>
@@ -132,15 +118,15 @@ const Transactions = () => {
               onClick={() => {
                 setIsDownloading(true);
                 try {
-                  const exportData = filteredTransactions.map(txn => ({
-                    id: txn.id,
-                    type: txn.type,
-                    amount: `₹${(txn.amount || 0).toLocaleString()}`,
-                    status: txn.status,
-                    date: txn.date || new Date(txn.createdAt).toLocaleDateString(),
-                    time: txn.time || new Date(txn.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    customer: txn.customer,
-                    ref: txn.ref
+                  const exportData = filteredTransactions.map((txn) => ({
+                    id: txn.id ?? txn.ref ?? "",
+                    type: txn.type ?? "",
+                    amount: `₹${Number(txn.amount ?? 0).toLocaleString()}`,
+                    status: txn.status ?? "",
+                    date: txn.date ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleDateString() : ""),
+                    time: txn.time ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""),
+                    customer: txn.customer ?? "",
+                    ref: txn.ref ?? "",
                   }));
 
                   exportToCSV(exportData, "Seller_Transactions", {
@@ -254,9 +240,15 @@ const Transactions = () => {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 <AnimatePresence>
-                  {filteredTransactions.map((txn) => (
+                  {filteredTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-slate-500 text-sm font-medium">
+                        {ledger.length === 0 ? "No transactions yet." : "No matches for your search or filter."}
+                      </td>
+                    </tr>
+                  ) : filteredTransactions.map((txn, idx) => (
                     <motion.tr
-                      key={txn.id}
+                      key={txn.id || txn.ref || txn.reference || `txn-${idx}`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -282,24 +274,24 @@ const Transactions = () => {
                           </div>
                           <div>
                             <p className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">
-                              {txn.id}
+                              {txn.id ?? txn.ref ?? "—"}
                             </p>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                              {txn.type}
+                              {txn.type ?? "—"}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <p className="text-xs font-bold text-slate-900">
-                          {txn.customer}
+                          {txn.customer ?? "—"}
                         </p>
                         <div className="flex items-center gap-1.5 mt-1">
                           <Badge className="text-[9px] px-1 py-0 bg-slate-100 text-slate-500 font-bold border-none">
-                            {txn.ref}
+                            {txn.ref ?? "—"}
                           </Badge>
                           <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
-                            {new Date(txn.createdAt).toLocaleDateString()} • {new Date(txn.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {txn.date ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleDateString() : "—")} • {txn.time ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—")}
                           </span>
                         </div>
                       </td>
@@ -307,15 +299,15 @@ const Transactions = () => {
                         <p
                           className={cn(
                             "text-sm font-black tracking-tight",
-                            txn.amount > 0
+                            Number(txn.amount ?? 0) > 0
                               ? "text-emerald-600"
                               : "text-rose-600",
                           )}>
-                          {txn.amount > 0 ? "+" : ""}₹
-                          {Math.abs(txn.amount).toLocaleString()}
+                          {Number(txn.amount ?? 0) > 0 ? "+" : ""}₹
+                          {Math.abs(Number(txn.amount ?? 0)).toLocaleString()}
                         </p>
                         <p className="text-[9px] font-bold text-slate-400 mt-0.5">
-                          Settlement: {txn.status === 'Settled' ? 'Complete' : 'T+2'}
+                          Settlement: {(txn.status ?? "") === "Settled" ? "Complete" : "T+2"}
                         </p>
                       </td>
                       <td className="px-6 py-5">
@@ -369,13 +361,13 @@ const Transactions = () => {
               <h2
                 className={cn(
                   "text-4xl font-black tracking-tight",
-                  selectedTxn.amount > 0 ? "text-emerald-600" : "text-rose-600",
+                  Number(selectedTxn.amount ?? 0) > 0 ? "text-emerald-600" : "text-rose-600",
                 )}>
-                {selectedTxn.amount > 0 ? "+" : ""}₹
-                {Math.abs(selectedTxn.amount).toLocaleString()}
+                {Number(selectedTxn.amount ?? 0) > 0 ? "+" : ""}₹
+                {Math.abs(Number(selectedTxn.amount ?? 0)).toLocaleString()}
               </h2>
               <Badge className="mt-4 uppercase font-black text-[9px] px-3 py-1">
-                {selectedTxn.status}
+                {selectedTxn.status ?? "—"}
               </Badge>
             </div>
 
@@ -383,13 +375,13 @@ const Transactions = () => {
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-400 font-bold">Transaction ID</span>
                 <span className="text-slate-900 font-black">
-                  {selectedTxn.id}
+                  {selectedTxn.id ?? selectedTxn.ref ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-400 font-bold">Type</span>
                 <span className="text-slate-900 font-black">
-                  {selectedTxn.type}
+                  {selectedTxn.type ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
@@ -397,19 +389,23 @@ const Transactions = () => {
                   Customer/Recipient
                 </span>
                 <span className="text-slate-900 font-black">
-                  {selectedTxn.customer}
+                  {selectedTxn.customer ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-400 font-bold">Reference</span>
                 <span className="text-slate-900 font-black">
-                  {selectedTxn.ref}
+                  {selectedTxn.ref ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-400 font-bold">Date & Time</span>
                 <span className="text-slate-900 font-black">
-                  {new Date(selectedTxn.createdAt).toLocaleDateString()} at {new Date(selectedTxn.createdAt).toLocaleTimeString()}
+                  {selectedTxn.date && selectedTxn.time
+                    ? `${selectedTxn.date} at ${selectedTxn.time}`
+                    : selectedTxn.createdAt
+                      ? `${new Date(selectedTxn.createdAt).toLocaleDateString()} at ${new Date(selectedTxn.createdAt).toLocaleTimeString()}`
+                      : "—"}
                 </span>
               </div>
             </div>

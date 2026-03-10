@@ -4,6 +4,7 @@ import Card from '@shared/components/ui/Card';
 import Button from '@shared/components/ui/Button';
 import Badge from '@shared/components/ui/Badge';
 import Input from '@shared/components/ui/Input';
+import Pagination from '@shared/components/ui/Pagination';
 import {
     HiOutlineCube,
     HiOutlineExclamationTriangle,
@@ -40,10 +41,17 @@ const StockManagement = () => {
     const [adjustValue, setAdjustValue] = useState('');
     const [adjustNote, setAdjustNote] = useState('');
 
-    const fetchInventory = async (silent = false) => {
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+
+    const fetchInventory = async (silent = false, stockStatus) => {
         if (!silent) setIsLoading(true);
         try {
-            const res = await sellerApi.getProducts();
+            const params = {};
+            if (stockStatus === 'in') params.stockStatus = 'in';
+            if (stockStatus === 'out') params.stockStatus = 'out';
+
+            const res = await sellerApi.getProducts(params);
             if (res.data.success) {
                 // Backend returns handleResponse(..., { items, page, limit, total, totalPages })
                 const payload = res.data.result || {};
@@ -88,11 +96,15 @@ const StockManagement = () => {
 
     useEffect(() => {
         if (activeView === 'inventory') {
-            fetchInventory();
+            let stockStatusParam;
+            if (filterStatus === 'In Stock') stockStatusParam = 'in';
+            else if (filterStatus === 'Out of Stock') stockStatusParam = 'out';
+            else stockStatusParam = undefined; // All / Low Stock -> no backend filter
+            fetchInventory(false, stockStatusParam);
         } else {
             fetchHistory();
         }
-    }, [activeView]);
+    }, [activeView, filterStatus]);
 
     const stats = useMemo(() => [
         { label: 'Total Inventory', value: inventory.reduce((acc, item) => acc + item.stock, 0), icon: HiOutlineCube, color: 'text-indigo-600', bg: 'bg-indigo-50', status: 'All' },
@@ -102,9 +114,11 @@ const StockManagement = () => {
     ], [inventory]);
 
     const filteredInventory = useMemo(() => {
+        const term = searchTerm.toLowerCase();
         return inventory.filter(item => {
-            const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.sku.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesSearch =
+                item.name.toLowerCase().includes(term) ||
+                (item.sku || '').toString().toLowerCase().includes(term);
             const matchesStatus = filterStatus === 'All' || item.status === filterStatus;
             return matchesSearch && matchesStatus;
         });
@@ -154,29 +168,13 @@ const StockManagement = () => {
                     <div>
                         <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
                             Stock Management
-                            <Badge variant="warning" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-amber-100 text-amber-700">Inventory Control</Badge>
+                            <Badge variant="warning" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-amber-100 text-amber-700">
+                                Inventory Control
+                            </Badge>
                         </h1>
-                        <p className="text-slate-500 text-sm mt-0.5 font-medium">Monitor stock levels, manage restocks, and track movements.</p>
-                    </div>
-                    <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-sm">
-                        <button
-                            onClick={() => setActiveView('inventory')}
-                            className={cn(
-                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
-                                activeView === 'inventory' ? "bg-white text-slate-900 shadow-md" : "text-slate-500 hover:text-slate-700"
-                            )}
-                        >
-                            In Stock
-                        </button>
-                        <button
-                            onClick={() => setActiveView('history')}
-                            className={cn(
-                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
-                                activeView === 'history' ? "bg-white text-slate-900 shadow-md" : "text-slate-500 hover:text-slate-700"
-                            )}
-                        >
-                            History Log
-                        </button>
+                        <p className="text-slate-500 text-sm mt-0.5 font-medium">
+                            Monitor stock levels, manage restocks, and track movements.
+                        </p>
                     </div>
                 </div>
             </BlurFade>
@@ -211,24 +209,37 @@ const StockManagement = () => {
                         <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden rounded-3xl">
                             {/* Toolbox */}
                             <div className="p-4 border-b border-slate-50 flex flex-col md:flex-row gap-4 items-center justify-between bg-slate-50/30">
-                                <div className="relative w-full md:w-80">
-                                    <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                    <Input
-                                        placeholder="Search by product name or SKU..."
-                                        className="pl-10 pr-4 py-2.5 rounded-2xl border-none ring-1 ring-slate-200 bg-white focus:ring-2 focus:ring-primary/20 transition-all text-xs font-semibold"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
+                                <div className="flex flex-col md:flex-row gap-3 items-center w-full">
+                                    <div className="relative w-full md:w-72">
+                                        <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                        <Input
+                                            placeholder="Search by product name or SKU..."
+                                            className="pl-10 pr-4 py-2.5 rounded-2xl border-none ring-1 ring-slate-200 bg-white focus:ring-2 focus:ring-primary/20 transition-all text-xs font-semibold"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-sm">
+                                        {['All', 'In Stock', 'Out of Stock'].map((status) => (
+                                            <button
+                                                key={status}
+                                                onClick={() => {
+                                                    setFilterStatus(status);
+                                                    setPage(1);
+                                                }}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all",
+                                                    filterStatus === status
+                                                        ? "bg-white text-slate-900 shadow-md"
+                                                        : "text-slate-500 hover:text-slate-700"
+                                                )}
+                                            >
+                                                {status}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => fetchInventory(true)}
-                                        className="rounded-xl px-4 py-2 text-[10px] font-bold border-slate-200 text-slate-600 bg-white hover:bg-slate-50 shadow-sm"
-                                    >
-                                        <HiOutlineArrowPath className="h-4 w-4 mr-2" />
-                                        REFRESH
-                                    </Button>
                                     <Button
                                         onClick={() => navigate('/seller/products/add')}
                                         className="rounded-xl px-4 py-2 text-[10px] font-bold shadow-lg shadow-primary/20"
@@ -252,69 +263,108 @@ const StockManagement = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
-                                        <AnimatePresence>
-                                            {filteredInventory.map((item) => (
-                                                <motion.tr
-                                                    key={item.id}
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    className="group hover:bg-slate-50/80 transition-all cursor-default"
+                                        {filteredInventory.length === 0 ? (
+                                            <tr>
+                                                <td
+                                                    colSpan={5}
+                                                    className="px-6 py-10 text-center text-slate-400 text-xs font-black tracking-widest uppercase"
                                                 >
-                                                    <td className="px-6 py-5">
-                                                        <div className="flex items-center gap-4 group">
-                                                            <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform overflow-hidden">
-                                                                {item.mainImage ? (
-                                                                    <img src={item.mainImage} alt={item.name} className="h-full w-full object-cover" />
-                                                                ) : (
-                                                                    <HiOutlineCube className="h-6 w-6" />
-                                                                )}
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">{item.name}</h4>
-                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Product Code: {item.sku || 'N/A'}</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-5">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="flex flex-col">
-                                                                <span className={cn(
-                                                                    "text-sm font-black",
-                                                                    item.stock <= item.threshold ? "text-rose-600" : "text-slate-900"
-                                                                )}>
-                                                                    {item.stock} units
-                                                                </span>
-                                                                {item.stock <= item.threshold && (
-                                                                    <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-fit mt-0.5">Low Stock</span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-5">
-                                                        <Badge variant={item.status === 'In Stock' ? 'success' : 'destructive'} className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg">
-                                                            {item.status}
-                                                        </Badge>
-                                                    </td>
-                                                    <td className="px-6 py-5">
-                                                        <p className="text-sm font-black text-slate-900">₹{item.price}</p>
-                                                    </td>
-                                                    <td className="px-6 py-5 text-right">
-                                                        <button
-                                                            onClick={() => openAdjustModal(item)}
-                                                            className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors"
+                                                    No products found for this filter.
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            <AnimatePresence>
+                                                {filteredInventory
+                                                    .slice((page - 1) * pageSize, page * pageSize)
+                                                    .map((item) => (
+                                                        <motion.tr
+                                                            key={item.id}
+                                                            initial={{ opacity: 0 }}
+                                                            animate={{ opacity: 1 }}
+                                                            exit={{ opacity: 0 }}
+                                                            className="group hover:bg-slate-50/80 transition-all cursor-default"
                                                         >
-                                                            Adjust Stock
-                                                        </button>
-                                                    </td>
-                                                </motion.tr>
-                                            ))}
-                                        </AnimatePresence>
+                                                            <td className="px-6 py-5">
+                                                                <div className="flex items-center gap-4 group">
+                                                                    <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform overflow-hidden">
+                                                                        {item.mainImage ? (
+                                                                            <img src={item.mainImage} alt={item.name} className="h-full w-full object-cover" />
+                                                                        ) : (
+                                                                            <HiOutlineCube className="h-6 w-6" />
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">
+                                                                            {item.name}
+                                                                        </h4>
+                                                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                                            Product Code: {item.sku || 'N/A'}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex flex-col">
+                                                                        <span
+                                                                            className={cn(
+                                                                                "text-sm font-black",
+                                                                                item.stock <= item.threshold ? "text-rose-600" : "text-slate-900"
+                                                                            )}
+                                                                        >
+                                                                            {item.stock} units
+                                                                        </span>
+                                                                        {item.stock <= item.threshold && (
+                                                                            <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
+                                                                                Low Stock
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                <Badge
+                                                                    variant={item.status === 'In Stock' ? 'success' : 'destructive'}
+                                                                    className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg"
+                                                                >
+                                                                    {item.status}
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="px-6 py-5">
+                                                                <p className="text-sm font-black text-slate-900">₹{item.price}</p>
+                                                            </td>
+                                                            <td className="px-6 py-5 text-right">
+                                                                <button
+                                                                    onClick={() => openAdjustModal(item)}
+                                                                    className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors"
+                                                                >
+                                                                    Adjust Stock
+                                                                </button>
+                                                            </td>
+                                                        </motion.tr>
+                                                    ))}
+                                            </AnimatePresence>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
                         </Card>
                     </BlurFade>
+
+                    <div className="mt-4">
+                        <Pagination
+                            page={page}
+                            totalPages={Math.ceil(filteredInventory.length / pageSize) || 1}
+                            total={filteredInventory.length}
+                            pageSize={pageSize}
+                            onPageChange={(p) => setPage(p)}
+                            onPageSizeChange={(newSize) => {
+                                setPageSize(newSize);
+                                setPage(1);
+                            }}
+                            loading={isLoading}
+                        />
+                    </div>
                 </>
             ) : (
                 /* History View */
@@ -325,14 +375,6 @@ const StockManagement = () => {
                                 <h3 className="text-base font-black text-slate-900">Inventory Movement Log</h3>
                                 <p className="text-xs text-slate-500 font-medium">Audit trail for all stock adjustments and sales.</p>
                             </div>
-                            <Button
-                                variant="outline"
-                                onClick={() => fetchHistory(true)}
-                                className="rounded-xl text-xs font-bold bg-white"
-                            >
-                                <HiOutlineArrowPath className="h-4 w-4 mr-2" />
-                                REFRESH LOG
-                            </Button>
                         </div>
                         <div className="divide-y divide-slate-50">
                             {history.length === 0 ? (

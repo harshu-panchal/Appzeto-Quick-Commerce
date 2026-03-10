@@ -62,15 +62,33 @@ const Analytics = () => {
 
   useEffect(() => {
     const fetchAnalytics = async () => {
+      setLoading(true);
       try {
-        if (!statsData) setLoading(true); // Only show full screen loader for first load
         const response = await sellerApi.getStats(chartRange.toLowerCase());
-        if (response.data.success) {
-          setStatsData(response.data.result);
+        const raw = response?.data?.result ?? response?.data?.data ?? null;
+        if (response?.data?.success && raw && typeof raw === "object") {
+          setStatsData({
+            overview: raw.overview ?? {},
+            salesTrend: Array.isArray(raw.salesTrend) ? raw.salesTrend : [],
+            categoryMix: Array.isArray(raw.categoryMix) ? raw.categoryMix : [],
+            topProducts: Array.isArray(raw.topProducts) ? raw.topProducts : [],
+            trafficSources: Array.isArray(raw.trafficSources) ? raw.trafficSources : [],
+            insights: raw.insights ?? {},
+          });
+        } else if (response?.data?.success && raw) {
+          setStatsData(raw);
         }
       } catch (error) {
         console.error("Analytics Fetch Error:", error);
         toast.error("Failed to load analytics data");
+        setStatsData((prev) => prev ?? {
+          overview: {},
+          salesTrend: [],
+          categoryMix: [],
+          topProducts: [],
+          trafficSources: [],
+          insights: {},
+        });
       } finally {
         setLoading(false);
       }
@@ -112,6 +130,9 @@ const Analytics = () => {
       bg: "bg-rose-50",
     },
   ];
+
+  const salesTrendArr = statsData?.salesTrend ?? [];
+  const hasNoData = !Number(statsData?.overview?.totalOrders) && (!salesTrendArr.length || salesTrendArr.every((d) => !d.sales));
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING ANALYTICS...</div>;
@@ -228,6 +249,15 @@ const Analytics = () => {
           </BlurFade>
         ))}
       </div>
+
+      {hasNoData && (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 flex items-center gap-3">
+          <HiOutlineChartBar className="h-6 w-6 text-slate-400 shrink-0" />
+          <p className="text-sm font-semibold text-slate-600">
+            Sales report is connected. Data will appear here once you have orders.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sales Performance Chart */}

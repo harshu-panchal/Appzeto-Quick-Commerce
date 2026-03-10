@@ -22,44 +22,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BlurFade } from "@/components/ui/blur-fade";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
+import { useSellerEarnings } from "../context/SellerEarningsContext";
 
 const Withdrawals = () => {
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState({ balances: {}, ledger: [] });
+    const { earningsData: data, earningsLoading: loading, refreshEarnings } = useSellerEarnings();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const fetchWithdrawals = async (silent = false) => {
-        try {
-            if (!silent) setLoading(true);
-            const response = await sellerApi.getEarnings();
-            if (response.data.success) {
-                setData(response.data.result);
-            }
-        } catch (error) {
-            console.error("Withdrawals Fetch Error:", error);
-            toast.error("Failed to load withdrawal data");
-        } finally {
-            if (!silent) setLoading(false);
-        }
-    };
+    const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
+    const withdrawalHistory = ledger.filter((t) => (t.type || '').toString() === 'Withdrawal');
 
-    useState(() => {
-        fetchWithdrawals();
-    }, []);
-
-    const withdrawalHistory = (data.ledger || []).filter(t => t.type === 'Withdrawal');
-
-    const filteredHistory = withdrawalHistory.filter(item =>
-        item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.status.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredHistory = withdrawalHistory.filter((item) => {
+        const id = (item.id ?? item.ref ?? '').toString().toLowerCase();
+        const status = (item.status ?? '').toString().toLowerCase();
+        const term = searchTerm.toLowerCase();
+        return id.includes(term) || status.includes(term);
+    });
 
     const handleSubmitRequest = async (e) => {
         e.preventDefault();
-        const available = (data.balances?.settledBalance || 0) + (data.balances?.pendingPayouts || 0);
+        const settled = Number(data?.balances?.settledBalance ?? 0);
+        const pending = Math.abs(Number(data?.balances?.pendingPayouts ?? 0));
+        const available = Math.max(0, settled - pending);
 
         if (!amount || parseFloat(amount) <= 0 || parseFloat(amount) > available) {
             toast.error(`Please enter a valid amount within your available balance (₹${available}).`);
@@ -73,7 +59,7 @@ const Withdrawals = () => {
                 toast.success('Withdrawal request submitted successfully!');
                 setIsModalOpen(false);
                 setAmount('');
-                fetchWithdrawals(true);
+                refreshEarnings();
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to submit request");
@@ -87,9 +73,9 @@ const Withdrawals = () => {
     }
 
     const balances = {
-        available: (data.balances?.settledBalance || 0) + (data.balances?.pendingPayouts || 0),
-        pending: Math.abs(data.balances?.pendingPayouts || 0),
-        lastWithdrawal: Math.abs(withdrawalHistory[0]?.amount || 0)
+        available: Math.max(0, Number(data.balances?.settledBalance ?? 0) - Math.abs(Number(data.balances?.pendingPayouts ?? 0))),
+        pending: Math.abs(Number(data.balances?.pendingPayouts ?? 0)),
+        lastWithdrawal: Math.abs(withdrawalHistory[0]?.amount ?? 0),
     };
 
     return (
@@ -177,8 +163,14 @@ const Withdrawals = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {filteredHistory.map((item) => (
-                                    <tr key={item.id} className="group hover:bg-slate-50/50 transition-all">
+                                {filteredHistory.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="px-8 py-12 text-center text-slate-500 text-sm font-medium">
+                                            {withdrawalHistory.length === 0 ? "No withdrawal requests yet." : "No matches for your search."}
+                                        </td>
+                                    </tr>
+                                ) : filteredHistory.map((item, idx) => (
+                                    <tr key={item.id || item.ref || item.reference || `wd-${idx}`} className="group hover:bg-slate-50/50 transition-all">
                                         <td className="px-8 py-5">
                                             <p className="text-sm font-black text-slate-900">{item.id}</p>
                                             <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-tighter">{item.date} • {item.time}</p>

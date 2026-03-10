@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import BottomNav from './BottomNav';
@@ -9,67 +10,148 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BellRing, Check, X, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import SellerOrdersContext from '@/modules/seller/context/SellerOrdersContext';
+import SellerEarningsContext, { defaultEarnings } from '@/modules/seller/context/SellerEarningsContext';
+
+const POLL_INTERVAL_MS = 30000; // 30 seconds - avoid too many API calls
+
+const isEarningsRoute = (path) =>
+    path.includes('earnings') || path.includes('withdrawals') || path.includes('transactions');
 
 const DashboardLayout = ({ children, navItems, title }) => {
     const [newOrderAlert, setNewOrderAlert] = useState(null);
-    const [shownOrderIds, setShownOrderIds] = useState(new Set());
+    const [shownOrderIds, setShownOrderIds] = useState(() => new Set());
     const [timeLeft, setTimeLeft] = useState(60);
-    const [isFirstLoad, setIsFirstLoad] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { user, logout, role } = useAuth();
-
-    // Close sidebar on route change
     const location = useLocation();
-    useEffect(() => {
-        setIsSidebarOpen(false);
-    }, [location.pathname]);
+
+    // Shared data for seller – single source, avoids duplicate API calls
+    const [sellerOrders, setSellerOrders] = useState([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+    const [sellerEarningsData, setSellerEarningsData] = useState(defaultEarnings);
+    const [earningsLoading, setEarningsLoading] = useState(false);
+
+    const shownOrderIdsRef = useRef(new Set());
+    const isFirstLoadRef = useRef(true);
+    const newOrderAlertRef = useRef(null);
+    const fetchOrdersRef = useRef(null);
+    const earningsFetchedRef = useRef(false);
 
     useEffect(() => {
+        shownOrderIdsRef.current = shownOrderIds;
+    }, [shownOrderIds]);
+    useEffect(() => {
+        newOrderAlertRef.current = newOrderAlert;
+    }, [newOrderAlert]);
+
+    useEffect(() => {
+        if (role !== 'seller') {
+            setSellerOrders([]);
+            setOrdersLoading(false);
+            return;
+        }
+        setOrdersLoading(true);
+
         const fetchOrders = async () => {
-            // Only poll for sellers, as per user request (Admin should not get these alerts)
-            if (role !== 'seller') {
-                console.log("Seller Alert Polling - Skipped (Role is:", role, ")");
-                return;
-            }
-
             try {
                 const res = await sellerApi.getOrders();
-                if (res.data.success) {
-                    const allOrders = res.data.results || res.data.result || [];
-                    const pendingOrders = allOrders.filter(o => o.status === 'pending');
+                if (!res?.data?.success) return;
 
-                    if (isFirstLoad) {
-                        // On first load, mark all existing pending orders as shown to prevent spam
-                        const existingIds = new Set(pendingOrders.map(o => o.orderId));
-                        setShownOrderIds(existingIds);
-                        setIsFirstLoad(false);
-                        console.log("Seller Alerts - First load, marked as shown:", existingIds.size);
-                    } else {
-                        // Find a truly new pending order
-                        const newOrder = pendingOrders.find(o => !shownOrderIds.has(o.orderId));
-                        console.log(`Seller Alert Polling - Pending: ${pendingOrders.length}, New Detected: ${newOrder ? newOrder.orderId : 'None'}`);
+                const payload = res.data.result || {};
+                const rawOrders = Array.isArray(payload.items)
+                    ? payload.items
+                    : (res.data.results || []);
+                const allOrders = Array.isArray(rawOrders) ? rawOrders : [];
+                setSellerOrders(allOrders);
 
-                        if (newOrder && !newOrderAlert) {
-                            setNewOrderAlert(newOrder);
-                            setShownOrderIds(prev => new Set(prev).add(newOrder.orderId));
+                const pendingOrders = allOrders.filter((o) => (o?.status || '').toLowerCase() === 'pending');
 
-                            // Play notification sound
-                            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                            audio.play().catch(e => console.log("Audio play blocked"));
-                        }
-                    }
+                if (isFirstLoadRef.current) {
+                    const existingIds = new Set(pendingOrders.map((o) => o.orderId).filter(Boolean));
+                    shownOrderIdsRef.current = existingIds;
+                    isFirstLoadRef.current = false;
+                    setShownOrderIds(existingIds);
+                    return;
                 }
+
+                const newOrder = pendingOrders.find((o) => !shownOrderIdsRef.current.has(o.orderId));
+                if (!newOrder || newOrderAlertRef.current) return;
+
+                setNewOrderAlert(newOrder);
+                setShownOrderIds((prev) => new Set(prev).add(newOrder.orderId));
+                shownOrderIdsRef.current = new Set(shownOrderIdsRef.current).add(newOrder.orderId);
+                newOrderAlertRef.current = newOrder;
+
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                audio.play().catch(() => {});
             } catch (error) {
                 console.error("Polling Error:", error);
+            } finally {
+                setOrdersLoading(false);
             }
         };
 
-        // Initial fetch
-        if (isFirstLoad) fetchOrders();
-
-        const pollInterval = setInterval(fetchOrders, 10000);
+        fetchOrdersRef.current = fetchOrders;
+        fetchOrders();
+        const pollInterval = setInterval(fetchOrders, POLL_INTERVAL_MS);
         return () => clearInterval(pollInterval);
-    }, [shownOrderIds, newOrderAlert, isFirstLoad, role]);
+    }, [role]);
+
+    // Single earnings fetch when seller is on earnings/withdrawals/transactions – no duplicate calls
+    useEffect(() => {
+        if (role !== 'seller' || !isEarningsRoute(location.pathname)) {
+            if (!isEarningsRoute(location.pathname)) earningsFetchedRef.current = false;
+            return;
+        }
+        if (earningsFetchedRef.current) return;
+        earningsFetchedRef.current = true;
+        setEarningsLoading(true);
+
+        sellerApi
+            .getEarnings()
+            .then((response) => {
+                const raw = response?.data?.result ?? response?.data?.data;
+                if (response?.data?.success && raw && typeof raw === 'object') {
+                    setSellerEarningsData({
+                        balances: raw.balances ?? {},
+                        ledger: Array.isArray(raw.ledger) ? raw.ledger : [],
+                        monthlyChart: Array.isArray(raw.monthlyChart) ? raw.monthlyChart : [],
+                    });
+                }
+            })
+            .catch((err) => console.error("Earnings Fetch Error:", err))
+            .finally(() => setEarningsLoading(false));
+    }, [role, location.pathname]);
+
+    const refreshOrders = () => {
+        if (fetchOrdersRef.current) fetchOrdersRef.current();
+    };
+    const refreshEarnings = () => {
+        earningsFetchedRef.current = false;
+        setEarningsLoading(true);
+        sellerApi
+            .getEarnings()
+            .then((response) => {
+                const raw = response?.data?.result ?? response?.data?.data;
+                if (response?.data?.success && raw && typeof raw === 'object') {
+                    setSellerEarningsData({
+                        balances: raw.balances ?? {},
+                        ledger: Array.isArray(raw.ledger) ? raw.ledger : [],
+                        monthlyChart: Array.isArray(raw.monthlyChart) ? raw.monthlyChart : [],
+                    });
+                }
+            })
+            .catch((err) => console.error("Earnings Fetch Error:", err))
+            .finally(() => {
+                setEarningsLoading(false);
+                earningsFetchedRef.current = true;
+            });
+    };
+
+    useEffect(() => {
+        setIsSidebarOpen(false);
+    }, [location.pathname]);
 
     // Timer logic for New Order Alert
     useEffect(() => {
@@ -127,7 +209,21 @@ const DashboardLayout = ({ children, navItems, title }) => {
                 <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
                 <main className={cn("p-6 min-h-screen", (role === "admin" || role === "seller") ? "pt-20 md:pt-6 pb-24 md:pb-6" : "pt-20")}>
                     <div className="max-w-7xl mx-auto pb-12">
-                        {children}
+                        <SellerOrdersContext.Provider
+                            value={{
+                                orders: role === 'seller' ? sellerOrders : [],
+                                ordersLoading: role === 'seller' ? ordersLoading : false,
+                                refreshOrders,
+                            }}>
+                            <SellerEarningsContext.Provider
+                                value={{
+                                    earningsData: role === 'seller' ? sellerEarningsData : defaultEarnings,
+                                    earningsLoading: role === 'seller' ? earningsLoading : false,
+                                    refreshEarnings,
+                                }}>
+                                {children}
+                            </SellerEarningsContext.Provider>
+                        </SellerOrdersContext.Provider>
                     </div>
                 </main>
             </div>

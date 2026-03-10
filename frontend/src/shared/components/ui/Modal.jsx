@@ -21,13 +21,13 @@ const Modal = ({ isOpen, onClose, title, children, footer, size = 'md' }) => {
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className={cn("overflow-hidden p-0", sizes[size])}>
-                <DialogHeader className="px-6 py-4 border-b border-gray-100/50 bg-gray-50/10">
-                    <DialogTitle className="text-xl font-bold text-gray-900">{title}</DialogTitle>
+                <DialogHeader className="px-6 pt-3 pb-2 border-b border-gray-100/50 bg-gray-50/10">
+                    <DialogTitle className="text-2xl font-semibold text-gray-900">{title}</DialogTitle>
                     <DialogDescription className="sr-only">Modal content</DialogDescription>
                 </DialogHeader>
 
                 <div
-                    className="px-6 py-6 max-h-[80vh] overflow-y-auto overscroll-contain touch-pan-y"
+                    className="px-6 pt-3 pb-5 max-h-[80vh] overflow-y-auto overscroll-contain touch-pan-y"
                     tabIndex={0}
                     onWheel={(e) => e.stopPropagation()}
                     onTouchMove={(e) => e.stopPropagation()}

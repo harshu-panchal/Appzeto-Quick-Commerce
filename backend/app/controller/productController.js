@@ -62,9 +62,15 @@ export const getProducts = async (req, res) => {
 export const getSellerProducts = async (req, res) => {
     try {
         const sellerId = req.user.id;
+        const { stockStatus } = req.query;
         const { page, limit, skip } = getPagination(req, { defaultLimit: 20, maxLimit: 100 });
 
         const query = { sellerId };
+        if (stockStatus === 'in') {
+            query.stock = { $gt: 0 };
+        } else if (stockStatus === 'out') {
+            query.stock = 0;
+        }
 
         const products = await Product.find(query)
             .select("name slug description price salePrice stock brand weight tags mainImage galleryImages variants headerId categoryId subcategoryId sellerId status isFeatured createdAt")

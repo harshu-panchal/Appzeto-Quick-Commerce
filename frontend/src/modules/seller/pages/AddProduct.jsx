@@ -208,7 +208,6 @@ const AddProduct = () => {
             { id: "variants", label: "Item Variants", icon: HiOutlineSwatch },
             { id: "category", label: "Groups", icon: HiOutlineFolderOpen },
             { id: "media", label: "Photos", icon: HiOutlinePhoto },
-            { id: "attributes", label: "SEO & Details", icon: HiOutlineScale },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -268,7 +267,9 @@ const AddProduct = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full px-4 py-3 bg-slate-100 border-none rounded-md text-sm font-semibold min-h-[120px] outline-none transition-all focus:ring-2 focus:ring-primary/5"
+                  onWheel={(e) => e.stopPropagation()}
+                  onTouchMove={(e) => e.stopPropagation()}
+                  className="w-full px-4 py-3 bg-slate-100 border-none rounded-2xl text-sm font-semibold min-h-[160px] max-h-[260px] outline-none transition-all focus:ring-2 focus:ring-primary/5 resize-none overflow-y-auto custom-scrollbar"
                   placeholder="Describe the item here..."
                 />
               </div>
@@ -593,39 +594,7 @@ const AddProduct = () => {
             </div>
           )}
 
-          {modalTab === "attributes" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Physical Weight (kg)
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.weight}
-                    onChange={(e) =>
-                      setFormData({ ...formData, weight: e.target.value })
-                    }
-                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-bold outline-none ring-primary/5 focus:ring-2 transition-all"
-                    placeholder="0.5"
-                  />
-                </div>
-                <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
-                    Search Tags
-                  </label>
-                  <input
-                    value={formData.tags}
-                    onChange={(e) =>
-                      setFormData({ ...formData, tags: e.target.value })
-                    }
-                    className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-md text-sm font-semibold outline-none ring-primary/5 focus:ring-2 transition-all"
-                    placeholder="mango, fresh, fruits..."
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          
         </div>
       </div>
     </div>

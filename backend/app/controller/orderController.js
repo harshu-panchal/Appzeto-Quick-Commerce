@@ -298,9 +298,23 @@ export const updateOrderStatus = async (req, res) => {
 export const getSellerOrders = async (req, res) => {
     try {
         const { id: userId, role } = req.user;
+        const { startDate, endDate } = req.query;
 
         // If admin, fetch all orders. If seller, fetch only their orders.
         const query = role === 'admin' ? {} : { seller: userId };
+
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) {
+                query.createdAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                // include entire end date day
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = end;
+            }
+        }
         console.log("Fetching Orders - User role:", role, "User ID:", userId);
 
         const { page, limit, skip } = getPagination(req, { defaultLimit: 25, maxLimit: 100 });

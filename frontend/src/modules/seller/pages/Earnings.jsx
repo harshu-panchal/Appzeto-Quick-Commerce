@@ -26,42 +26,27 @@ import { cn } from "@/lib/utils";
 import { MagicCard } from "@/components/ui/magic-card";
 import { BlurFade } from "@/components/ui/blur-fade";
 import ShimmerButton from "@/components/ui/shimmer-button";
-import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { exportToCSV } from "@/lib/exportUtils";
-
+import { useSellerEarnings } from "../context/SellerEarningsContext";
 
 const Earnings = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(true);
-  const [data, setData] = React.useState(null);
+  const { earningsData: data, earningsLoading: loading, refreshEarnings } = useSellerEarnings();
+  const [withdrawAmount, setWithdrawAmount] = React.useState("");
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = React.useState(false);
   const [isWithdrawing, setIsWithdrawing] = React.useState(false);
-  const [withdrawAmount, setWithdrawAmount] = React.useState("");
-
-  const fetchEarnings = async () => {
-    try {
-      setLoading(true);
-      const response = await sellerApi.getEarnings();
-      if (response.data.success) {
-        setData(response.data.result);
-        setWithdrawAmount(response.data.result.balances.settledBalance.toString());
-      }
-    } catch (error) {
-      console.error("Earnings Fetch Error:", error);
-      toast.error("Failed to load earnings data");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   React.useEffect(() => {
-    fetchEarnings();
-  }, []);
+    if (data?.balances != null && withdrawAmount === "") {
+      const settled = Number(data.balances?.settledBalance ?? 0);
+      setWithdrawAmount(settled > 0 ? String(settled) : "");
+    }
+  }, [data?.balances]);
 
   const handleWithdraw = () => {
-    const totalBalance = data?.balances?.settledBalance || 0;
+    const totalBalance = Number(data?.balances?.settledBalance ?? 0);
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0 || amount > totalBalance) {
       alert(
@@ -98,17 +83,20 @@ const Earnings = () => {
           <div className="flex space-x-3">
             <Button
               onClick={() => {
-                if (!data?.ledger) return;
-                const exportData = data.ledger.map(txn => ({
-                  id: txn.id,
-                  type: txn.type,
-                  amount: `₹${(txn.amount || 0).toLocaleString()}`,
-                  status: txn.status,
-                  date: txn.date || new Date(txn.createdAt).toLocaleDateString(),
-                  customer: txn.customer,
-                  ref: txn.ref
+                const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
+                if (ledger.length === 0) {
+                  toast.info("No transactions to export.");
+                  return;
+                }
+                const exportData = ledger.map((txn) => ({
+                  id: txn.id ?? txn.ref ?? "",
+                  type: txn.type ?? "",
+                  amount: `₹${Number(txn.amount ?? 0).toLocaleString()}`,
+                  status: txn.status ?? "",
+                  date: txn.date ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleDateString() : ""),
+                  customer: txn.customer ?? "",
+                  ref: txn.ref ?? "",
                 }));
-
                 exportToCSV(exportData, "Seller_Earnings_Report", {
                   id: "Transaction ID",
                   type: "Type",
@@ -116,7 +104,7 @@ const Earnings = () => {
                   status: "Status",
                   date: "Date",
                   customer: "Customer",
-                  ref: "Reference"
+                  ref: "Reference",
                 });
                 toast.success("Earnings report downloaded successfully!");
               }}
@@ -140,7 +128,7 @@ const Earnings = () => {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-emerald-100 font-medium">Total Revenue</p>
-                <h3 className="text-4xl font-bold mt-2">₹{(data?.balances?.totalRevenue || 0).toLocaleString()}</h3>
+                <h3 className="text-4xl font-bold mt-2">₹{Number(data?.balances?.totalRevenue ?? 0).toLocaleString()}</h3>
               </div>
               <div className="p-3 bg-white/20 rounded-xl">
                 <DollarSign className="h-8 w-8 text-white" />
@@ -161,7 +149,7 @@ const Earnings = () => {
                   Total Withdrawn
                 </p>
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                  ₹{(data?.balances?.totalWithdrawn || 0).toLocaleString()}
+                  ₹{Number(data?.balances?.totalWithdrawn ?? 0).toLocaleString()}
                 </h2>
               </div>
               <div className="p-3 bg-indigo-50 rounded-lg group-hover:scale-110 transition-transform duration-300">
@@ -178,7 +166,7 @@ const Earnings = () => {
                     Available to Withdraw
                   </p>
                   <p className="text-xs font-black text-slate-900">
-                    ₹{(data?.balances?.settledBalance || 0).toLocaleString()}
+                    ₹{Number(data?.balances?.settledBalance ?? 0).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -195,9 +183,12 @@ const Earnings = () => {
               Monthly Revenue Performance
             </h3>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-[300px] w-full min-h-[200px] flex items-center justify-center">
+            {(Array.isArray(data?.monthlyChart) ? data.monthlyChart : []).length === 0 ? (
+              <p className="text-slate-400 text-sm font-medium">No monthly revenue data yet.</p>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data?.monthlyChart || []}>
+              <BarChart data={data.monthlyChart}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -241,6 +232,7 @@ const Earnings = () => {
                 </defs>
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
         </Card>
       </BlurFade>
@@ -264,7 +256,7 @@ const Earnings = () => {
               <p className="text-sm text-slate-500 font-medium mb-8">
                 Available Balance:{" "}
                 <span className="text-emerald-600 font-bold">
-                  ₹{(data?.balances?.settledBalance || 0).toLocaleString()}
+                  ₹{Number(data?.balances?.settledBalance ?? 0).toLocaleString()}
                 </span>
               </p>
 

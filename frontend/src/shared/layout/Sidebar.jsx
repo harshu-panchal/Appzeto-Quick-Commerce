@@ -259,10 +259,10 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-white truncate group-hover:text-primary transition-colors">
-                Admin Console
+                {title?.toLowerCase().includes('seller') ? 'Seller Console' : 'Admin Console'}
               </p>
               <p className="text-[9px] text-gray-500 truncate font-black uppercase tracking-widest">
-                Super Admin
+                {title?.toLowerCase().includes('seller') ? 'Seller' : 'Super Admin'}
               </p>
             </div>
           </div>

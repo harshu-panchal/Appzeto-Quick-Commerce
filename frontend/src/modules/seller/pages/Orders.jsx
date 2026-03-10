@@ -5,7 +5,6 @@ import Badge from '@shared/components/ui/Badge';
 import Input from '@shared/components/ui/Input';
 import {
     HiOutlineMagnifyingGlass,
-    HiOutlineFunnel,
     HiOutlineEye,
     HiOutlinePrinter,
     HiOutlineCheck,
@@ -14,13 +13,13 @@ import {
     HiOutlineBanknotes,
     HiOutlineClock,
     HiOutlineArchiveBoxXMark,
-    HiOutlineCalendarDays,
     HiOutlineChartBar,
     HiOutlineChevronDown,
     HiOutlineChevronRight,
     HiOutlineInboxStack,
     HiOutlineMapPin,
-    HiOutlinePhone
+    HiOutlinePhone,
+    HiOutlineCalendarDays
 } from 'react-icons/hi2';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -33,6 +32,8 @@ import ShimmerButton from '@/components/ui/shimmer-button';
 import { sellerApi } from '../services/sellerApi';
 import { useToast } from '@shared/components/ui/Toast';
 import { Loader2 } from 'lucide-react';
+import Pagination from '@shared/components/ui/Pagination';
+import { DatePicker } from "@/components/ui/date-picker";
 
 
 const Orders = () => {
@@ -40,19 +41,29 @@ const Orders = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isQuickViewModalOpen, setIsQuickViewModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const { showToast } = useToast();
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+    const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        fetchOrders(page);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, startDate, endDate]);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (requestedPage = 1) => {
         try {
             setLoading(true);
-            const response = await sellerApi.getOrders();
+            const params = { page: requestedPage };
+            if (startDate) params.startDate = startDate;
+            if (endDate) params.endDate = endDate;
+
+            const response = await sellerApi.getOrders(params);
 
             // Backend returns handleResponse(..., { items, page, limit, total, totalPages })
             const payload = response.data.result || {};
@@ -91,6 +102,11 @@ const Orders = () => {
             }));
 
             setOrders(formattedOrders);
+            if (typeof payload.total === 'number') {
+                setTotal(payload.total);
+            } else {
+                setTotal(formattedOrders.length);
+            }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
             showToast("Failed to fetch orders", "error");
@@ -100,6 +116,7 @@ const Orders = () => {
     };
 
     const tabs = ['All', 'Pending', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'];
+    const todayStr = new Date().toISOString().split('T')[0];
 
     const safeOrders = useMemo(
         () => (Array.isArray(orders) ? orders : []),
@@ -275,7 +292,7 @@ const Orders = () => {
                             </div>
 
                             {/* Toolbox */}
-                            <div className="p-4 border-b border-slate-100 flex flex-col lg:flex-row gap-3 items-center">
+                            <div className="p-4 border-b border-slate-100 flex flex-col lg:flex-row gap-3 items-center justify-between">
                                 <div className="relative flex-1 group w-full">
                                     <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
                                     <input
@@ -286,10 +303,69 @@ const Orders = () => {
                                         className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-lg text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
                                     />
                                 </div>
-                                <div className="flex gap-2 shrink-0 w-full lg:w-auto">
-                                    <button className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-white ring-1 ring-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm w-full lg:w-auto">
-                                        <HiOutlineFunnel className="h-4 w-4" />
-                                        <span>DATE FILTER</span>
+                                <div className="flex gap-3 shrink-0 w-full lg:w-auto items-center justify-end">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-32">
+                                            <DatePicker
+                                                value={startDate}
+                                                max={todayStr}
+                                                onChange={(value) => {
+                                                    if (!value) {
+                                                        setStartDate("");
+                                                        setPage(1);
+                                                        return;
+                                                    }
+                                                    const today = new Date().toISOString().split("T")[0];
+                                                    if (value > today) {
+                                                        showToast("Start date cannot be in the future", "error");
+                                                        return;
+                                                    }
+                                                    if (endDate && value > endDate) {
+                                                        showToast("Start date cannot be after end date", "error");
+                                                        return;
+                                                    }
+                                                    setPage(1);
+                                                    setStartDate(value);
+                                                }}
+                                                placeholder="From date"
+                                            />
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-slate-400">
+                                            to
+                                        </span>
+                                        <div className="w-32">
+                                            <DatePicker
+                                                value={endDate}
+                                                max={todayStr}
+                                                min={startDate || undefined}
+                                                onChange={(value) => {
+                                                    if (!value) {
+                                                        setEndDate("");
+                                                        setPage(1);
+                                                        return;
+                                                    }
+                                                    const today = new Date().toISOString().split("T")[0];
+                                                    if (value > today) {
+                                                        showToast("End date cannot be in the future", "error");
+                                                        return;
+                                                    }
+                                                    if (startDate && value < startDate) {
+                                                        showToast("End date cannot be before start date", "error");
+                                                        return;
+                                                    }
+                                                    setPage(1);
+                                                    setEndDate(value);
+                                                }}
+                                                placeholder="To date"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setStartDate(''); setEndDate(''); setPage(1); }}
+                                        className="text-[10px] font-semibold text-slate-400 hover:text-slate-600"
+                                    >
+                                        Clear dates
                                     </button>
                                 </div>
                             </div>
@@ -308,7 +384,9 @@ const Orders = () => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
                                         <AnimatePresence mode="popLayout">
-                                            {filteredOrders.map((order) => (
+                                            {filteredOrders
+                                                .slice((page - 1) * pageSize, page * pageSize)
+                                                .map((order) => (
                                                 <motion.tr
                                                     layout
                                                     initial={{ opacity: 0, y: 10 }}
@@ -432,6 +510,22 @@ const Orders = () => {
                         </Card>
                     </BlurFade>
 
+                    <div className="mt-4">
+                        <Pagination
+                            page={page}
+                            totalPages={Math.ceil((total || filteredOrders.length) / pageSize) || 1}
+                            total={total || filteredOrders.length}
+                            pageSize={pageSize}
+                            onPageChange={(p) => setPage(p)}
+                            onPageSizeChange={(newSize) => {
+                                setPageSize(newSize);
+                                setPage(1);
+                                fetchOrders(1);
+                            }}
+                            loading={loading}
+                        />
+                    </div>
+
                     {/* Order Details Modal */}
                     {/* ... (existing details modal) */}
 
@@ -480,40 +574,7 @@ const Orders = () => {
                                             </div>
                                         </div>
 
-                                        {/* Recent Pending */}
-                                        <div>
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center justify-between">
-                                                Latest Pending Orders
-                                                <span className="text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">{safeOrders.filter(o => o.status === 'Pending').length} Action needed</span>
-                                            </h4>
-                                            <div className="space-y-2">
-                                                {safeOrders.filter(o => o.status === 'Pending').slice(0, 3).map((order) => (
-                                                    <div key={order.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-[10px] font-black text-white">
-                                                                {order.customer.avatar}
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-xs font-bold text-slate-900">#{order.id}</p>
-                                                                <p className="text-[10px] font-medium text-slate-400">₹{order.total.toLocaleString()}</p>
-                                                            </div>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => {
-                                                                setIsQuickViewModalOpen(false);
-                                                                handleViewDetails(order);
-                                                            }}
-                                                            className="text-[10px] font-black text-primary uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        >
-                                                            Process
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                                {safeOrders.filter(o => o.status === 'Pending').length === 0 && (
-                                                    <p className="text-xs text-center text-slate-400 py-4 font-medium italic">All caught up! No pending orders.</p>
-                                                )}
-                                            </div>
-                                        </div>
+                                        {/* Recent Pending section removed as requested */}
                                     </div>
 
                                     <div className="p-6 bg-slate-50 border-t border-slate-100">
