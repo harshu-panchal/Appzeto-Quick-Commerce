@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
@@ -12,7 +12,6 @@ import {
   HiOutlineArrowDownRight,
   HiOutlineCalendarDays,
   HiOutlineFunnel,
-  HiOutlineShare,
   HiOutlineArrowDownTray,
   HiOutlineMapPin,
   HiOutlineClock,
@@ -56,13 +55,16 @@ const Analytics = () => {
   const [activeTab, setActiveTab] = useState("Overview");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [chartRange, setChartRange] = useState("Daily");
+  const hasFetchedOnce = useRef(false);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      setLoading(true);
+      const isInitialLoad = !hasFetchedOnce.current;
+      if (isInitialLoad) {
+        setLoading(true);
+      }
       try {
         const response = await sellerApi.getStats(chartRange.toLowerCase());
         const raw = response?.data?.result ?? response?.data?.data ?? null;
@@ -90,6 +92,9 @@ const Analytics = () => {
           insights: {},
         });
       } finally {
+        if (isInitialLoad) {
+          hasFetchedOnce.current = true;
+        }
         setLoading(false);
       }
     };
@@ -134,17 +139,95 @@ const Analytics = () => {
   const salesTrendArr = statsData?.salesTrend ?? [];
   const hasNoData = !Number(statsData?.overview?.totalOrders) && (!salesTrendArr.length || salesTrendArr.every((d) => !d.sales));
 
+  const handleDownloadReport = () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const escapeCsv = (v) => {
+        const s = String(v ?? "").replace(/"/g, '""');
+        return /[",\n\r]/.test(s) ? `"${s}"` : s;
+      };
+      const lines = [];
+      lines.push("Analytics Report");
+      lines.push(`Generated,${new Date().toISOString()}`);
+      lines.push("");
+
+      const ov = statsData?.overview ?? {};
+      lines.push("Overview");
+      lines.push("Metric,Value");
+      ["Total Sales", "Total Orders", "Avg Order Value", "Conversion Rate"].forEach((label, i) => {
+        const key = ["totalSales", "totalOrders", "avgOrderValue", "conversionRate"][i];
+        lines.push(`${escapeCsv(label)},${escapeCsv(ov[key] ?? "—")}`);
+      });
+      lines.push("");
+
+      const trend = statsData?.salesTrend ?? [];
+      if (trend.length) {
+        lines.push("Sales Trend");
+        lines.push("Period,Sales,Traffic");
+        trend.forEach((d) => {
+          lines.push(`${escapeCsv(d.name)},${escapeCsv(d.sales)},${escapeCsv(d.traffic)}`);
+        });
+        lines.push("");
+      }
+
+      const top = statsData?.topProducts ?? [];
+      if (top.length) {
+        lines.push("Top Products");
+        lines.push("Product,Sales,Revenue,Trend %");
+        top.forEach((p) => {
+          lines.push(`${escapeCsv(p.name)},${escapeCsv(p.sales)},${escapeCsv(p.revenue)},${escapeCsv(p.trend)}`);
+        });
+        lines.push("");
+      }
+
+      const cat = statsData?.categoryMix ?? [];
+      if (cat.length) {
+        lines.push("Category Mix");
+        lines.push("Category,Volume");
+        cat.forEach((c) => {
+          lines.push(`${escapeCsv(c.subject)},${escapeCsv(c.A)}`);
+        });
+        lines.push("");
+      }
+
+      const traffic = statsData?.trafficSources ?? [];
+      if (traffic.length) {
+        lines.push("Traffic Sources");
+        lines.push("Source,Value");
+        traffic.forEach((t) => {
+          lines.push(`${escapeCsv(t.name)},${escapeCsv(t.value)}`);
+        });
+      }
+
+      const csvContent = lines.join("\n");
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `analytics-report-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Report downloaded successfully!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to download report");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING ANALYTICS...</div>;
   }
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="space-y-6 sm:space-y-8 pb-20 sm:pb-16">
       <BlurFade delay={0.1}>
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex flex-wrap items-center gap-2">
               Advanced Analytics
               <Badge
                 variant="success"
@@ -152,19 +235,19 @@ const Analytics = () => {
                 Real-time Insights
               </Badge>
             </h1>
-            <p className="text-slate-500 text-sm mt-0.5 font-medium">
+            <p className="text-slate-500 text-xs sm:text-sm mt-0.5 font-medium">
               Detailed breakdown of your business performance and customer
               behavior.
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 w-full sm:w-auto overflow-x-auto scrollbar-hide min-w-0">
               {["Overview", "Sales", "Customers"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                    "px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap shrink-0",
                     activeTab === tab
                       ? "bg-white text-slate-900 shadow-sm border border-slate-200"
                       : "text-slate-500 hover:text-slate-700",
@@ -173,32 +256,26 @@ const Analytics = () => {
                 </button>
               ))}
             </div>
-            <div
-              onClick={() => setIsShareModalOpen(true)}
-              className="h-10 w-10 border border-slate-200 rounded-lg flex items-center justify-center bg-white cursor-pointer hover:bg-slate-50 transition-colors shadow-sm">
-              <HiOutlineShare className="h-5 w-5 text-slate-500" />
-            </div>
             <ShimmerButton
-              onClick={() => {
-                setIsExporting(true);
-                setTimeout(() => {
-                  setIsExporting(false);
-                  alert("Analytics report exported successfully!");
-                }, 1500);
-              }}
-              className="px-5 py-2.5 rounded-lg text-xs font-bold text-white shadow-lg disabled:opacity-50"
+              onClick={handleDownloadReport}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-[11px] sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0"
               disabled={isExporting}>
-              <HiOutlineArrowDownTray className="h-4 w-4 mr-2" />
-              {isExporting ? "DOWNLOADING..." : "DOWNLOAD REPORT"}
+              <HiOutlineArrowDownTray className="h-4 w-4 shrink-0" />
+              <span>{isExporting ? "DOWNLOADING..." : "DOWNLOAD REPORT"}</span>
             </ShimmerButton>
           </div>
         </div>
       </BlurFade>
 
-      {/* Quick Stats Grid */}
+      {/* Quick Stats Grid - show for all tabs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
-          <BlurFade key={i} delay={0.1 + i * 0.05}>
+        {stats
+          .filter((_, i) => {
+            if (activeTab === "Customers") return i === 0 || i === 1; // Total Sales, Total Orders only
+            return true;
+          })
+          .map((stat, i) => (
+          <BlurFade key={stat.label} delay={0.1 + i * 0.05}>
             <MagicCard
               className="border-none shadow-md overflow-hidden group bg-white p-0"
               gradientColor={
@@ -250,7 +327,7 @@ const Analytics = () => {
         ))}
       </div>
 
-      {hasNoData && (
+      {hasNoData && (activeTab === "Overview" || activeTab === "Sales") && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 flex items-center gap-3">
           <HiOutlineChartBar className="h-6 w-6 text-slate-400 shrink-0" />
           <p className="text-sm font-semibold text-slate-600">
@@ -259,6 +336,7 @@ const Analytics = () => {
         </div>
       )}
 
+      {(activeTab === "Overview" || activeTab === "Sales") && (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Sales Performance Chart */}
         <BlurFade delay={0.4} className="lg:col-span-2">
@@ -422,9 +500,11 @@ const Analytics = () => {
           </Card>
         </BlurFade>
       </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Top Selling Products */}
+        {/* Top Selling Products - Overview & Sales */}
+        {(activeTab === "Overview" || activeTab === "Sales") && (
         <BlurFade delay={0.6}>
           <Card className="border-none shadow-xl shadow-slate-200/50 rounded-lg p-0 overflow-hidden bg-white">
             <div className="p-6 border-b border-slate-50">
@@ -488,8 +568,10 @@ const Analytics = () => {
             </div>
           </Card>
         </BlurFade>
+        )}
 
-        {/* Traffic Sources & Customer Insights */}
+        {/* Traffic Sources & Customer Insights - Overview & Customers */}
+        {(activeTab === "Overview" || activeTab === "Customers") && (
         <BlurFade delay={0.7}>
           <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl p-6 bg-white overflow-hidden group h-full">
             <div className="mb-8">
@@ -589,6 +671,7 @@ const Analytics = () => {
             </div>
           </Card>
         </BlurFade>
+        )}
       </div>
       {/* Product Detail Modal */}
       <Modal
@@ -649,45 +732,6 @@ const Analytics = () => {
             </Button>
           </div>
         )}
-      </Modal>
-
-      {/* Share Modal */}
-      <Modal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        title="Share Insights">
-        <div className="space-y-6">
-          <p className="text-sm text-slate-500 font-medium text-center">
-            Generate a secure link to share this dashboard with your team or
-            partners.
-          </p>
-
-          <div className="flex gap-2">
-            <input
-              readOnly
-              value="https://appzeto.com/seller/analytics/share-link-9283"
-              className="flex-1 px-4 py-3 bg-slate-50 rounded-xl text-xs font-semibold select-all outline-none"
-            />
-            <Button
-              onClick={() => alert("Link copied to clipboard!")}
-              className="rounded-xl px-4">
-              COPY
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            {["PDF", "Excel", "Image"].map((format) => (
-              <button
-                key={format}
-                className="p-4 rounded-2xl bg-white border border-slate-100 hover:border-primary/30 hover:bg-primary/5 transition-all flex flex-col items-center gap-2 group">
-                <HiOutlineArrowDownTray className="h-5 w-5 text-slate-400 group-hover:text-primary" />
-                <span className="text-[10px] font-black uppercase text-slate-500 group-hover:text-primary">
-                  {format}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
       </Modal>
     </div>
   );

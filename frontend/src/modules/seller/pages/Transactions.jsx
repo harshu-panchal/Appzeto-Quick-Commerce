@@ -10,7 +10,6 @@ import {
   HiOutlineFunnel,
   HiOutlineMagnifyingGlass,
   HiOutlineDocumentText,
-  HiOutlineArrowPath,
   HiOutlineBanknotes,
   HiOutlineClock,
   HiOutlineCheckCircle,
@@ -26,21 +25,17 @@ import { MagicCard } from "@/components/ui/magic-card";
 import { toast } from "sonner";
 import { exportToCSV } from "@/lib/exportUtils";
 import { useSellerEarnings } from "../context/SellerEarningsContext";
+import Pagination from "@shared/components/ui/Pagination";
 
 const Transactions = () => {
-  const { earningsData: data, earningsLoading: loading, refreshEarnings } = useSellerEarnings();
+  const { earningsData: data, earningsLoading: loading } = useSellerEarnings();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("All");
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedTxn, setSelectedTxn] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-
-  const onRefresh = () => {
-    setIsRefreshing(true);
-    refreshEarnings();
-    setTimeout(() => setIsRefreshing(false), 500);
-  };
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const stats = [
     {
@@ -69,17 +64,78 @@ const Transactions = () => {
   const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
   const filteredTransactions = useMemo(() => {
     const term = searchTerm.toLowerCase();
-    return ledger.filter((txn) => {
+    const result = ledger.filter((txn) => {
+      if (!term && activeTab === "All") return true;
       const id = (txn.id ?? txn.ref ?? "").toString().toLowerCase();
       const customer = (txn.customer ?? "").toString().toLowerCase();
       const ref = (txn.ref ?? "").toString().toLowerCase();
+      const status = (txn.status ?? "").toString().toLowerCase();
+      const type = (txn.type ?? "").toString().toLowerCase();
+      const amount = Math.abs(Number(txn.amount ?? 0)).toString();
       const matchesSearch =
-        id.includes(term) || customer.includes(term) || ref.includes(term);
+        !term ||
+        id.includes(term) ||
+        customer.includes(term) ||
+        ref.includes(term) ||
+        status.includes(term) ||
+        type.includes(term) ||
+        amount.includes(term);
       const txnType = (txn.type ?? "").toString();
       const matchesType = activeTab === "All" || txnType === activeTab;
       return matchesSearch && matchesType;
     });
-  }, [searchTerm, activeTab, ledger]);
+    const totalPages = Math.max(1, Math.ceil(result.length / pageSize));
+    if (page > totalPages) {
+      setPage(1);
+    }
+    return result;
+  }, [searchTerm, activeTab, ledger, page, pageSize]);
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return filteredTransactions.slice(start, end);
+  }, [filteredTransactions, page, pageSize]);
+
+  const handleDownloadReceipt = (txn) => {
+    try {
+      const record = {
+        id: txn.id ?? txn.ref ?? "",
+        type: txn.type ?? "",
+        amount: `₹${Math.abs(Number(txn.amount ?? 0)).toLocaleString()}`,
+        status: txn.status ?? "",
+        date:
+          txn.date ??
+          (txn.createdAt
+            ? new Date(txn.createdAt).toLocaleDateString()
+            : ""),
+        time:
+          txn.time ??
+          (txn.createdAt
+            ? new Date(txn.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : ""),
+        customer: txn.customer ?? "",
+        ref: txn.ref ?? "",
+      };
+      exportToCSV([record], `Transaction_${record.id || "receipt"}`, {
+        id: "Transaction ID",
+        type: "Type",
+        amount: "Amount",
+        status: "Status",
+        date: "Date",
+        time: "Time",
+        customer: "Customer/Recipient",
+        ref: "Reference",
+      });
+      toast.success("Receipt downloaded");
+    } catch (error) {
+      console.error("Receipt download error:", error);
+      toast.error("Failed to download receipt");
+    }
+  };
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING TRANSACTIONS...</div>;
@@ -104,16 +160,6 @@ const Transactions = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              onClick={onRefresh}
-              variant="outline"
-              className="rounded-lg px-4 py-2 border-slate-200 text-slate-600 bg-white disabled:opacity-50"
-              disabled={isRefreshing}>
-              <HiOutlineArrowPath
-                className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")}
-              />
-              {isRefreshing ? "REFRESHING..." : "REFRESH"}
-            </Button>
             <Button
               onClick={() => {
                 setIsDownloading(true);
@@ -208,7 +254,7 @@ const Transactions = () => {
             <div className="relative w-full md:w-80">
               <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Search by ID, Customer or Ref..."
+                placeholder="Search by customer..."
                 className="pl-10 pr-4 py-2.5 rounded-lg border-none ring-1 ring-slate-100 bg-slate-50/50 focus:ring-2 focus:ring-primary/20 transition-all text-xs font-semibold"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -218,7 +264,7 @@ const Transactions = () => {
 
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[720px]">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
                   <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -246,7 +292,7 @@ const Transactions = () => {
                         {ledger.length === 0 ? "No transactions yet." : "No matches for your search or filter."}
                       </td>
                     </tr>
-                  ) : filteredTransactions.map((txn, idx) => (
+                  ) : paginatedTransactions.map((txn, idx) => (
                     <motion.tr
                       key={txn.id || txn.ref || txn.reference || `txn-${idx}`}
                       initial={{ opacity: 0 }}
@@ -332,7 +378,7 @@ const Transactions = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            alert("Receipt downloading...");
+                            handleDownloadReceipt(txn);
                           }}
                           className="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-all ml-auto">
                           <HiOutlineArrowDownTray className="h-5 w-5" />
@@ -344,6 +390,23 @@ const Transactions = () => {
               </tbody>
             </table>
           </div>
+
+          {filteredTransactions.length > 0 && (
+            <div className="p-4 border-t border-slate-50 bg-slate-50/40">
+              <Pagination
+                page={page}
+                totalPages={Math.max(1, Math.ceil(filteredTransactions.length / pageSize))}
+                total={filteredTransactions.length}
+                pageSize={pageSize}
+                onPageChange={(newPage) => setPage(newPage)}
+                onPageSizeChange={(newSize) => {
+                  setPageSize(newSize);
+                  setPage(1);
+                }}
+                loading={loading}
+              />
+            </div>
+          )}
         </Card>
       </BlurFade>
 

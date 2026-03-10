@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import Button from '@shared/components/ui/Button';
@@ -23,6 +23,7 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
 import { useSellerEarnings } from "../context/SellerEarningsContext";
+import Pagination from "@shared/components/ui/Pagination";
 
 const Withdrawals = () => {
     const { earningsData: data, earningsLoading: loading, refreshEarnings } = useSellerEarnings();
@@ -30,16 +31,64 @@ const Withdrawals = () => {
     const [amount, setAmount] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
     const withdrawalHistory = ledger.filter((t) => (t.type || '').toString() === 'Withdrawal');
 
-    const filteredHistory = withdrawalHistory.filter((item) => {
-        const id = (item.id ?? item.ref ?? '').toString().toLowerCase();
-        const status = (item.status ?? '').toString().toLowerCase();
+    const filteredHistory = useMemo(() => {
         const term = searchTerm.toLowerCase();
-        return id.includes(term) || status.includes(term);
-    });
+        const result = withdrawalHistory.filter((item) => {
+            const id = (item.id ?? item.ref ?? '').toString().toLowerCase();
+            const status = (item.status ?? '').toString().toLowerCase();
+            const method = (item.method ?? item.customer ?? '').toString().toLowerCase();
+            const amount = Math.abs(Number(item.amount ?? 0)).toString();
+            return (
+                !term ||
+                id.includes(term) ||
+                status.includes(term) ||
+                method.includes(term) ||
+                amount.includes(term)
+            );
+        });
+        // Reset page if out of range
+        const totalPages = Math.max(1, Math.ceil(result.length / pageSize));
+        if (page > totalPages) {
+            setPage(1);
+        }
+        return result;
+    }, [withdrawalHistory, searchTerm, page, pageSize]);
+
+    const paginatedHistory = useMemo(() => {
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        return filteredHistory.slice(start, end);
+    }, [filteredHistory, page, pageSize]);
+
+    const handleDownloadReceipt = (item) => {
+        const id = item.id || item.ref || item.reference || 'withdrawal';
+        const lines = [];
+        lines.push('Withdrawal Receipt');
+        lines.push(`ID,${id}`);
+        lines.push(`Status,${item.status ?? ''}`);
+        lines.push(`Date,${item.date ?? ''}`);
+        lines.push(`Time,${item.time ?? ''}`);
+        lines.push(`Amount,₹${Math.abs(item.amount ?? 0).toLocaleString()}`);
+        lines.push(`Method,${item.customer ?? 'Bank Transfer'}`);
+        if (item.reason) {
+            lines.push(`Reason,${item.reason}`);
+        }
+        const csvContent = lines.join('\n');
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `withdrawal-receipt-${id}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Receipt downloaded');
+    };
 
     const handleSubmitRequest = async (e) => {
         e.preventDefault();
@@ -102,7 +151,7 @@ const Withdrawals = () => {
             </BlurFade>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 {[
                     { label: 'Available Balance', value: `₹${balances.available.toLocaleString()}`, icon: Wallet, color: 'emerald', sub: 'Ready to withdraw' },
                     { label: 'Pending Requests', value: `₹${balances.pending.toLocaleString()}`, icon: Clock, color: 'amber', sub: 'Awaiting approval' },
@@ -136,8 +185,8 @@ const Withdrawals = () => {
             {/* History Table */}
             <BlurFade delay={0.5}>
                 <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden bg-white rounded-3xl">
-                    <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <div className="p-4 sm:p-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4">
+                        <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                             <History className="h-5 w-5 text-indigo-500" />
                             Withdrawal History
                         </h2>
@@ -153,7 +202,7 @@ const Withdrawals = () => {
                         </div>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                        <table className="w-full text-left min-w-[640px]">
                             <thead>
                                 <tr className="bg-slate-50/50">
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Request Details</th>
@@ -169,7 +218,7 @@ const Withdrawals = () => {
                                             {withdrawalHistory.length === 0 ? "No withdrawal requests yet." : "No matches for your search."}
                                         </td>
                                     </tr>
-                                ) : filteredHistory.map((item, idx) => (
+                                ) : paginatedHistory.map((item, idx) => (
                                     <tr key={item.id || item.ref || item.reference || `wd-${idx}`} className="group hover:bg-slate-50/50 transition-all">
                                         <td className="px-8 py-5">
                                             <p className="text-sm font-black text-slate-900">{item.id}</p>
@@ -190,7 +239,11 @@ const Withdrawals = () => {
                                         </td>
                                         <td className="px-8 py-5 text-right">
                                             <p className="text-xs font-bold text-slate-600">{item.customer}</p>
-                                            <button className="text-[10px] font-black text-indigo-500 hover:text-indigo-600 mt-1 uppercase tracking-widest flex items-center gap-1 justify-end ml-auto">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDownloadReceipt(item)}
+                                                className="text-[10px] font-black text-indigo-500 hover:text-indigo-600 mt-1 uppercase tracking-widest flex items-center gap-1 justify-end ml-auto"
+                                            >
                                                 Receipt <Download className="h-3 w-3" />
                                             </button>
                                         </td>
@@ -199,6 +252,23 @@ const Withdrawals = () => {
                             </tbody>
                         </table>
                     </div>
+
+                    {filteredHistory.length > 0 && (
+                        <div className="p-4 sm:p-5 border-t border-slate-50 bg-slate-50/40">
+                            <Pagination
+                                page={page}
+                                totalPages={Math.max(1, Math.ceil(filteredHistory.length / pageSize))}
+                                total={filteredHistory.length}
+                                pageSize={pageSize}
+                                onPageChange={(newPage) => setPage(newPage)}
+                                onPageSizeChange={(newSize) => {
+                                    setPageSize(newSize);
+                                    setPage(1);
+                                }}
+                                loading={loading}
+                            />
+                        </div>
+                    )}
                 </Card>
             </BlurFade>
 

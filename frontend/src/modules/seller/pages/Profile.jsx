@@ -11,14 +11,11 @@ import {
   X,
   Rocket,
   Globe,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
 import Card from "@shared/components/ui/Card";
 import Button from "@shared/components/ui/Button";
-import axiosInstance from '@core/api/axios';
 
 const SellerProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -29,22 +26,11 @@ const SellerProfile = () => {
     name: "",
     shopName: "",
     phone: "",
+    email: "",
   });
-  const [faqs, setFaqs] = useState([]);
-
   useEffect(() => {
     fetchProfile();
-    fetchFaqs();
   }, []);
-
-  const fetchFaqs = async () => {
-    try {
-      const response = await axiosInstance.get('/public/faqs', { params: { category: 'Seller', status: 'published' } });
-      setFaqs(response.data.results || []);
-    } catch (error) {
-      console.error("Error fetching FAQs:", error);
-    }
-  };
 
   const fetchProfile = async () => {
     try {
@@ -54,6 +40,7 @@ const SellerProfile = () => {
         name: response.data.result.name,
         shopName: response.data.result.shopName,
         phone: response.data.result.phone,
+        email: response.data.result.email,
       });
     } catch (error) {
       toast.error("Failed to fetch profile");
@@ -63,11 +50,35 @@ const SellerProfile = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "name") {
+      // Disallow numbers in seller name
+      const cleaned = value.replace(/[0-9]/g, "");
+      setFormData({ ...formData, [name]: cleaned });
+    } else if (name === "phone") {
+      // Allow only digits, max 10 characters
+      const digitsOnly = value.replace(/[^0-9]/g, "").slice(0, 10);
+      setFormData({ ...formData, [name]: digitsOnly });
+    } else if (name === "email") {
+      // Trim spaces, keep as-is otherwise; HTML5 type=email will help validate shape
+      setFormData({ ...formData, [name]: value.trimStart() });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Basic phone validation: must be exactly 10 digits
+    if (!/^[0-9]{10}$/.test(formData.phone)) {
+      toast.error("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    // Basic email validation
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
     setIsSaving(true);
     try {
       await sellerApi.updateProfile(formData);
@@ -145,8 +156,8 @@ const SellerProfile = () => {
                 <Button
                   onClick={() => setIsEditing(false)}
                   variant="outline"
-                  className="h-[64px] w-[64px] flex items-center justify-center bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-lg shadow-lg transition-all backdrop-blur-md">
-                  <X size={24} />
+                  className="h-[64px] w-[64px] flex items-center justify-center bg-white/5 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-lg shadow-lg transition-all backdrop-blur-md">
+                  <X size={24} className="stroke-[2.5]" />
                 </Button>
                 <Button
                   onClick={handleSubmit}
@@ -243,9 +254,11 @@ const SellerProfile = () => {
                     </div>
                     <input
                       type="email"
-                      value={profile?.email}
-                      disabled
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50/50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-400 outline-none"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={!isEditing}
+                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70"
                     />
                   </div>
                 </div>
@@ -254,7 +267,7 @@ const SellerProfile = () => {
           </Card>
         </div>
 
-        {/* Sidebar Cards */}
+        {/* Sidebar Card */}
         <div className="space-y-8">
           <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[40px] bg-linear-to-br from-slate-900 text-white">
             <h4 className="text-[10px] font-black uppercase tracking-[4px] text-white/40 mb-6">
@@ -300,62 +313,8 @@ const SellerProfile = () => {
               </div>
             </div>
           </Card>
-
-          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[40px]">
-            <h4 className="text-[10px] font-black uppercase tracking-[4px] text-slate-400 mb-4">
-              Support
-            </h4>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed mb-6">
-              Need help with your business profile or verification status?
-            </p>
-            <Button
-              variant="outline"
-              className="w-full rounded-2xl border-slate-100 text-slate-900 font-bold hover:bg-slate-50">
-              Contact Partner Support
-            </Button>
-          </Card>
-
-          {/* Seller FAQ Section */}
-          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[40px]">
-            <h4 className="text-[10px] font-black uppercase tracking-[4px] text-slate-400 mb-6">
-              Seller FAQs
-            </h4>
-            <div className="space-y-4">
-              {faqs.length > 0 ? (
-                faqs.map((faq) => (
-                  <SellerFAQItem
-                    key={faq._id}
-                    question={faq.question}
-                    answer={faq.answer}
-                  />
-                ))
-              ) : (
-                <div className="py-4 text-center text-xs text-slate-400">No FAQs available</div>
-              )}
-            </div>
-          </Card>
         </div>
       </div>
-    </div>
-  );
-};
-
-const SellerFAQItem = ({ question, answer }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="border-b border-slate-50 pb-4">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-left group"
-      >
-        <span className="text-sm font-bold text-slate-700 group-hover:text-slate-900 transition-colors">{question}</span>
-        {isOpen ? <ChevronUp size={16} className="text-slate-400" /> : <ChevronDown size={16} className="text-slate-400" />}
-      </button>
-      {isOpen && (
-        <p className="mt-3 text-xs text-slate-500 font-medium leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
-          {answer}
-        </p>
-      )}
     </div>
   );
 };

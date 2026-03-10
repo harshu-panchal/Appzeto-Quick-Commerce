@@ -38,7 +38,8 @@ const Auth = () => {
     name: "",
     shopName: "",
     phone: "",
-    address: "",
+    city: "",
+    state: "",
     category: "",
     description: "",
   });
@@ -50,7 +51,26 @@ const Auth = () => {
   });
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "name") {
+      // Owner name: only alphabets and spaces
+      const cleaned = value.replace(/[^a-zA-Z\s]/g, "");
+      setFormData({ ...formData, [name]: cleaned });
+    } else if (name === "email") {
+      // Business email: trim leading spaces, disallow spaces inside
+      const cleaned = value.replace(/\s+/g, "").toLowerCase();
+      setFormData({ ...formData, [name]: cleaned });
+    } else if (name === "phone") {
+      // Contact number: only digits, max 10 characters
+      const digitsOnly = value.replace(/[^0-9]/g, "").slice(0, 10);
+      setFormData({ ...formData, [name]: digitsOnly });
+    } else if (name === "city" || name === "state") {
+      // City & State: only alphabets and spaces
+      const cleaned = value.replace(/[^a-zA-Z\s]/g, "");
+      setFormData({ ...formData, [name]: cleaned });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleDocumentChange = (e, docName) => {
@@ -69,13 +89,35 @@ const Auth = () => {
     setIsLoading(true);
 
     try {
-      // Note: Only sending formData as user requested backend shouldn't be changed
+      // Basic client-side validation for signup
+      if (!isLogin) {
+        const email = formData.email || "";
+        const phone = formData.phone || "";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          toast.error("Please enter a valid business email address.");
+          setIsLoading(false);
+          return;
+        }
+        if (!/^[0-9]{10}$/.test(phone)) {
+          toast.error("Please enter a valid 10-digit contact number.");
+          setIsLoading(false);
+          return;
+        }
+      }
+      // Note: backend expects a single address string, derive from city + state
+      const address =
+        formData.city && formData.state
+          ? `${formData.city}, ${formData.state}`
+          : formData.city || formData.state || "";
+
+      const signupPayload = { ...formData, address };
+
       const response = isLogin
         ? await sellerApi.login({
           email: formData.email,
           password: formData.password,
         })
-        : await sellerApi.signup(formData);
+        : await sellerApi.signup(signupPayload);
 
       const { token, seller } = response.data.result;
 
@@ -272,19 +314,35 @@ const Auth = () => {
                 {/* SIGNUP STEP 2 (Extra verification & details fields) */}
                 {!isLogin && signupStep === 2 && (
                   <div className="space-y-4">
-                    <div className="relative group">
-                      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
-                        <MapPin size={18} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="relative group">
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
+                          <MapPin size={18} />
+                        </div>
+                        <input
+                          type="text"
+                          name="city"
+                          required
+                          placeholder="City"
+                          className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
+                          value={formData.city}
+                          onChange={handleChange}
+                        />
                       </div>
-                      <input
-                        type="text"
-                        name="address"
-                        required
-                        placeholder="City, State"
-                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
-                        value={formData.address}
-                        onChange={handleChange}
-                      />
+                      <div className="relative group">
+                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-violet-600 transition-colors">
+                          <MapPin size={18} />
+                        </div>
+                        <input
+                          type="text"
+                          name="state"
+                          required
+                          placeholder="State"
+                          className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
+                          value={formData.state}
+                          onChange={handleChange}
+                        />
+                      </div>
                     </div>
 
                     <div className="pt-2">

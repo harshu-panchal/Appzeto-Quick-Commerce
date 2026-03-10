@@ -423,11 +423,11 @@ const Dashboard = () => {
         title="Order Details"
       >
         {selectedOrder && (
-          <div className="space-y-4 text-[13px]">
-            {/* Top summary card with accent stripe */}
-            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900 px-5 py-4 flex items-center justify-between gap-6 shadow-lg shadow-slate-900/10">
+          <div className="space-y-4 text-[13px] max-h-[70vh] overflow-y-auto px-1 sm:px-0 min-w-0">
+            {/* Top summary card with accent stripe - stacks on small screens */}
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-tr from-slate-900 via-slate-800 to-slate-900 px-4 py-3 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6 shadow-lg shadow-slate-900/10 min-w-0">
               <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-primary via-indigo-400 to-emerald-400" />
-              <div className="relative pl-3">
+              <div className="relative pl-3 min-w-0">
                 <p className="text-[12px] font-semibold text-slate-200 uppercase tracking-[0.16em]">
                   Order #{selectedOrder.orderId}
                 </p>
@@ -439,16 +439,16 @@ const Dashboard = () => {
                   })}
                 </p>
               </div>
-              <div className="relative text-right">
-                <p className="text-[11px] font-semibold text-slate-300 uppercase tracking-[0.18em] mb-1">
+              <div className="relative sm:text-right flex flex-col sm:items-end gap-1 min-w-0">
+                <p className="text-[11px] font-semibold text-slate-300 uppercase tracking-[0.18em]">
                   Total Amount
                 </p>
-                <p className="text-2xl font-black text-white leading-tight">
+                <p className="text-xl sm:text-2xl font-black text-white leading-tight">
                   ₹{Number(selectedOrder.pricing?.total ?? 0).toLocaleString()}
                 </p>
                 <Badge
                   variant={getStatusColor(selectedOrder.status)}
-                  className="mt-2 capitalize px-3 py-0.5 text-[11px] font-semibold bg-white/10 text-white border-white/20"
+                  className="capitalize px-3 py-0.5 text-[11px] font-semibold bg-white/10 text-white border-white/20 w-fit"
                 >
                   {selectedOrder.status}
                 </Badge>
