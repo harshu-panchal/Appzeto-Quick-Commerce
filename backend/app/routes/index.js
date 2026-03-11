@@ -13,6 +13,8 @@ import ticketRoute from "./ticketRoutes.js";
 import reviewRoute from "./reviewRoutes.js";
 import faqRoute from "./faqRoutes.js";
 import experienceRoute from "./experienceRoutes.js";
+import offerRoute from "./offerRoutes.js";
+import couponRoute from "./couponRoutes.js";
 
 import express from "express";
 
@@ -32,6 +34,8 @@ const setupRoutes = (app) => {
     router.use("/orders", orderRoute);
     router.use("/payments", paymentRoute);
     router.use("/", experienceRoute);
+    router.use("/", offerRoute);
+    router.use("/", couponRoute);
     router.use("/notifications", notificationRoute);
     router.use("/tickets", ticketRoute);
     router.use("/reviews", reviewRoute);

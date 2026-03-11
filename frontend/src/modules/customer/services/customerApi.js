@@ -43,4 +43,13 @@ export const customerApi = {
 
     // Experience sections (home / header pages)
     getExperienceSections: (params) => axiosInstance.get('/experience', { params }),
+
+    // Public offers
+    getOffers: () => axiosInstance.get('/offers'),
+    // Offer sections (category → products, banner + side image)
+    getOfferSections: () => axiosInstance.get('/offer-sections'),
+
+    // Coupons
+    validateCoupon: (data) => axiosInstance.post('/coupons/validate', data),
+    getActiveCoupons: () => axiosInstance.get('/coupons', { params: { status: 'active' } }),
 };

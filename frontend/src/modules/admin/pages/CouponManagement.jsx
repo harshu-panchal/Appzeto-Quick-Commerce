@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import Modal from '@shared/components/ui/Modal';
@@ -20,6 +20,7 @@ import {
 } from 'react-icons/hi2';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { adminApi } from '../services/adminApi';
 
 const CouponManagement = () => {
     const { showToast } = useToast();
@@ -28,124 +29,148 @@ const CouponManagement = () => {
     const [editingCoupon, setEditingCoupon] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Mock Data for Coupons
-    const [coupons, setCoupons] = useState([
-        {
-            id: 'c1',
-            code: 'WELCOME50',
-            discountType: 'percentage',
-            discountValue: 50,
-            minOrder: 200,
-            maxDiscount: 100,
-            startDate: '2024-01-01',
-            endDate: '2024-12-31',
-            totalLimit: 1000,
-            usedCount: 450,
-            status: 'active',
-            description: 'Flat 50% off on first order'
-        },
-        {
-            id: 'c2',
-            code: 'FREESHIP',
-            discountType: 'fixed',
-            discountValue: 40,
-            minOrder: 500,
-            maxDiscount: 40,
-            startDate: '2024-02-01',
-            endDate: '2024-06-30',
-            totalLimit: 500,
-            usedCount: 500,
-            status: 'expired',
-            description: 'Free delivery on orders above ₹500'
-        },
-        {
-            id: 'c3',
-            code: 'WEEKEND20',
-            discountType: 'percentage',
-            discountValue: 20,
-            minOrder: 300,
-            maxDiscount: 150,
-            startDate: '2024-02-15',
-            endDate: '2024-02-18',
-            totalLimit: 200,
-            usedCount: 85,
-            status: 'active',
-            description: 'Special weekend discount'
-        }
-    ]);
+    const [coupons, setCoupons] = useState([]);
 
     const [formData, setFormData] = useState({
         code: '',
+        title: '',
+        couponType: 'generic',
         discountType: 'percentage',
         discountValue: '',
-        minOrder: '',
+        minOrderValue: '',
         maxDiscount: '',
-        startDate: '',
-        endDate: '',
-        totalLimit: '',
-        description: ''
+        usageLimit: '',
+        perUserLimit: '1',
+        validFrom: '',
+        validTill: '',
+        description: '',
     });
 
-    const stats = useMemo(() => ({
-        total: coupons.length,
-        active: coupons.filter(c => c.status === 'active').length,
-        totalRedeemed: coupons.reduce((acc, c) => acc + c.usedCount, 0),
-        expiringSoon: 2 // Mock
-    }), [coupons]);
+    useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                setIsLoading(true);
+                const res = await adminApi.getCoupons({
+                    status: statusFilter === 'all' ? undefined : statusFilter,
+                    search: searchTerm || undefined,
+                });
+                if (res.data.success) {
+                    const list = res.data.result || res.data.results || [];
+                    setCoupons(list);
+                }
+            } catch (error) {
+                showToast('Failed to load coupons', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCoupons();
+    }, [statusFilter, searchTerm]);
 
-    const filteredCoupons = useMemo(() => {
-        return coupons.filter(c => {
-            const matchesSearch = c.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                c.description.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
-            return matchesSearch && matchesStatus;
+    const stats = useMemo(() => {
+        const now = new Date();
+        const active = coupons.filter(c => {
+            const from = c.validFrom ? new Date(c.validFrom) : null;
+            const till = c.validTill ? new Date(c.validTill) : null;
+            return c.isActive && (!from || from <= now) && (!till || till >= now);
         });
-    }, [coupons, searchTerm, statusFilter]);
+        const expiringSoon = coupons.filter(c => {
+            if (!c.validTill) return false;
+            const till = new Date(c.validTill);
+            const diffDays = (till - now) / (1000 * 60 * 60 * 24);
+            return diffDays >= 0 && diffDays <= 7;
+        });
+        return {
+            total: coupons.length,
+            active: active.length,
+            totalRedeemed: coupons.reduce((acc, c) => acc + (c.usedCount || 0), 0),
+            expiringSoon: expiringSoon.length,
+        };
+    }, [coupons]);
+
+    const filteredCoupons = coupons;
 
     const handleOpenModal = (coupon = null) => {
         if (coupon) {
             setEditingCoupon(coupon);
-            setFormData({ ...coupon });
+            setFormData({
+                code: coupon.code || '',
+                title: coupon.title || '',
+                couponType: coupon.couponType || 'generic',
+                discountType: coupon.discountType || 'percentage',
+                discountValue: coupon.discountValue ?? '',
+                minOrderValue: coupon.minOrderValue ?? '',
+                maxDiscount: coupon.maxDiscount ?? '',
+                usageLimit: coupon.usageLimit ?? '',
+                perUserLimit: coupon.perUserLimit ?? '1',
+                validFrom: coupon.validFrom ? coupon.validFrom.substring(0, 10) : '',
+                validTill: coupon.validTill ? coupon.validTill.substring(0, 10) : '',
+                description: coupon.description || '',
+            });
         } else {
             setEditingCoupon(null);
             setFormData({
                 code: '',
+                title: '',
+                couponType: 'generic',
                 discountType: 'percentage',
                 discountValue: '',
-                minOrder: '',
+                minOrderValue: '',
                 maxDiscount: '',
-                startDate: '',
-                endDate: '',
-                totalLimit: '',
-                description: ''
+                usageLimit: '',
+                perUserLimit: '1',
+                validFrom: '',
+                validTill: '',
+                description: '',
             });
         }
         setIsModalOpen(true);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (editingCoupon) {
-            setCoupons(coupons.map(c => c.id === editingCoupon.id ? { ...formData, id: c.id, usedCount: c.usedCount, status: 'active' } : c));
-            showToast('Coupon updated successfully', 'success');
-        } else {
-            const newCoupon = {
+        try {
+            const payload = {
                 ...formData,
-                id: `c${Date.now()}`,
-                usedCount: 0,
-                status: 'active'
+                discountValue: Number(formData.discountValue),
+                minOrderValue: formData.minOrderValue ? Number(formData.minOrderValue) : 0,
+                maxDiscount: formData.maxDiscount ? Number(formData.maxDiscount) : undefined,
+                usageLimit: formData.usageLimit ? Number(formData.usageLimit) : undefined,
+                perUserLimit: formData.perUserLimit ? Number(formData.perUserLimit) : 1,
+                validFrom: formData.validFrom,
+                validTill: formData.validTill,
             };
-            setCoupons([newCoupon, ...coupons]);
-            showToast('New coupon launched!', 'success');
+
+            if (editingCoupon?._id) {
+                await adminApi.updateCoupon(editingCoupon._id, payload);
+                showToast('Coupon updated successfully', 'success');
+            } else {
+                await adminApi.createCoupon(payload);
+                showToast('New coupon launched!', 'success');
+            }
+            setIsModalOpen(false);
+            setEditingCoupon(null);
+            const res = await adminApi.getCoupons();
+            if (res.data.success) {
+                const list = res.data.result || res.data.results || [];
+                setCoupons(list);
+            }
+        } catch (error) {
+            showToast(error.response?.data?.message || 'Failed to save coupon', 'error');
         }
-        setIsModalOpen(false);
     };
 
-    const handleDelete = (id) => {
-        setCoupons(coupons.filter(c => c.id !== id));
-        setDeleteTarget(null);
-        showToast('Coupon removed', 'warning');
+    const handleDelete = async (id) => {
+        try {
+            await adminApi.deleteCoupon(id);
+            setCoupons(coupons.filter(c => c._id !== id));
+            setDeleteTarget(null);
+            showToast('Coupon removed', 'warning');
+        } catch (error) {
+            showToast('Failed to delete coupon', 'error');
+        }
     };
 
     return (
@@ -239,8 +264,15 @@ const CouponManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {filteredCoupons.map((c) => (
-                                <tr key={c.id} className="group hover:bg-slate-50/30 transition-colors">
+                            {isLoading && (
+                                <tr>
+                                    <td colSpan="6" className="text-center py-8 text-slate-400 text-sm">
+                                        Loading coupons...
+                                    </td>
+                                </tr>
+                            )}
+                            {!isLoading && filteredCoupons.map((c) => (
+                                <tr key={c._id} className="group hover:bg-slate-50/30 transition-colors">
                                     <td className="px-4 py-6">
                                         <div className="flex items-center gap-4">
                                             <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -248,28 +280,32 @@ const CouponManagement = () => {
                                             </div>
                                             <div>
                                                 <span className="text-sm font-black text-slate-900 tracking-wider bg-slate-100 px-2 py-1 rounded-lg border-2 border-dashed border-slate-300">{c.code}</span>
-                                                <p className="text-[10px] font-bold text-slate-400 mt-1.5">{c.description}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 mt-1">{c.title}</p>
+                                                <p className="text-[10px] font-medium text-slate-400 mt-0.5 line-clamp-2">{c.description}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-4 py-6">
                                         <div className="space-y-1">
                                             <p className="text-xs font-black text-slate-900">
-                                                {c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `₹${c.discountValue} OFF`}
+                                                {c.discountType === 'percentage' ? `${c.discountValue}% OFF` : c.discountType === 'free_delivery' ? 'Free Delivery' : `₹${c.discountValue} OFF`}
                                             </p>
-                                            <p className="text-[10px] font-bold text-slate-400">Min. Order: ₹{c.minOrder}</p>
+                                            {c.minOrderValue > 0 && (
+                                                <p className="text-[10px] font-bold text-slate-400">Min. Order: ₹{c.minOrderValue}</p>
+                                            )}
+                                            <p className="text-[10px] font-bold text-slate-400 capitalize">Type: {c.couponType?.replace(/_/g, ' ') || 'generic'}</p>
                                         </div>
                                     </td>
                                     <td className="px-4 py-6">
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-end">
                                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Redeemed</span>
-                                                <span className="text-xs font-black text-slate-900">{c.usedCount}/{c.totalLimit}</span>
+                                                <span className="text-xs font-black text-slate-900">{c.usedCount || 0}{c.usageLimit ? `/${c.usageLimit}` : ''}</span>
                                             </div>
                                             <div className="h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
                                                 <div
                                                     className="h-full bg-indigo-500 rounded-full transition-all duration-1000"
-                                                    style={{ width: `${(c.usedCount / c.totalLimit) * 100}%` }}
+                                                    style={{ width: c.usageLimit ? `${((c.usedCount || 0) / c.usageLimit) * 100}%` : '0%' }}
                                                 />
                                             </div>
                                         </div>
@@ -277,12 +313,14 @@ const CouponManagement = () => {
                                     <td className="px-4 py-6">
                                         <div className="flex items-center gap-2 text-slate-500">
                                             <HiOutlineCalendarDays className="h-4 w-4" />
-                                            <span className="text-[10px] font-bold uppercase tracking-tighter">Till {new Date(c.endDate).toLocaleDateString()}</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-tighter">
+                                                {c.validFrom ? new Date(c.validFrom).toLocaleDateString() : '—'} - {c.validTill ? new Date(c.validTill).toLocaleDateString() : '—'}
+                                            </span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-6 text-center">
-                                        <Badge variant={c.status === 'active' ? 'success' : 'secondary'} className="text-[9px] font-black uppercase">
-                                            {c.status}
+                                        <Badge variant={c.isActive ? 'success' : 'secondary'} className="text-[9px] font-black uppercase">
+                                            {c.isActive ? 'active' : 'inactive'}
                                         </Badge>
                                     </td>
                                     <td className="px-4 py-6">
@@ -376,7 +414,7 @@ const CouponManagement = () => {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</label>
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Discount Kind</label>
                             <select
                                 value={formData.discountType}
                                 onChange={(e) => setFormData({ ...formData, discountType: e.target.value })}
@@ -384,8 +422,28 @@ const CouponManagement = () => {
                             >
                                 <option value="percentage">Percentage (%)</option>
                                 <option value="fixed">Fixed Amount (₹)</option>
+                                <option value="free_delivery">Free Delivery</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Coupon Strategy</label>
+                        <select
+                            value={formData.couponType}
+                            onChange={(e) => setFormData({ ...formData, couponType: e.target.value })}
+                            className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black outline-none"
+                        >
+                            <option value="generic">Generic Discount</option>
+                            <option value="bulk_order">Bulk Order Discount</option>
+                            <option value="min_order_value">Minimum Order Value Coupon</option>
+                            <option value="free_delivery">Free Delivery Coupon</option>
+                            <option value="category_based">Category-Based Coupon</option>
+                            <option value="monthly_volume">Monthly Volume Coupon</option>
+                        </select>
+                        <p className="text-[10px] text-slate-400">
+                            Choose the logic: bulk order, MOV, free delivery, specific categories, or monthly volume buyers.
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
@@ -404,8 +462,42 @@ const CouponManagement = () => {
                             <input
                                 required
                                 type="number"
-                                value={formData.minOrder}
-                                onChange={(e) => setFormData({ ...formData, minOrder: e.target.value })}
+                                value={formData.minOrderValue}
+                                onChange={(e) => setFormData({ ...formData, minOrderValue: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Max Discount (optional)</label>
+                            <input
+                                type="number"
+                                value={formData.maxDiscount}
+                                onChange={(e) => setFormData({ ...formData, maxDiscount: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black outline-none"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Uses (optional)</label>
+                            <input
+                                type="number"
+                                value={formData.usageLimit}
+                                onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Per User Limit</label>
+                            <input
+                                type="number"
+                                min={1}
+                                value={formData.perUserLimit}
+                                onChange={(e) => setFormData({ ...formData, perUserLimit: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black outline-none"
                             />
                         </div>
@@ -417,8 +509,8 @@ const CouponManagement = () => {
                             <input
                                 required
                                 type="date"
-                                value={formData.startDate}
-                                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                value={formData.validFrom}
+                                onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black outline-none"
                             />
                         </div>
@@ -427,8 +519,8 @@ const CouponManagement = () => {
                             <input
                                 required
                                 type="date"
-                                value={formData.endDate}
-                                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                value={formData.validTill}
+                                onChange={(e) => setFormData({ ...formData, validTill: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-black outline-none"
                             />
                         </div>

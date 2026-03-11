@@ -18,6 +18,7 @@ export const adminApi = {
     // Category Management
     getCategories: (params) => axiosInstance.get('/admin/categories', { params }),
     getCategoryTree: () => axiosInstance.get('/admin/categories?tree=true'),
+    getSellers: (params) => axiosInstance.get('/admin/sellers', { params }),
     createCategory: (formData) => axiosInstance.post('/admin/categories', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
@@ -88,4 +89,24 @@ export const adminApi = {
     uploadExperienceBanner: (formData) => axiosInstance.post('/admin/experience/upload-banner', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
+
+    // Offers Management
+    getOffers: (params) => axiosInstance.get('/admin-offers', { params }),
+    createOffer: (data) => axiosInstance.post('/admin-offers', data),
+    updateOffer: (id, data) => axiosInstance.put(`/admin-offers/${id}`, data),
+    deleteOffer: (id) => axiosInstance.delete(`/admin-offers/${id}`),
+    reorderOffers: (items) => axiosInstance.put('/admin-offers/reorder', { items }),
+
+    // Offer Sections (category → products, banner + side image)
+    getOfferSections: (params) => axiosInstance.get('/admin-offer-sections', { params }),
+    createOfferSection: (data) => axiosInstance.post('/admin-offer-sections', data),
+    updateOfferSection: (id, data) => axiosInstance.put(`/admin-offer-sections/${id}`, data),
+    deleteOfferSection: (id) => axiosInstance.delete(`/admin-offer-sections/${id}`),
+    reorderOfferSections: (items) => axiosInstance.put('/admin-offer-sections/reorder', { items }),
+
+    // Coupons & Promos
+    getCoupons: (params) => axiosInstance.get('/admin/coupons', { params }),
+    createCoupon: (data) => axiosInstance.post('/admin/coupons', data),
+    updateCoupon: (id, data) => axiosInstance.put(`/admin/coupons/${id}`, data),
+    deleteCoupon: (id) => axiosInstance.delete(`/admin/coupons/${id}`),
 };

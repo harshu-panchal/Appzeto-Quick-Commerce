@@ -76,6 +76,15 @@ const ContentManager = React.lazy(() => import("../pages/ContentManager"));
 const NotificationComposer = React.lazy(
   () => import("../pages/NotificationComposer"),
 );
+const OffersManagement = React.lazy(
+  () => import("../pages/OffersManagement"),
+);
+const OfferSectionsManagement = React.lazy(
+  () => import("../pages/OfferSectionsManagement"),
+);
+const ShopByStoreManagement = React.lazy(
+  () => import("../pages/ShopByStoreManagement"),
+);
 const AdminSettings = React.lazy(() => import("../pages/AdminSettings"));
 const EnvSettings = React.lazy(() => import("../pages/EnvSettings"));
 const AdminProfile = React.lazy(() => import("../pages/AdminProfile"));
@@ -107,6 +116,9 @@ const navItems = [
     children: [
       { label: "Content Manager", path: "/admin/experience-studio" },
       { label: "Send Notifications", path: "/admin/notifications" },
+      { label: "Coupons & Promos", path: "/admin/coupons" },
+      { label: "Offer Sections", path: "/admin/offer-sections" },
+      { label: "Shop by Store", path: "/admin/shop-by-store" },
     ],
   },
   {
@@ -126,7 +138,6 @@ const navItems = [
       { label: "Active Sellers", path: "/admin/sellers/active" },
       { label: "Waiting for Review", path: "/admin/sellers/pending" },
       { label: "Seller Locations", path: "/admin/seller-locations" },
-      { label: "Coupons & Promos", path: "/admin/coupons" },
     ],
   },
   {
@@ -216,6 +227,9 @@ const AdminRoutes = () => {
         <Route path="/moderation" element={<ReviewModeration />} />
         <Route path="/experience-studio" element={<ContentManager />} />
         <Route path="/notifications" element={<NotificationComposer />} />
+        <Route path="/offers" element={<OffersManagement />} />
+        <Route path="/offer-sections" element={<OfferSectionsManagement />} />
+        <Route path="/shop-by-store" element={<ShopByStoreManagement />} />
         <Route path="/coupons" element={<CouponManagement />} />
         <Route path="/sellers/pending" element={<PendingSellers />} />
         <Route path="/seller-locations" element={<SellerLocations />} />

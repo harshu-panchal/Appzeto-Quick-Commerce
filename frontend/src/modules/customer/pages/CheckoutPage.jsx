@@ -105,10 +105,8 @@ const CheckoutPage = () => {
         { id: 103, name: 'Bread', price: 35, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200' },
     ];
 
-    const coupons = [
-        { code: 'FIRST50', description: 'Get ₹50 off on first order', discount: 50 },
-        { code: 'SAVE100', description: 'Save ₹100 on orders above ₹999', discount: 100 },
-    ];
+    const [coupons, setCoupons] = useState([]);
+    const [manualCode, setManualCode] = useState('');
 
     const deliveryAddress = {
         type: 'Home',
@@ -139,7 +137,7 @@ const CheckoutPage = () => {
     const deliveryFee = 0;
     const platformFee = 3;
     const gst = Math.round(cartTotal * 0.05);
-    const discountAmount = selectedCoupon ? selectedCoupon.discount : 0;
+    const discountAmount = selectedCoupon ? selectedCoupon.discountAmount || selectedCoupon.discount || 0 : 0;
     const totalAmount = (cartTotal - discountAmount) + deliveryFee + platformFee + gst + selectedTip;
 
     const displayCartItems = showAllCartItems ? cart : cart;
@@ -177,10 +175,29 @@ const CheckoutPage = () => {
         }
     };
 
-    const handleApplyCoupon = (coupon) => {
-        setSelectedCoupon(coupon);
-        setIsCouponModalOpen(false);
-        showToast(`Coupon ${coupon.code} applied!`, 'success');
+    const handleApplyCoupon = async (coupon) => {
+        try {
+            const payload = {
+                code: coupon.code,
+                cartTotal,
+                items: cart,
+                customerId: user?._id,
+            };
+            const res = await customerApi.validateCoupon(payload);
+            if (res.data.success) {
+                const data = res.data.result;
+                setSelectedCoupon({
+                    ...coupon,
+                    ...data,
+                });
+                setIsCouponModalOpen(false);
+                showToast(`Coupon ${coupon.code} applied!`, 'success');
+            } else {
+                showToast(res.data.message || 'Unable to apply coupon', 'error');
+            }
+        } catch (error) {
+            showToast(error.response?.data?.message || 'Unable to apply coupon', 'error');
+        }
     };
 
     const handleAddToCart = (product) => {
@@ -189,6 +206,21 @@ const CheckoutPage = () => {
     };
 
     const getCartItem = (productId) => cart.find(item => item.id === productId);
+
+    useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                const res = await customerApi.getActiveCoupons();
+                if (res.data.success) {
+                    const list = res.data.result || res.data.results || [];
+                    setCoupons(list);
+                }
+            } catch {
+                // silently ignore
+            }
+        };
+        fetchCoupons();
+    }, []);
 
     const handlePlaceOrder = async () => {
         setIsPlacingOrder(true);
@@ -943,9 +975,40 @@ const CheckoutPage = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                             <Input
                                 placeholder="Enter coupon code manually"
+                                value={manualCode}
+                                onChange={(e) => setManualCode(e.target.value.toUpperCase())}
                                 className="pl-10 h-12 rounded-xl focus-visible:ring-[#0c831f]"
                             />
-                            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0c831f] font-bold text-xs">
+                            <button
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0c831f] font-bold text-xs"
+                                onClick={async () => {
+                                    if (!manualCode.trim()) {
+                                        showToast('Please enter a coupon code', 'error');
+                                        return;
+                                    }
+                                    try {
+                                        const res = await customerApi.validateCoupon({
+                                            code: manualCode.trim(),
+                                            cartTotal,
+                                            items: cart,
+                                            customerId: user?._id,
+                                        });
+                                        if (res.data.success) {
+                                            const data = res.data.result;
+                                            setSelectedCoupon({
+                                                code: manualCode.trim(),
+                                                description: 'Applied manually',
+                                                ...data,
+                                            });
+                                            showToast(`Coupon ${manualCode.trim()} applied!`, 'success');
+                                        } else {
+                                            showToast(res.data.message || 'Invalid coupon', 'error');
+                                        }
+                                    } catch (error) {
+                                        showToast(error.response?.data?.message || 'Invalid coupon', 'error');
+                                    }
+                                }}
+                            >
                                 CHECK
                             </button>
                         </div>

@@ -55,6 +55,11 @@ import { useProductDetail } from "../context/ProductDetailContext";
 import { cn } from "@/lib/utils";
 import CardBanner from "@/assets/CardBanner.jpg";
 import SectionRenderer from "../components/experience/SectionRenderer";
+import {
+  getSideImageByKey,
+  getBackgroundColorByValue,
+  getBackgroundGradientByValue,
+} from "@/shared/constants/offerSectionOptions";
 
 const DEFAULT_CATEGORY_THEME = {
   gradient: "linear-gradient(to bottom, #25D366, #4ADE80)",
@@ -155,6 +160,7 @@ const ALL_CATEGORY = {
   name: "All",
   icon: HomeIcon,
   theme: DEFAULT_CATEGORY_THEME,
+  headerColor: "#065f46",
   banner: {
     title: "HOUSEFULL",
     subtitle: "SALE",
@@ -380,6 +386,7 @@ const Home = () => {
   const [categoryMap, setCategoryMap] = useState({});
   const [subcategoryMap, setSubcategoryMap] = useState({});
   const [pendingReturn, setPendingReturn] = useState(null);
+  const [offerSections, setOfferSections] = useState([]);
 
   const scrollQuickCats = (direction) => {
     if (quickCatsRef.current) {
@@ -405,10 +412,11 @@ const Home = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [catRes, prodRes, expRes] = await Promise.all([
+      const [catRes, prodRes, expRes, sectionsRes] = await Promise.all([
         customerApi.getCategories(),
         customerApi.getProducts({ limit: 20 }),
         customerApi.getExperienceSections({ pageType: "home" }).catch(() => null),
+        customerApi.getOfferSections().catch(() => ({ data: {} })),
       ]);
 
       if (catRes.data.success) {
@@ -463,7 +471,37 @@ const Home = () => {
               banner: { ...meta.banner, textColor: "text-white" },
             };
           });
-        setCategories([ALL_CATEGORY, ...formattedHeaders]);
+
+        // 1a. Merge admin-configured "All" header color into the static ALL category
+        const allHeaderFromAdmin = formattedHeaders.find(
+          (h) =>
+            (h.slug && h.slug.toLowerCase() === "all") ||
+            (h.name && h.name.toLowerCase() === "all"),
+        );
+
+        const mergedAllCategory = allHeaderFromAdmin
+          ? {
+              ...ALL_CATEGORY,
+              // Preserve special id/_id used in UI logic, but take color and icon from admin
+              headerColor: allHeaderFromAdmin.headerColor || ALL_CATEGORY.headerColor,
+              icon: allHeaderFromAdmin.icon || ALL_CATEGORY.icon,
+            }
+          : ALL_CATEGORY;
+
+        const headersWithoutAll = formattedHeaders.filter(
+          (h) =>
+            !(
+              (h.slug && h.slug.toLowerCase() === "all") ||
+              (h.name && h.name.toLowerCase() === "all")
+            ),
+        );
+
+        setCategories([mergedAllCategory, ...headersWithoutAll]);
+
+        // If active category is "All", keep it in sync with admin color updates
+        setActiveCategory((prev) =>
+          !prev || prev._id === "all" ? mergedAllCategory : prev,
+        );
 
         // If we have a stored header to restore (coming back from a category page), set it
         if (pendingReturn?.headerId) {
@@ -515,6 +553,12 @@ const Home = () => {
       } else {
         setExperienceSections([]);
       }
+
+      const sectionsList =
+        sectionsRes?.data?.results ||
+        sectionsRes?.data?.result ||
+        sectionsRes?.data;
+      setOfferSections(Array.isArray(sectionsList) ? sectionsList : []);
     } catch (error) {
       console.error("Error fetching data:", error);
       // toast.error("Failed to load content");
@@ -934,6 +978,120 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Offer Sections (admin-configured: Trending, etc.) – show on Home so user sees them */}
+      {offerSections.length > 0 && (
+        <div className="container mx-auto px-4 md:px-8 lg:px-[50px] py-6 md:py-10">
+          {[...offerSections]
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map((section) => {
+              const bgColor = getBackgroundColorByValue(section.backgroundColor);
+              const sectionProducts = (section.productIds || [])
+                .filter((p) => typeof p === "object" && p !== null)
+                .map((p) => ({
+                  id: p._id,
+                  _id: p._id,
+                  name: p.name,
+                  image: p.mainImage || p.image || "",
+                  price: p.salePrice ?? p.price,
+                  originalPrice: p.price ?? p.salePrice,
+                  weight: p.weight,
+                  deliveryTime: p.deliveryTime,
+                }));
+              return (
+                <motion.div
+                  key={section._id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ duration: 0.4 }}
+                  className="mb-10 rounded-[1.75rem] overflow-hidden shadow-[0_18px_35px_rgba(15,23,42,0.16)] bg-white border border-slate-100/70"
+                >
+                  <div
+                    className="relative flex items-center justify-between px-5 md:px-8 py-5 md:py-6 text-black"
+                    style={{
+                      backgroundColor: bgColor,
+                      backgroundImage: getBackgroundGradientByValue(
+                        section.backgroundColor
+                      ),
+                    }}
+                  >
+                    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                      <div className="absolute -top-10 -left-10 w-40 h-40 md:w-56 md:h-56 bg-white/20 rounded-full blur-3xl" />
+                      <div className="absolute -bottom-10 right-0 w-44 h-44 bg-white/10 rounded-full blur-3xl" />
+                    </div>
+                    <div className="flex-1 pr-4">
+                      <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] text-black/60 mb-1">
+                        Trending right now
+                      </p>
+                      <h3 className="text-2xl md:text-3xl font-black tracking-tight leading-tight drop-shadow-sm">
+                        {section.title}
+                      </h3>
+                      {((section.categoryIds || []).map((c) => (typeof c === "object" && c?.name ? c.name : null)).filter(Boolean).join(", ") || section.categoryId?.name) && (
+                        <p className="text-xs md:text-sm font-semibold text-black/75 mt-1">
+                          {(section.categoryIds || []).map((c) => (typeof c === "object" && c?.name ? c.name : null)).filter(Boolean).join(", ") || section.categoryId?.name}
+                        </p>
+                      )}
+                    </div>
+                    <motion.div
+                      whileHover={{ y: -4, rotate: -4, scale: 1.06 }}
+                      transition={{ type: "spring", stiffness: 260, damping: 18 }}
+                      className="w-20 h-20 md:w-24 md:h-24 rounded-2xl flex-shrink-0 shadow-[0_16px_30px_rgba(0,0,0,0.25)] border border-black/10 overflow-hidden relative bg-black/10"
+                    >
+                      {/* Product-driven visual if available */}
+                      {sectionProducts[0]?.image ? (
+                        <>
+                          <img
+                            src={sectionProducts[0].image}
+                            alt={section.title}
+                            className="absolute inset-0 w-full h-full object-cover scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-black/20 to-transparent" />
+                          <div className="absolute -bottom-6 -right-6 w-16 h-16 rounded-full bg-amber-400/60 blur-xl mix-blend-screen" />
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500" />
+                      )}
+
+                      {/* Top-left pill with items count */}
+                      {sectionProducts.length > 0 && (
+                        <div className="absolute top-1 left-1 px-2 py-0.5 rounded-full bg-black/70 text-[9px] font-bold text-white/90 tracking-wide flex items-center gap-1">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          {sectionProducts.length} items
+                        </div>
+                      )}
+
+                      <div className="relative z-10 flex items-center justify-center h-full">
+                        <Sparkles className="text-amber-200 drop-shadow-[0_0_12px_rgba(251,191,36,0.9)]" size={30} />
+                      </div>
+                    </motion.div>
+                  </div>
+                  <div className="p-4 md:p-5">
+                    <div className="flex overflow-x-auto gap-3 md:gap-4 pb-2 no-scrollbar snap-x snap-mandatory">
+                      {sectionProducts.length === 0 ? (
+                        <div className="w-full py-6 text-center text-slate-400 text-sm font-bold">
+                          No products in this section yet.
+                        </div>
+                      ) : (
+                        sectionProducts.map((product) => (
+                          <div
+                            key={product.id}
+                            className="w-[165px] md:w-[200px] flex-shrink-0 snap-start"
+                          >
+                            <ProductCard
+                              product={product}
+                              className="bg-white border border-slate-100 shadow-[0_10px_24px_rgba(15,23,42,0.08)]"
+                              compact
+                            />
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+        </div>
+      )}
 
       {/* Main Content Area – show admin-configured sections in saved order */}
       {(headerSections.length ? headerSections : experienceSections).length > 0 && (
