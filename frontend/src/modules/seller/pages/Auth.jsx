@@ -68,6 +68,10 @@ const Auth = () => {
       // City & State: only alphabets and spaces
       const cleaned = value.replace(/[^a-zA-Z\s]/g, "");
       setFormData({ ...formData, [name]: cleaned });
+    } else if (name === "password") {
+      // Password: only digits and alphabets, max 6 characters
+      const cleaned = value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6);
+      setFormData({ ...formData, [name]: cleaned });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -103,6 +107,13 @@ const Auth = () => {
           setIsLoading(false);
           return;
         }
+      }
+      // Password: exactly 6 characters, digits/alphabets only
+      const pwd = (formData.password || "").trim();
+      if (!/^[a-zA-Z0-9]{6}$/.test(pwd)) {
+        toast.error("Password must be exactly 6 characters (digits or letters only).");
+        setIsLoading(false);
+        return;
       }
       // Note: backend expects a single address string, derive from city + state
       const address =
@@ -304,7 +315,10 @@ const Auth = () => {
                         type="password"
                         name="password"
                         required
-                        placeholder="Secure Pin / Password"
+                        minLength={6}
+                        maxLength={6}
+                        autoComplete="current-password"
+                        placeholder="6 digit / letter PIN"
                         className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-200 transition-all placeholder:text-slate-300"
                         value={formData.password}
                         onChange={handleChange}

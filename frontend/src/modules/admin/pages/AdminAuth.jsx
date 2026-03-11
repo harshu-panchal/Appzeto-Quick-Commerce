@@ -34,11 +34,22 @@ const AdminAuth = () => {
     });
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        if (name === 'password') {
+            const cleaned = value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6);
+            setFormData({ ...formData, [name]: cleaned });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const pwd = (formData.password || '').trim();
+        if (!/^[a-zA-Z0-9]{6}$/.test(pwd)) {
+            toast.error('Password must be exactly 6 characters (digits or letters only).');
+            return;
+        }
         setIsLoading(true);
 
         try {
@@ -159,9 +170,12 @@ const AdminAuth = () => {
                                         type="password"
                                         name="password"
                                         required
+                                        minLength={6}
+                                        maxLength={6}
+                                        autoComplete="current-password"
                                         value={formData.password}
                                         onChange={handleChange}
-                                        placeholder="Password"
+                                        placeholder="6 digit / letter PIN"
                                         className="w-full pl-14 pr-5 py-5 bg-[#f8f9ff] border-2 border-transparent rounded-[24px] text-sm font-bold text-gray-700 outline-none focus:bg-white focus:border-indigo-100 focus:ring-8 focus:ring-indigo-50/50 transition-all placeholder:text-gray-300"
                                     />
                                 </div>
