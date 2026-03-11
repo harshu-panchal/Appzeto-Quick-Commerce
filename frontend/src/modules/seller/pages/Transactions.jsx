@@ -138,7 +138,7 @@ const Transactions = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING TRANSACTIONS...</div>;
+    return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING TRANSACTIONS...</div>;
   }
 
   return (
@@ -151,11 +151,11 @@ const Transactions = () => {
               Transaction Ledger
               <Badge
                 variant="primary"
-                className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">
+                className="text-[10px] sm:text-xs px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">
                 Audit Trail
               </Badge>
             </h1>
-            <p className="text-slate-500 text-sm mt-0.5 font-medium">
+            <p className="text-slate-600 text-sm mt-0.5 font-medium">
               Keep track of all financial movements, payouts, and settlements.
             </p>
           </div>
@@ -219,7 +219,7 @@ const Transactions = () => {
                   <stat.icon className="h-7 w-7" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <p className="text-xs font-black text-slate-600 uppercase tracking-widest">
                     {stat.label}
                   </p>
                   <h4 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -245,14 +245,14 @@ const Transactions = () => {
                     "px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap",
                     activeTab === tab
                       ? "bg-white text-slate-900 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700",
+                      : "text-slate-600 hover:text-slate-700",
                   )}>
                   {tab === "Order Payment" ? "Payments" : tab}
                 </button>
               ))}
             </div>
             <div className="relative w-full md:w-80">
-              <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
               <Input
                 placeholder="Search by customer..."
                 className="pl-10 pr-4 py-2.5 rounded-lg border-none ring-1 ring-slate-100 bg-slate-50/50 focus:ring-2 focus:ring-primary/20 transition-all text-xs font-semibold"
@@ -267,19 +267,19 @@ const Transactions = () => {
             <table className="w-full text-left min-w-[720px]">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">
                     Transaction Details
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">
                     Reference
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">
                     Amount
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
+                  <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest text-right">
                     Actions
                   </th>
                 </tr>
@@ -288,7 +288,7 @@ const Transactions = () => {
                 <AnimatePresence>
                   {filteredTransactions.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-500 text-sm font-medium">
+                      <td colSpan={5} className="px-6 py-12 text-center text-slate-600 text-sm font-medium">
                         {ledger.length === 0 ? "No transactions yet." : "No matches for your search or filter."}
                       </td>
                     </tr>
@@ -322,7 +322,7 @@ const Transactions = () => {
                             <p className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">
                               {txn.id ?? txn.ref ?? "—"}
                             </p>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
                               {txn.type ?? "—"}
                             </p>
                           </div>
@@ -333,10 +333,10 @@ const Transactions = () => {
                           {txn.customer ?? "—"}
                         </p>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <Badge className="text-[9px] px-1 py-0 bg-slate-100 text-slate-500 font-bold border-none">
+                          <Badge className="text-[10px] sm:text-xs px-1 py-0 bg-slate-100 text-slate-600 font-bold border-none">
                             {txn.ref ?? "—"}
                           </Badge>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">
+                          <span className="text-[10px] sm:text-xs text-slate-600 font-bold uppercase tracking-tighter">
                             {txn.date ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleDateString() : "—")} • {txn.time ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—")}
                           </span>
                         </div>
@@ -352,7 +352,7 @@ const Transactions = () => {
                           {Number(txn.amount ?? 0) > 0 ? "+" : ""}₹
                           {Math.abs(Number(txn.amount ?? 0)).toLocaleString()}
                         </p>
-                        <p className="text-[9px] font-bold text-slate-400 mt-0.5">
+                        <p className="text-[10px] sm:text-xs font-bold text-slate-600 mt-0.5">
                           Settlement: {(txn.status ?? "") === "Settled" ? "Complete" : "T+2"}
                         </p>
                       </td>
@@ -365,7 +365,7 @@ const Transactions = () => {
                                 ? "warning"
                                 : "default"
                           }
-                          className="text-[9px] font-black uppercase tracking-widest px-2-5 py-0.5 rounded-lg">
+                          className="text-[10px] sm:text-xs font-black uppercase tracking-widest px-2-5 py-0.5 rounded-lg">
                           {txn.status === "Settled" ? (
                             <HiOutlineCheckCircle className="mr-1 h-3 w-3" />
                           ) : (
@@ -380,7 +380,7 @@ const Transactions = () => {
                             e.stopPropagation();
                             handleDownloadReceipt(txn);
                           }}
-                          className="h-9 w-9 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-all ml-auto">
+                          className="h-9 w-9 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all ml-auto">
                           <HiOutlineArrowDownTray className="h-5 w-5" />
                         </button>
                       </td>
@@ -418,7 +418,7 @@ const Transactions = () => {
         {selectedTxn && (
           <div className="space-y-6">
             <div className="text-center p-6 bg-slate-50 rounded-lg border border-slate-100">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">
                 Total Amount
               </p>
               <h2
@@ -429,26 +429,26 @@ const Transactions = () => {
                 {Number(selectedTxn.amount ?? 0) > 0 ? "+" : ""}₹
                 {Math.abs(Number(selectedTxn.amount ?? 0)).toLocaleString()}
               </h2>
-              <Badge className="mt-4 uppercase font-black text-[9px] px-3 py-1">
+              <Badge className="mt-4 uppercase font-black text-[10px] sm:text-xs px-3 py-1">
                 {selectedTxn.status ?? "—"}
               </Badge>
             </div>
 
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400 font-bold">Transaction ID</span>
+                <span className="text-slate-600 font-bold">Transaction ID</span>
                 <span className="text-slate-900 font-black">
                   {selectedTxn.id ?? selectedTxn.ref ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400 font-bold">Type</span>
+                <span className="text-slate-600 font-bold">Type</span>
                 <span className="text-slate-900 font-black">
                   {selectedTxn.type ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400 font-bold">
+                <span className="text-slate-600 font-bold">
                   Customer/Recipient
                 </span>
                 <span className="text-slate-900 font-black">
@@ -456,13 +456,13 @@ const Transactions = () => {
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400 font-bold">Reference</span>
+                <span className="text-slate-600 font-bold">Reference</span>
                 <span className="text-slate-900 font-black">
                   {selectedTxn.ref ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-400 font-bold">Date & Time</span>
+                <span className="text-slate-600 font-bold">Date & Time</span>
                 <span className="text-slate-900 font-black">
                   {selectedTxn.date && selectedTxn.time
                     ? `${selectedTxn.date} at ${selectedTxn.time}`

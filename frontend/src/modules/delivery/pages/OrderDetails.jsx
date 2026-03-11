@@ -37,17 +37,17 @@ const OrderDetails = () => {
     const fetchOrderDetails = async () => {
       try {
         const response = await deliveryApi.getOrderDetails(orderId);
-        setOrder(response.data.result);
+        const ord = response.data.result;
+        setOrder(ord);
 
-        // Map backend status to UI step
         const statusMap = {
           "confirmed": 1,
           "packed": 2,
           "out_for_delivery": 3,
           "delivered": 4
         };
-        if (statusMap[response.data.result.status]) {
-          setStep(statusMap[response.data.result.status]);
+        if (statusMap[ord.status]) {
+          setStep(statusMap[ord.status]);
         }
       } catch (error) {
         toast.error("Failed to fetch order details");
@@ -97,17 +97,44 @@ const OrderDetails = () => {
     },
   ];
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     const currentStep = steps[step - 1];
-    toast.success(`${currentStep.action} Confirmed!`);
 
-    if (step < 4) {
-      setStep(step + 1);
-      setIsSlideComplete(false);
-      setDragX(0);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      navigate(`/delivery/confirm-delivery/${order.orderId}`);
+    try {
+      // If this is a return pickup flow, drive returnStatus instead of main status
+      if (order?.returnStatus && order.returnStatus !== "none") {
+        let nextReturnStatus = order.returnStatus;
+        if (order.returnStatus === "return_pickup_assigned") {
+          nextReturnStatus = "return_in_transit";
+        } else if (order.returnStatus === "return_in_transit") {
+          nextReturnStatus = "returned";
+        }
+
+        const res = await deliveryApi.updateReturnStatus(order.orderId, {
+          returnStatus: nextReturnStatus,
+        });
+        const updated = res.data.result;
+        setOrder((prev) => ({ ...(prev || {}), ...updated }));
+        toast.success(`${currentStep.action} Confirmed!`);
+
+        if (nextReturnStatus === "returned") {
+          navigate("/delivery/dashboard");
+        }
+      } else {
+        // Normal forward delivery flow (existing behavior - local step only)
+        toast.success(`${currentStep.action} Confirmed!`);
+        if (step < 4) {
+          setStep(step + 1);
+          setIsSlideComplete(false);
+          setDragX(0);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          navigate(`/delivery/confirm-delivery/${order.orderId}`);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to update return status", error);
+      toast.error("Failed to update status");
     }
   };
 

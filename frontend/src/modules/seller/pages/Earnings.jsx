@@ -71,7 +71,7 @@ const Earnings = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING EARNINGS...</div>;
+    return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING EARNINGS...</div>;
   }
   return (
     <div className="space-y-8 pb-16">
@@ -145,7 +145,7 @@ const Earnings = () => {
           <Card className="h-full border-none shadow-md bg-white p-6 flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">
                   Total Withdrawn
                 </p>
                 <h2 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -158,11 +158,11 @@ const Earnings = () => {
             </div>
             <div className="mt-4">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs">
+                <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xs">
                   <ArrowDownToLine className="h-4 w-4" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">
+                  <p className="text-xs font-bold text-slate-600 uppercase">
                     Available to Withdraw
                   </p>
                   <p className="text-xs font-black text-slate-900">
@@ -185,7 +185,7 @@ const Earnings = () => {
           </div>
           <div className="h-[300px] w-full min-h-[200px] flex items-center justify-center">
             {(Array.isArray(data?.monthlyChart) ? data.monthlyChart : []).length === 0 ? (
-              <p className="text-slate-400 text-sm font-medium">No monthly revenue data yet.</p>
+              <p className="text-slate-600 text-sm font-medium">No monthly revenue data yet.</p>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.monthlyChart}>
@@ -253,7 +253,7 @@ const Earnings = () => {
               <h2 className="text-2xl font-black text-slate-900 mb-2">
                 Withdraw Funds
               </h2>
-              <p className="text-sm text-slate-500 font-medium mb-8">
+              <p className="text-sm text-slate-600 font-medium mb-8">
                 Available Balance:{" "}
                 <span className="text-emerald-600 font-bold">
                   ₹{Number(data?.balances?.settledBalance ?? 0).toLocaleString()}
@@ -262,11 +262,11 @@ const Earnings = () => {
 
               <div className="space-y-4 text-left">
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">
                     Amount
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-bold">
                       ₹
                     </span>
                     <input
@@ -280,18 +280,18 @@ const Earnings = () => {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">
                     Select Bank Account
                   </label>
                   <div className="p-4 border border-slate-200 rounded-lg flex items-center gap-4 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/10 transition-all group">
-                    <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
+                    <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
                       <Building2 className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-black text-slate-900">
                         HDFC Bank **** 4589
                       </p>
-                      <p className="text-xs text-slate-400 font-bold">
+                      <p className="text-xs text-slate-600 font-bold">
                         Primary Account
                       </p>
                     </div>

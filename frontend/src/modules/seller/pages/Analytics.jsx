@@ -218,7 +218,7 @@ const Analytics = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING ANALYTICS...</div>;
+    return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING ANALYTICS...</div>;
   }
 
   return (
@@ -227,7 +227,7 @@ const Analytics = () => {
         {/* Header */}
         <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
               Advanced Analytics
               <Badge
                 variant="success"
@@ -235,7 +235,7 @@ const Analytics = () => {
                 Real-time Insights
               </Badge>
             </h1>
-            <p className="text-slate-500 text-xs sm:text-sm mt-0.5 font-medium">
+            <p className="text-slate-600 text-sm sm:text-base mt-0.5 font-medium">
               Detailed breakdown of your business performance and customer
               behavior.
             </p>
@@ -247,10 +247,10 @@ const Analytics = () => {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "px-3 sm:px-4 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap shrink-0",
+                    "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm sm:text-xs font-bold transition-all whitespace-nowrap shrink-0",
                     activeTab === tab
                       ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-                      : "text-slate-500 hover:text-slate-700",
+                      : "text-slate-600 hover:text-slate-700",
                   )}>
                   {tab}
                 </button>
@@ -258,7 +258,7 @@ const Analytics = () => {
             </div>
             <ShimmerButton
               onClick={handleDownloadReport}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-[11px] sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-xs sm:text-sm sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0"
               disabled={isExporting}>
               <HiOutlineArrowDownTray className="h-4 w-4 shrink-0" />
               <span>{isExporting ? "DOWNLOADING..." : "DOWNLOAD REPORT"}</span>
@@ -289,7 +289,7 @@ const Analytics = () => {
               }>
               <div className="p-6 relative z-10 flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <p className="text-xs font-black text-slate-600 uppercase tracking-widest">
                     {stat.label}
                   </p>
                   <h4 className="text-2xl font-black text-slate-900 mt-1 tracking-tight">
@@ -297,7 +297,7 @@ const Analytics = () => {
                   </h4>
                   <div
                     className={cn(
-                      "flex items-center mt-3 text-[11px] font-black px-2 py-0.5 rounded-full w-fit",
+                      "flex items-center mt-3 text-xs sm:text-sm font-black px-2 py-0.5 rounded-full w-fit",
                       stat.trend.startsWith("+")
                         ? "text-emerald-600 bg-emerald-50"
                         : "text-rose-600 bg-rose-50",
@@ -308,7 +308,7 @@ const Analytics = () => {
                       <HiOutlineArrowDownRight className="mr-0.5" />
                     )}
                     {stat.trend}
-                    <span className="text-slate-400 ml-1 font-medium">
+                    <span className="text-slate-600 ml-1 font-medium">
                       vs prev 7d
                     </span>
                   </div>
@@ -329,7 +329,7 @@ const Analytics = () => {
 
       {hasNoData && (activeTab === "Overview" || activeTab === "Sales") && (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 flex items-center gap-3">
-          <HiOutlineChartBar className="h-6 w-6 text-slate-400 shrink-0" />
+          <HiOutlineChartBar className="h-6 w-6 text-slate-600 shrink-0" />
           <p className="text-sm font-semibold text-slate-600">
             Sales report is connected. Data will appear here once you have orders.
           </p>
@@ -346,7 +346,7 @@ const Analytics = () => {
                 <h3 className="text-lg font-black text-slate-900">
                   Revenue & Trends
                 </h3>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+                <p className="text-xs text-slate-600 font-bold uppercase tracking-widest">
                   Performance Insights
                 </p>
               </div>
@@ -359,7 +359,7 @@ const Analytics = () => {
                       "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                       chartRange === range
                         ? "bg-white text-primary shadow-sm"
-                        : "text-slate-400 hover:text-slate-600",
+                        : "text-slate-600 hover:text-slate-600",
                     )}>
                     {range}
                   </button>
@@ -450,7 +450,7 @@ const Analytics = () => {
               <h3 className="text-lg font-black text-slate-900">
                 Category Mix
               </h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
                 Inventory Distribution
               </p>
             </div>
@@ -491,7 +491,7 @@ const Analytics = () => {
                   <p className="text-[10px] font-black text-slate-900">
                     {cat.A}
                   </p>
-                  <p className="text-[8px] font-bold text-slate-400 uppercase">
+                  <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase">
                     {cat.subject}
                   </p>
                 </div>
@@ -511,7 +511,7 @@ const Analytics = () => {
               <h3 className="text-lg font-black text-slate-900">
                 Top Performing Products
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-slate-600 font-medium">
                 Bestsellers by sales volume and revenue generation.
               </p>
             </div>
@@ -525,14 +525,14 @@ const Analytics = () => {
                   }}
                   className="px-6 py-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors group cursor-pointer">
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 font-black text-xs group-hover:bg-primary group-hover:text-white transition-all">
+                    <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 font-black text-xs group-hover:bg-primary group-hover:text-white transition-all">
                       {i + 1}
                     </div>
                     <div>
                       <h4 className="text-sm font-black text-slate-900">
                         {product.name}
                       </h4>
-                      <p className="text-[11px] text-slate-400 font-bold">
+                      <p className="text-xs sm:text-sm text-slate-600 font-bold">
                         {product.sales} units sold
                       </p>
                     </div>
@@ -578,7 +578,7 @@ const Analytics = () => {
               <h3 className="text-lg font-black text-slate-900">
                 New Customers
               </h3>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
+              <p className="text-xs text-slate-600 font-bold uppercase tracking-widest">
                 Traffic Origin Analysis
               </p>
             </div>
@@ -642,7 +642,7 @@ const Analytics = () => {
                 <p className="text-[10px] font-black text-slate-900 tracking-tight">
                   {statsData?.insights?.topCity || "N/A"}
                 </p>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">
                   Top City
                 </p>
               </div>
@@ -653,7 +653,7 @@ const Analytics = () => {
                 <p className="text-[10px] font-black text-slate-900 tracking-tight">
                   {statsData?.insights?.peakTime || "N/A"}
                 </p>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">
                   Peak Time
                 </p>
               </div>
@@ -664,7 +664,7 @@ const Analytics = () => {
                 <p className="text-[10px] font-black text-slate-900 tracking-tight">
                   {statsData?.insights?.topDevice || "N/A"}
                 </p>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">
                   Top Device
                 </p>
               </div>
@@ -681,14 +681,14 @@ const Analytics = () => {
         {selectedProduct && (
           <div className="space-y-6">
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-              <div className="h-16 w-16 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-slate-400">
+              <div className="h-16 w-16 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-slate-600">
                 <HiOutlineShoppingBag className="h-8 w-8" />
               </div>
               <div>
                 <h3 className="font-black text-slate-900">
                   {selectedProduct.name}
                 </h3>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">
+                <p className="text-xs text-slate-600 font-bold uppercase tracking-widest mt-1">
                   Product ID: {selectedProduct._id || "N/A"}
                 </p>
               </div>
@@ -720,7 +720,7 @@ const Analytics = () => {
               <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full bg-primary w-[75%]" />
               </div>
-              <p className="text-[10px] text-slate-400 font-bold text-right pt-1">
+              <p className="text-[10px] text-slate-600 font-bold text-right pt-1">
                 +{selectedProduct.trend}% faster than last week
               </p>
             </div>

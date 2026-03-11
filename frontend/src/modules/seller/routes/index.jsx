@@ -20,6 +20,7 @@ const ProductManagement = React.lazy(
 const StockManagement = React.lazy(() => import("../pages/StockManagement"));
 const AddProduct = React.lazy(() => import("../pages/AddProduct"));
 const Orders = React.lazy(() => import("../pages/Orders"));
+const Returns = React.lazy(() => import("../pages/Returns"));
 const Earnings = React.lazy(() => import("../pages/Earnings"));
 const Analytics = React.lazy(() => import("../pages/Analytics"));
 const Transactions = React.lazy(() => import("../pages/Transactions"));
@@ -32,6 +33,7 @@ const navItems = [
   { label: "Products", path: "/seller/products", icon: HiOutlineCube },
   { label: "Stock", path: "/seller/inventory", icon: HiOutlineArchiveBox },
   { label: "Orders", path: "/seller/orders", icon: HiOutlineTruck },
+  { label: "Returns", path: "/seller/returns", icon: HiOutlineArchiveBox },
   { label: "Track Orders", path: "/seller/tracking", icon: HiOutlineMapPin },
   {
     label: "Sales Reports",
@@ -65,6 +67,7 @@ const SellerRoutes = () => {
         <Route path="/products/add" element={<AddProduct />} />
         <Route path="/inventory" element={<StockManagement />} />
         <Route path="/orders" element={<Orders />} />
+        <Route path="/returns" element={<Returns />} />
         <Route path="/tracking" element={<DeliveryTracking />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/transactions" element={<Transactions />} />

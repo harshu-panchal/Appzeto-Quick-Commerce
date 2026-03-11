@@ -235,7 +235,7 @@ const Dashboard = () => {
   };
 
   if (loadingOrStats) {
-    return <div className="flex items-center justify-center h-screen font-bold text-gray-500">Updating Dashboard...</div>;
+    return <div className="flex items-center justify-center h-screen font-bold text-slate-600">Updating Dashboard...</div>;
   }
 
   return (
@@ -251,8 +251,8 @@ const Dashboard = () => {
           <Card key={stat.label} className="hover:shadow-lg transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                <p className="text-base font-medium text-slate-600">{stat.label}</p>
+                <p className="text-2xl font-bold text-slate-900 mt-2">{stat.value}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <span
                     className={cn(
@@ -263,7 +263,7 @@ const Dashboard = () => {
                     <TrendingUp className={cn("h-3 w-3", stat.changeType === "decrease" && "rotate-180")} />
                     {stat.change}
                   </span>
-                  <span className="text-xs text-gray-500">{stat.description}</span>
+                  <span className="text-sm text-slate-600">{stat.description}</span>
                 </div>
               </div>
               <div className={cn("p-3 rounded-lg", stat.iconBg)}>
@@ -286,37 +286,37 @@ const Dashboard = () => {
               className={cn(
                 "p-6 rounded-xl text-left transition-all duration-200 shadow-sm hover:shadow-md border-2",
                 isPrimary && "bg-primary border-primary text-white hover:bg-primary/90 hover:border-primary/90",
-                action.variant === "outline" && "bg-white border-gray-200 text-gray-900 hover:border-primary hover:bg-primary/5",
-                isEmerald && "bg-white border-gray-200 text-gray-900 hover:border-emerald-500 hover:bg-emerald-50"
+                action.variant === "outline" && "bg-white border-slate-200 text-slate-900 hover:border-primary hover:bg-primary/5",
+                isEmerald && "bg-white border-slate-200 text-slate-900 hover:border-emerald-500 hover:bg-emerald-50"
               )}
             >
               <div className="flex items-start gap-4">
                 <div className={cn(
                   "p-2 rounded-lg",
-                  isPrimary ? "bg-white/20" : isEmerald ? "bg-emerald-50" : "bg-gray-100"
+                  isPrimary ? "bg-white/20" : isEmerald ? "bg-emerald-50" : "bg-slate-100"
                 )}>
                   <action.icon className={cn(
                     "h-5 w-5",
-                    isPrimary ? "text-white" : isEmerald ? "text-emerald-600" : "text-gray-700"
+                    isPrimary ? "text-white" : isEmerald ? "text-emerald-600" : "text-slate-700"
                   )} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className={cn(
                     "font-semibold text-sm",
-                    isPrimary ? "text-white" : "text-gray-900"
+                    isPrimary ? "text-white" : "text-slate-900"
                   )}>
                     {action.title}
                   </h3>
                   <p className={cn(
                     "text-xs mt-1",
-                    isPrimary ? "text-white/90" : "text-gray-600"
+                    isPrimary ? "text-white/90" : "text-slate-600"
                   )}>
                     {action.description}
                   </p>
                 </div>
                 <ArrowUpRight className={cn(
                   "h-4 w-4 shrink-0",
-                  isPrimary ? "text-white/70" : "text-gray-500"
+                  isPrimary ? "text-white/70" : "text-slate-600"
                 )} />
               </div>
             </button>
@@ -327,7 +327,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Chart */}
         <Card title="Revenue Overview" subtitle="Last 7 days performance" className="lg:col-span-2">
-          <div className="h-[300px] mt-4">
+          <div className="h-[300px] min-h-[280px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
@@ -341,12 +341,12 @@ const Dashboard = () => {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#64748b", fontSize: 12, fontWeight: 600 }}
+                  tick={{ fill: "#475569", fontSize: 12, fontWeight: 600 }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#64748b", fontSize: 12, fontWeight: 600 }}
+                  tick={{ fill: "#475569", fontSize: 12, fontWeight: 600 }}
                   tickFormatter={(value) => `₹${Number(value).toLocaleString()}`}
                   domain={[0, revenueMax]}
                   allowDataOverflow
@@ -357,6 +357,7 @@ const Dashboard = () => {
                     border: "1px solid #e2e8f0",
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    color: "#334155",
                   }}
                   formatter={(value) => [`₹${Number(value).toLocaleString()}`, "Revenue"]}
                   labelFormatter={(label) => `Day: ${label}`}
@@ -376,17 +377,17 @@ const Dashboard = () => {
 
         {/* Product Performance */}
         <Card title="Top Categories" subtitle="Sales by category">
-          <div className="h-[300px] mt-4">
+          <div className="h-[300px] min-h-[280px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={statsData?.categoryMix || []} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: "#475569", fontSize: 12 }} />
                 <YAxis
                   type="category"
                   dataKey="subject"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  tick={{ fill: "#475569", fontSize: 12 }}
                   width={80}
                 />
                 <Tooltip
@@ -395,6 +396,7 @@ const Dashboard = () => {
                     border: "1px solid #e2e8f0",
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    color: "#334155",
                   }}
                 />
                 <Bar dataKey="A" fill="#4f46e5" radius={[0, 4, 4, 0]} />
@@ -421,46 +423,46 @@ const Dashboard = () => {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <tr className="border-b border-slate-100">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">
                   Order ID
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th className="text-center py-3 px-4 text-sm font-semibold text-slate-600 uppercase tracking-wider">
                   Action
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-50">
               {safeOrders.slice(0, 5).map((order) => (
-                <tr key={order.orderId} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={order.orderId} className="hover:bg-slate-50/50 transition-colors">
                   <td className="py-4 px-4 align-middle">
-                    <span className="text-sm font-semibold text-gray-900">{order.orderId}</span>
+                    <span className="text-sm font-semibold text-slate-900">{order.orderId}</span>
                   </td>
                   <td className="py-4 px-4 align-middle">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
+                      <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-600">
                         {order.customer?.name?.split(" ").map(n => n[0]).join("") || "C"}
                       </div>
-                      <span className="text-sm font-medium text-gray-700">{order.customer?.name || "Customer"}</span>
+                      <span className="text-sm font-medium text-slate-700">{order.customer?.name || "Customer"}</span>
                     </div>
                   </td>
                   <td className="py-4 px-4 align-middle">
-                    <span className="text-sm text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</span>
+                    <span className="text-sm text-slate-600">{new Date(order.createdAt).toLocaleDateString()}</span>
                   </td>
                   <td className="py-4 px-4 align-middle">
-                    <span className="text-sm font-semibold text-gray-900">₹{order.pricing?.total || 0}</span>
+                    <span className="text-sm font-semibold text-slate-900">₹{order.pricing?.total || 0}</span>
                   </td>
                   <td className="py-4 px-4 align-middle">
                     <Badge variant={getStatusColor(order.status)} className="capitalize">
@@ -473,7 +475,7 @@ const Dashboard = () => {
                         setSelectedOrder(normalizeOrderForModal(order));
                         setIsOrderModalOpen(true);
                       }}
-                      className="text-gray-400 hover:text-primary transition-colors p-1"
+                      className="text-slate-600 hover:text-primary transition-colors p-1"
                     >
                       <Eye className="h-4 w-4" />
                     </button>
@@ -514,11 +516,11 @@ const Dashboard = () => {
                     <div className="flex items-center space-x-2 mt-0.5">
                       <Badge
                         variant={getStatusColor(selectedOrder.status)}
-                        className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0"
+                        className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0"
                       >
                         {selectedOrder.status}
                       </Badge>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
                         #{selectedOrder.id}
                       </span>
                     </div>
@@ -526,7 +528,7 @@ const Dashboard = () => {
                 </div>
                 <button
                   onClick={() => setIsOrderModalOpen(false)}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
                 >
                   <HiOutlineXMark className="h-5 w-5" />
                 </button>
@@ -536,7 +538,7 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                   <div className="space-y-3 sm:space-y-4">
                     <div>
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                         <HiOutlineMapPin className="h-3 w-3 text-primary" />{" "}
                         Delivery Address
                       </h4>
@@ -545,7 +547,7 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <div>
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                         <HiOutlinePhone className="h-3 w-3 text-emerald-500" />{" "}
                         Contact Info
                       </h4>
@@ -553,7 +555,7 @@ const Dashboard = () => {
                         <p className="text-xs font-bold text-slate-800">
                           {selectedOrder.customer.name}
                         </p>
-                        <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
+                        <p className="text-[11px] font-semibold text-slate-600 mt-0.5">
                           {selectedOrder.customer.phone}
                         </p>
                       </div>
@@ -566,7 +568,7 @@ const Dashboard = () => {
                       </h4>
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs">
-                          <span className="font-bold text-slate-500">
+                          <span className="font-bold text-slate-600">
                             Subtotal
                           </span>
                           <span className="font-black text-slate-900">
@@ -574,7 +576,7 @@ const Dashboard = () => {
                           </span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="font-bold text-slate-500">
+                          <span className="font-bold text-slate-600">
                             Delivery Fee
                           </span>
                           <span className="font-black text-emerald-600">
@@ -593,7 +595,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="bg-slate-900 p-3 sm:p-4 rounded-3xl text-white shadow-xl shadow-slate-900/10">
-                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                      <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">
                         Payment Status
                       </h4>
                       <div className="flex items-center gap-2">
@@ -606,7 +608,7 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 sm:mb-4">
+                <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-3 sm:mb-4">
                   Items Ordered ({selectedOrder.items.length})
                 </h4>
                 <div className="space-y-3 max-h-52 sm:max-h-64 overflow-y-auto pr-1">
@@ -624,7 +626,7 @@ const Dashboard = () => {
                               className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                           ) : (
-                            <div className="h-full w-full flex items-center justify-center text-slate-400 text-xs font-bold">
+                            <div className="h-full w-full flex items-center justify-center text-slate-600 text-xs font-bold">
                               —
                             </div>
                           )}
@@ -633,7 +635,7 @@ const Dashboard = () => {
                           <p className="text-xs font-bold text-slate-900">
                             {item.name}
                           </p>
-                          <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                          <p className="text-[10px] font-semibold text-slate-600 mt-0.5">
                             ₹{Number(item.price).toFixed(2)} × {item.qty}
                           </p>
                         </div>
@@ -653,7 +655,7 @@ const Dashboard = () => {
                 <div className="flex gap-2 items-center">
                   <button
                     onClick={() => setIsOrderModalOpen(false)}
-                    className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100 transition-all"
+                    className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all"
                   >
                     CLOSE
                   </button>

@@ -25,7 +25,9 @@ import {
     settleRiderCash,
     getCashSettlementHistory,
     getUsers,
-    getUserById
+    getUserById,
+    getPlatformSettings,
+    updatePlatformSettings
 } from "../controller/adminController.js";
 
 import { verifyToken, allowRoles } from "../middleware/authMiddleware.js";
@@ -62,6 +64,18 @@ router.get(
     verifyToken,
     allowRoles("admin"),
     getAdminStats
+);
+router.get(
+    "/settings/platform",
+    verifyToken,
+    allowRoles("admin"),
+    getPlatformSettings
+);
+router.put(
+    "/settings/platform",
+    verifyToken,
+    allowRoles("admin"),
+    updatePlatformSettings
 );
 router.get("/users", verifyToken, allowRoles("admin"), getUsers);
 router.get("/users/:id", verifyToken, allowRoles("admin"), getUserById);

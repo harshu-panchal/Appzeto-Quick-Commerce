@@ -175,7 +175,7 @@ const DeliveryTracking = () => {
                 Live Fleet
               </Badge>
             </h1>
-            <p className="text-slate-500 text-sm mt-0.5 font-medium">
+            <p className="text-slate-600 text-base mt-0.5 font-medium">
               Monitor active deliveries and assigned delivery partners.
             </p>
           </div>
@@ -186,7 +186,7 @@ const DeliveryTracking = () => {
       {loading ? (
         <div className="min-h-[400px] flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-100 shadow-sm">
           <Loader2 className="h-10 w-10 text-primary animate-spin" />
-          <p className="text-slate-400 font-bold mt-4 uppercase tracking-widest text-xs">Tracking Fleet...</p>
+          <p className="text-slate-600 font-bold mt-4 uppercase tracking-widest text-xs">Tracking Fleet...</p>
         </div>
       ) : (
         <>
@@ -212,7 +212,7 @@ const DeliveryTracking = () => {
                       <stat.icon className="h-7 w-7" />
                     </div>
                     <div className="flex flex-col">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <p className="text-xs font-black text-slate-600 uppercase tracking-widest">
                         {stat.label}
                       </p>
                       <h4 className="text-3xl font-black text-slate-900 tracking-tight leading-none mt-1">
@@ -239,7 +239,7 @@ const DeliveryTracking = () => {
                           "relative py-5 px-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
                           activeTab === tab
                             ? "text-primary bg-white/50"
-                            : "text-slate-400 hover:text-slate-600",
+                            : "text-slate-600 hover:text-slate-700",
                         )}>
                         {tab}
                         {activeTab === tab && (
@@ -253,11 +253,11 @@ const DeliveryTracking = () => {
                   </div>
                   <div className="py-3 lg:py-0 w-full lg:w-72">
                     <div className="relative group">
-                      <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
+                      <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-primary transition-all" />
                       <input
                         type="text"
                         placeholder="Search Order ID or Partner..."
-                        className="w-full pl-10 pr-4 py-2 bg-slate-100/50 border-none rounded-lg text-xs font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-100/50 border-none rounded-lg text-sm font-bold text-slate-700 placeholder:text-slate-500 focus:ring-2 focus:ring-primary/10 transition-all outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
@@ -326,14 +326,14 @@ const DeliveryTracking = () => {
                                   {dlv.status}
                                 </Badge>
                               </div>
-                              <h4 className="text-[11px] sm:text-xs font-bold text-slate-500 flex items-center gap-1.5 flex-wrap">
-                                <HiOutlineUser className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-400 shrink-0" />
+                              <h4 className="text-[11px] sm:text-xs font-bold text-slate-600 flex items-center gap-1.5 flex-wrap">
+                                <HiOutlineUser className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-600 shrink-0" />
                                 Customer:{" "}
                                 <span className="text-slate-900 capitalize">{dlv.customerName}</span>
                               </h4>
                             </div>
                             <div className="sm:text-right shrink-0">
-                              <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-widest">
                                 Order Date & Time
                               </p>
                               <p className="text-xs sm:text-sm font-black text-primary tracking-tight">
@@ -343,7 +343,7 @@ const DeliveryTracking = () => {
                           </div>
 
                           <div className="bg-slate-50/50 p-3 sm:p-4 rounded-lg border border-slate-100/50 min-w-0">
-                            <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 sm:mb-2 flex items-center gap-2">
+                            <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-widest mb-1.5 sm:mb-2 flex items-center gap-2">
                               <HiOutlineMapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
                               Customer Address
                             </p>
@@ -372,7 +372,7 @@ const DeliveryTracking = () => {
                     <h3 className="text-base font-black text-slate-900">
                       No active tracking found
                     </h3>
-                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-2">
+                    <p className="text-sm text-slate-600 font-bold uppercase tracking-widest mt-2">
                       Adjust filters or search terms
                     </p>
                   </div>

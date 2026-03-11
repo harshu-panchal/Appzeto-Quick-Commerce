@@ -185,7 +185,7 @@ const Auth = () => {
 
             <div className="mt-8 text-center space-y-4">
               <h2 className="text-2xl font-black text-white tracking-tight leading-tight uppercase underline decoration-white/20 underline-offset-8">
-                Seller <span className="text-slate-400">Expansion.</span>
+                Seller <span className="text-slate-600">Expansion.</span>
               </h2>
             </div>
           </motion.div>
@@ -227,7 +227,7 @@ const Auth = () => {
                     {isLogin ? "Login" : "Signup"}
                   </span>
                 </h1>
-                <p className="text-slate-400 font-medium text-base leading-relaxed">
+                <p className="text-slate-600 font-medium text-base leading-relaxed">
                   {isLogin
                     ? "Access your unified seller dashboard and manage orders."
                     : signupStep === 1
@@ -362,7 +362,7 @@ const Auth = () => {
                     </div>
 
                     <div className="pt-2">
-                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Verification Documents</p>
+                      <p className="text-sm font-black text-slate-600 uppercase tracking-widest mb-3">Verification Documents</p>
                       <div className="space-y-3">
                         {[
                           { label: "Trade License", id: "tradeLicense" },
@@ -385,14 +385,14 @@ const Auth = () => {
                                 }`}
                             >
                               <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-md ${documents[doc.id] ? "bg-green-100 text-green-600" : "bg-white text-slate-400 shadow-sm"}`}>
+                                <div className={`p-2 rounded-md ${documents[doc.id] ? "bg-green-100 text-green-600" : "bg-white text-slate-600 shadow-sm"}`}>
                                   {documents[doc.id] ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
                                 </div>
                                 <div className="text-left">
                                   <p className={`text-xs font-bold ${documents[doc.id] ? "text-green-700" : "text-slate-600"}`}>
                                     {doc.label}
                                   </p>
-                                  <p className="text-[10px] text-slate-400 font-medium truncate max-w-[150px]">
+                                  <p className="text-xs text-slate-600 font-medium truncate max-w-[150px]">
                                     {documents[doc.id] ? documents[doc.id].name : "Upload secure PDF or image"}
                                   </p>
                                 </div>
@@ -435,7 +435,7 @@ const Auth = () => {
               </form>
 
               <div className="pt-6 border-t border-slate-50 flex flex-col items-center gap-4">
-                <p className="text-slate-400 font-bold text-sm">
+                <p className="text-slate-600 font-bold text-sm">
                   {isLogin ? "New to the platform?" : "Already part of us?"}{" "}
                   <button
                     onClick={() => {

@@ -7,6 +7,7 @@ import Order from "../models/order.js";
 import Product from "../models/product.js";
 import Transaction from "../models/transaction.js";
 import Notification from "../models/notification.js";
+import Setting from "../models/setting.js";
 import handleResponse from "../utils/helper.js";
 import getPagination from "../utils/pagination.js";
 
@@ -112,6 +113,40 @@ export const getAdminStats = async (req, res) => {
                 color: "bg-blue-50 text-blue-600"
             }))
         });
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   PLATFORM SETTINGS (Admin)
+================================ */
+export const getPlatformSettings = async (req, res) => {
+    try {
+        let settings = await Setting.findOne({});
+
+        if (!settings) {
+            settings = await Setting.create({});
+        }
+
+        return handleResponse(res, 200, "Platform settings fetched successfully", settings);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+export const updatePlatformSettings = async (req, res) => {
+    try {
+        const payload = req.body || {};
+
+        // We keep a single settings document for the platform
+        const settings = await Setting.findOneAndUpdate(
+            {},
+            { $set: payload },
+            { new: true, upsert: true }
+        );
+
+        return handleResponse(res, 200, "Platform settings updated successfully", settings);
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

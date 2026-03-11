@@ -6,6 +6,8 @@ import StockHistory from "../models/stockHistory.js";
 import Notification from "../models/notification.js";
 import Seller from "../models/seller.js";
 import Delivery from "../models/delivery.js";
+import Setting from "../models/setting.js";
+import User from "../models/customer.js";
 import handleResponse from "../utils/helper.js";
 import getPagination from "../utils/pagination.js";
 
@@ -128,6 +130,66 @@ export const getMyOrders = async (req, res) => {
 };
 
 /* ===============================
+   GET SELLER RETURNS (Admin/Seller)
+================================ */
+export const getSellerReturns = async (req, res) => {
+    try {
+        const { id: userId, role } = req.user;
+        const { status, startDate, endDate } = req.query;
+
+        const query = {};
+
+        if (role !== "admin") {
+            query.seller = userId;
+        }
+
+        query.returnStatus = { $ne: "none" };
+
+        if (status && status !== "all") {
+            query.returnStatus = status;
+        }
+
+        if (startDate || endDate) {
+            query.returnRequestedAt = {};
+            if (startDate) {
+                query.returnRequestedAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.returnRequestedAt.$lte = end;
+            }
+        }
+
+        const { page, limit, skip } = getPagination(req, {
+            defaultLimit: 25,
+            maxLimit: 100,
+        });
+
+        const [orders, total] = await Promise.all([
+            Order.find(query)
+                .sort({ returnRequestedAt: -1, createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .populate("customer", "name phone")
+                .populate("returnDeliveryBoy", "name phone")
+                .lean(),
+            Order.countDocuments(query),
+        ]);
+
+        return handleResponse(res, 200, "Seller returns fetched", {
+            items: orders,
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit) || 1,
+        });
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
    GET ORDER DETAILS
 ================================ */
 export const getOrderDetails = async (req, res) => {
@@ -192,6 +254,156 @@ export const cancelOrder = async (req, res) => {
 };
 
 /* ===============================
+   REQUEST RETURN (Customer)
+================================ */
+export const requestReturn = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const customerId = req.user.id;
+        const { items, reason, images } = req.body || {};
+
+        if (!Array.isArray(items) || items.length === 0) {
+            return handleResponse(res, 400, "Please select at least one item to return.");
+        }
+        if (!reason || typeof reason !== "string" || reason.trim().length === 0) {
+            return handleResponse(res, 400, "Return reason is required.");
+        }
+
+        const order = await Order.findOne({ orderId, customer: customerId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        if (order.status !== "delivered") {
+            return handleResponse(res, 400, "Return can only be requested for delivered orders.");
+        }
+
+        if (order.returnStatus && order.returnStatus !== "none") {
+            return handleResponse(res, 400, "Return request already exists for this order.");
+        }
+
+        const now = new Date();
+        const deliveredAt = order.deliveredAt || order.updatedAt || order.createdAt;
+        const deadline =
+            order.returnDeadline ||
+            new Date(deliveredAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+        if (now > deadline) {
+            return handleResponse(res, 400, "Return window has expired for this order.");
+        }
+
+        const selectedItems = [];
+        for (const entry of items) {
+            const { itemIndex, quantity } = entry || {};
+            if (
+                typeof itemIndex !== "number" ||
+                itemIndex < 0 ||
+                itemIndex >= order.items.length
+            ) {
+                return handleResponse(res, 400, "Invalid item selection for return.");
+            }
+            const original = order.items[itemIndex];
+            const qty = Number(quantity) || original.quantity;
+            if (qty <= 0 || qty > original.quantity) {
+                return handleResponse(res, 400, "Invalid quantity for one of the return items.");
+            }
+
+            selectedItems.push({
+                product: original.product,
+                name: original.name,
+                quantity: qty,
+                price: original.price,
+                variantSlot: original.variantSlot,
+                itemIndex,
+                status: "requested",
+            });
+        }
+
+        order.returnStatus = "return_requested";
+        order.returnReason = reason.trim();
+        order.returnImages = Array.isArray(images) ? images.slice(0, 5) : [];
+        order.returnItems = selectedItems;
+        order.returnRequestedAt = now;
+        order.returnDeadline = deadline;
+
+        await order.save();
+
+        // Basic notification for seller about new return request
+        if (order.seller) {
+            await Notification.create({
+                recipient: order.seller,
+                recipientModel: "Seller",
+                title: "New Return Request",
+                message: `Customer requested a return for order #${order.orderId}.`,
+                type: "order",
+                data: { orderId: order._id },
+            });
+        }
+
+        return handleResponse(res, 200, "Return request submitted successfully", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   GET RETURN DETAILS (Order-scoped)
+================================ */
+export const getReturnDetails = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+
+        const order = await Order.findOne({ orderId })
+            .populate("customer", "name phone")
+            .populate("seller", "shopName name")
+            .populate("returnDeliveryBoy", "name phone");
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        const isOwnerCustomer =
+            (role === "customer" || role === "user") &&
+            order.customer?._id?.toString() === userId;
+        const isOwnerSeller =
+            role === "seller" && order.seller?._id?.toString() === userId;
+        const isAssignedReturnDelivery =
+            role === "delivery" &&
+            order.returnDeliveryBoy?._id?.toString() === userId;
+        const isAdmin = role === "admin";
+
+        if (!isOwnerCustomer && !isOwnerSeller && !isAssignedReturnDelivery && !isAdmin) {
+            return handleResponse(
+                res,
+                403,
+                "Access denied. You are not authorized to view this return."
+            );
+        }
+
+        const payload = {
+            orderId: order.orderId,
+            status: order.status,
+            returnStatus: order.returnStatus,
+            returnReason: order.returnReason,
+            returnRejectedReason: order.returnRejectedReason,
+            returnRequestedAt: order.returnRequestedAt,
+            returnDeadline: order.returnDeadline,
+            returnImages: order.returnImages || [],
+            returnItems: order.returnItems || [],
+            returnRefundAmount: order.returnRefundAmount,
+            returnDeliveryCommission: order.returnDeliveryCommission,
+            returnDeliveryBoy: order.returnDeliveryBoy || null,
+        };
+
+        return handleResponse(res, 200, "Return details fetched", payload);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
    UPDATE ORDER STATUS (Admin/Seller/Delivery)
 ================================ */
 export const updateOrderStatus = async (req, res) => {
@@ -243,7 +455,8 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         // Handle Confirmation/Delivery (Settle Transaction for Demo)
-        if (status === 'delivered') {
+        if (status === 'delivered' && oldStatus !== 'delivered') {
+            order.deliveredAt = new Date();
             await Transaction.findOneAndUpdate(
                 { reference: orderId, userModel: "Seller" },
                 { status: 'Settled' }
@@ -287,6 +500,339 @@ export const updateOrderStatus = async (req, res) => {
         }
 
         return handleResponse(res, 200, "Order status updated", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   APPROVE RETURN (Seller/Admin)
+================================ */
+export const approveReturnRequest = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        const isOwnerSeller = role === "seller" && order.seller?.toString() === userId;
+        const isAdmin = role === "admin";
+
+        if (!isOwnerSeller && !isAdmin) {
+            return handleResponse(
+                res,
+                403,
+                "Access denied. You are not authorized to approve this return."
+            );
+        }
+
+        if (order.returnStatus !== "return_requested") {
+            return handleResponse(res, 400, "Only pending return requests can be approved.");
+        }
+
+        if (!Array.isArray(order.returnItems) || order.returnItems.length === 0) {
+            return handleResponse(res, 400, "No return items found for this order.");
+        }
+
+        const refundAmount = order.returnItems.reduce(
+            (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+            0
+        );
+
+        const settings = await Setting.findOne({});
+        const returnCommission = settings?.returnDeliveryCommission ?? 0;
+
+        order.returnItems = order.returnItems.map((item) => ({
+            ...item.toObject?.() ?? item,
+            status: "approved",
+        }));
+        order.returnStatus = "return_approved";
+        order.returnRefundAmount = refundAmount;
+        order.returnDeliveryCommission = returnCommission;
+
+        await order.save();
+
+        return handleResponse(res, 200, "Return request approved", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   REJECT RETURN (Seller/Admin)
+================================ */
+export const rejectReturnRequest = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+        const { reason } = req.body || {};
+
+        if (!reason || typeof reason !== "string" || reason.trim().length === 0) {
+            return handleResponse(res, 400, "Rejection reason is required.");
+        }
+
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        const isOwnerSeller = role === "seller" && order.seller?.toString() === userId;
+        const isAdmin = role === "admin";
+
+        if (!isOwnerSeller && !isAdmin) {
+            return handleResponse(
+                res,
+                403,
+                "Access denied. You are not authorized to reject this return."
+            );
+        }
+
+        if (order.returnStatus !== "return_requested") {
+            return handleResponse(res, 400, "Only pending return requests can be rejected.");
+        }
+
+        order.returnStatus = "return_rejected";
+        order.returnRejectedReason = reason.trim();
+
+        await order.save();
+
+        return handleResponse(res, 200, "Return request rejected", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   ASSIGN RETURN DELIVERY (Seller/Admin)
+================================ */
+export const assignReturnDelivery = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { id: userId, role } = req.user;
+        const { deliveryBoyId } = req.body || {};
+
+        if (!deliveryBoyId) {
+            return handleResponse(res, 400, "deliveryBoyId is required.");
+        }
+
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        const isOwnerSeller = role === "seller" && order.seller?.toString() === userId;
+        const isAdmin = role === "admin";
+
+        if (!isOwnerSeller && !isAdmin) {
+            return handleResponse(
+                res,
+                403,
+                "Access denied. You are not authorized to assign return pickup."
+            );
+        }
+
+        if (order.returnStatus !== "return_approved") {
+            return handleResponse(
+                res,
+                400,
+                "Return pickup can only be assigned after approval."
+            );
+        }
+
+        const partner = await Delivery.findById(deliveryBoyId);
+        if (!partner) {
+            return handleResponse(res, 404, "Delivery partner not found.");
+        }
+
+        order.returnDeliveryBoy = deliveryBoyId;
+        order.returnStatus = "return_pickup_assigned";
+
+        await order.save();
+
+        await Notification.create({
+            recipient: deliveryBoyId,
+            recipientModel: "Delivery",
+            title: "Return Pickup Assigned",
+            message: `A return pickup has been assigned for order #${order.orderId}.`,
+            type: "order",
+            data: { orderId: order._id },
+        });
+
+        return handleResponse(res, 200, "Return pickup assigned successfully", order);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+const completeReturnAndRefund = async (order) => {
+    if (!order) return null;
+    if (order.returnStatus === "refund_completed") {
+        return order;
+    }
+
+    const refundAmount =
+        order.returnRefundAmount ||
+        (Array.isArray(order.returnItems)
+            ? order.returnItems.reduce(
+                  (sum, item) => sum + (item.price || 0) * (item.quantity || 0),
+                  0
+              )
+            : 0);
+
+    const commission = order.returnDeliveryCommission || 0;
+
+    // 1. Credit customer wallet
+    if (order.customer && refundAmount > 0) {
+        const customer = await User.findById(order.customer);
+        if (customer) {
+            customer.walletBalance = (customer.walletBalance || 0) + refundAmount;
+            await customer.save();
+
+            await Transaction.create({
+                user: customer._id,
+                userModel: "User",
+                order: order._id,
+                type: "Refund",
+                amount: refundAmount,
+                status: "Settled",
+                reference: `REF-CUST-${order.orderId}`,
+            });
+        }
+    }
+
+    // 2. Seller adjustment (refund + return commission)
+    if (order.seller && (refundAmount > 0 || commission > 0)) {
+        const adjustment = -Math.abs(refundAmount + commission);
+        await Transaction.create({
+            user: order.seller,
+            userModel: "Seller",
+            order: order._id,
+            type: "Refund",
+            amount: adjustment,
+            status: "Settled",
+            reference: `REF-SELL-${order.orderId}`,
+        });
+    }
+
+    // 3. Delivery partner earning for return pickup
+    if (order.returnDeliveryBoy && commission > 0) {
+        await Transaction.create({
+            user: order.returnDeliveryBoy,
+            userModel: "Delivery",
+            order: order._id,
+            type: "Delivery Earning",
+            amount: commission,
+            status: "Settled",
+            reference: `RET-DEL-${order.orderId}`,
+        });
+    }
+
+    order.returnStatus = "refund_completed";
+    if (order.payment) {
+        order.payment.status = "refunded";
+    }
+
+    await order.save();
+    return order;
+};
+
+/* ===============================
+   UPDATE RETURN STATUS (Delivery/Admin)
+================================ */
+export const updateReturnStatus = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { returnStatus } = req.body || {};
+        const { id: userId, role } = req.user;
+
+        if (!returnStatus) {
+            return handleResponse(res, 400, "returnStatus is required.");
+        }
+
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            return handleResponse(res, 404, "Order not found");
+        }
+
+        const isAssignedReturnDelivery =
+            role === "delivery" && order.returnDeliveryBoy?.toString() === userId;
+        const isAdmin = role === "admin";
+
+        if (!isAssignedReturnDelivery && !isAdmin) {
+            return handleResponse(
+                res,
+                403,
+                "Access denied. You are not authorized to update this return."
+            );
+        }
+
+        const oldStatus = order.returnStatus;
+        const allowedStatuses = [
+            "return_pickup_assigned",
+            "return_in_transit",
+            "returned",
+        ];
+
+        if (!allowedStatuses.includes(returnStatus)) {
+            return handleResponse(res, 400, "Invalid returnStatus value.");
+        }
+
+        // Only allow forward transitions
+        const orderOf = (s) =>
+            s === "return_pickup_assigned"
+                ? 1
+                : s === "return_in_transit"
+                ? 2
+                : s === "returned"
+                ? 3
+                : 0;
+
+        if (orderOf(returnStatus) < orderOf(oldStatus)) {
+            return handleResponse(
+                res,
+                400,
+                "Return status cannot move backwards."
+            );
+        }
+
+        const now = new Date();
+
+        if (returnStatus === "return_in_transit") {
+            order.returnStatus = "return_in_transit";
+            if (!order.returnPickedAt) {
+                order.returnPickedAt = now;
+            }
+            await order.save();
+            return handleResponse(res, 200, "Return status updated", order);
+        }
+
+        if (returnStatus === "returned") {
+            order.returnStatus = "returned";
+            if (!order.returnDeliveredBackAt) {
+                order.returnDeliveredBackAt = now;
+            }
+            await order.save();
+
+            const updated = await completeReturnAndRefund(order);
+            return handleResponse(
+                res,
+                200,
+                "Return received and refund processed",
+                updated
+            );
+        }
+
+        order.returnStatus = returnStatus;
+        await order.save();
+
+        return handleResponse(res, 200, "Return status updated", order);
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

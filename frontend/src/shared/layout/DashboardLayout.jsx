@@ -207,8 +207,8 @@ const DashboardLayout = ({ children, navItems, title }) => {
             />
             <div className={cn("transition-all duration-300", (role === "admin" || role === "seller") ? "pl-0 md:pl-56" : "pl-56")}>
                 <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
-                <main className={cn("p-6 min-h-screen", (role === "admin" || role === "seller") ? "pt-20 md:pt-6 pb-24 md:pb-6" : "pt-20")}>
-                    <div className="max-w-7xl mx-auto pb-12">
+                <main className={cn("p-4 md:p-6 min-h-screen", (role === "admin" || role === "seller") ? "pt-20 md:pt-6 pb-24 md:pb-6" : "pt-20")}>
+                    <div className="w-full pb-12">
                         <SellerOrdersContext.Provider
                             value={{
                                 orders: role === 'seller' ? sellerOrders : [],
@@ -244,7 +244,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
                                 </div>
 
                                 <h2 className="text-2xl font-black text-slate-900 mb-2">New Order Received!</h2>
-                                <p className="text-slate-500 font-medium mb-6">
+                                <p className="text-slate-600 font-medium mb-6">
                                     You have a new order <span className="text-primary font-bold">#{newOrderAlert.orderId}</span> for <span className="text-slate-900 font-bold">₹{newOrderAlert.pricing?.total || newOrderAlert.total}</span>
                                 </p>
 
@@ -259,7 +259,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
                                 </div>
 
                                 <div className="flex items-center gap-4 text-sm font-bold mb-8">
-                                    <Clock className={cn("h-4 w-4", timeLeft < 15 ? "text-rose-500 animate-pulse" : "text-slate-400")} />
+                                    <Clock className={cn("h-4 w-4", timeLeft < 15 ? "text-rose-500 animate-pulse" : "text-slate-600")} />
                                     <span className={timeLeft < 15 ? "text-rose-500" : "text-slate-600"}>
                                         Accept within {timeLeft} seconds
                                     </span>

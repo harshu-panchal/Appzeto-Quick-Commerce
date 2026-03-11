@@ -20,7 +20,7 @@ export const sellerApi = {
 
     // Others
     getStats: (range) => axiosInstance.get('/seller/stats', { params: { range } }),
-    getOrders: () => axiosInstance.get('/orders/seller-orders'),
+    getOrders: (params) => axiosInstance.get('/orders/seller-orders', { params }),
     updateOrderStatus: (orderId, data) => axiosInstance.put(`/orders/status/${orderId}`, data),
     getEarnings: () => axiosInstance.get('/seller/earnings'),
     getProfile: () => axiosInstance.get('/seller/profile'),
@@ -37,4 +37,11 @@ export const sellerApi = {
 
     // Money Requests
     requestWithdrawal: (data) => axiosInstance.post('/seller/request-withdrawal', data),
+
+    // Returns
+    getReturns: (params) => axiosInstance.get('/orders/seller-returns', { params }),
+    getReturnDetails: (orderId) => axiosInstance.get(`/orders/${orderId}/returns`),
+    approveReturn: (orderId, data) => axiosInstance.put(`/orders/returns/${orderId}/approve`, data),
+    rejectReturn: (orderId, data) => axiosInstance.put(`/orders/returns/${orderId}/reject`, data),
+    assignReturnDelivery: (orderId, data) => axiosInstance.put(`/orders/returns/${orderId}/assign-delivery`, data),
 };

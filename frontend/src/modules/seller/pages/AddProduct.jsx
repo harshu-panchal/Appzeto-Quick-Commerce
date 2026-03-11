@@ -216,7 +216,7 @@ const AddProduct = () => {
                 "w-full flex items-center space-x-3 px-4 py-3 rounded-md text-xs font-bold transition-all text-left",
                 modalTab === tab.id
                   ? "bg-white text-primary shadow-sm ring-1 ring-slate-100"
-                  : "text-slate-500 hover:bg-slate-100",
+                  : "text-slate-600 hover:bg-slate-100",
               )}>
               <tab.icon className="h-4 w-4" />
               <span>{tab.label}</span>
@@ -246,7 +246,7 @@ const AddProduct = () => {
           {modalTab === "general" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
               <div className="space-y-1.5 flex flex-col">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                   Product Title
                 </label>
                 <input
@@ -259,7 +259,7 @@ const AddProduct = () => {
                 />
               </div>
               <div className="space-y-1.5 flex flex-col">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                   About this item
                 </label>
                 <textarea
@@ -275,7 +275,7 @@ const AddProduct = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                     Brand Name
                   </label>
                   <input
@@ -288,7 +288,7 @@ const AddProduct = () => {
                   />
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                     Product Code
                   </label>
                   <input
@@ -311,7 +311,7 @@ const AddProduct = () => {
                   <h4 className="text-sm font-bold text-slate-900">
                     Product Variants
                   </h4>
-                  <p className="text-[10px] text-slate-500 font-medium">
+                  <p className="text-xs text-slate-600 font-medium">
                     Add different sizes, colors or weights.
                   </p>
                 </div>
@@ -344,7 +344,7 @@ const AddProduct = () => {
                     key={variant.id}
                     className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-4 items-end group relative">
                     <div className="col-span-12 md:col-span-3 space-y-1">
-                      <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                         Variant Name
                       </label>
                       <input
@@ -359,7 +359,7 @@ const AddProduct = () => {
                       />
                     </div>
                     <div className="col-span-6 md:col-span-2 space-y-1">
-                      <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                         Price
                       </label>
                       <input
@@ -391,7 +391,7 @@ const AddProduct = () => {
                       />
                     </div>
                     <div className="col-span-6 md:col-span-2 space-y-1">
-                      <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                         Stock
                       </label>
                       <input
@@ -407,7 +407,7 @@ const AddProduct = () => {
                       />
                     </div>
                     <div className="col-span-5 md:col-span-2 space-y-1">
-                      <label className="text-[8px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                         Product Code
                       </label>
                       <input
@@ -445,7 +445,7 @@ const AddProduct = () => {
             <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                     Main Group <span className="text-rose-500">*</span>
                   </label>
                   <select
@@ -463,7 +463,7 @@ const AddProduct = () => {
                   </select>
                 </div>
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                     Specific Category <span className="text-rose-500">*</span>
                   </label>
                   <select
@@ -486,7 +486,7 @@ const AddProduct = () => {
               </div>
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-1.5 flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                     Sub-Category <span className="text-rose-500">*</span>
                   </label>
                   <select
@@ -515,7 +515,7 @@ const AddProduct = () => {
             <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
               {/* Main Image Section */}
               <div className="space-y-3">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                   Main Cover Photo
                 </label>
                 <div className="flex flex-col md:flex-row items-start gap-6">
@@ -533,7 +533,7 @@ const AddProduct = () => {
                     ) : (
                       <>
                         <HiOutlinePhoto className="h-10 w-10 text-slate-200 group-hover:text-primary transition-colors" />
-                        <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest group-hover:text-primary">
+                        <p className="text-[9px] font-bold text-slate-600 mt-2 uppercase tracking-widest group-hover:text-primary">
                           Upload Cover
                         </p>
                       </>
@@ -543,7 +543,7 @@ const AddProduct = () => {
                     <p className="text-xs font-bold text-slate-900">
                       Choose a primary image
                     </p>
-                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed">
                       We show this image on the search page and the main
                       store listing. Make sure it is clear and bright.
                     </p>
@@ -556,7 +556,7 @@ const AddProduct = () => {
 
               {/* Gallery Section */}
               <div className="space-y-3">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
                   Gallery Photos (Max 5)
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -577,7 +577,7 @@ const AddProduct = () => {
                             onChange={(e) => handleImageUpload(e, "gallery")}
                           />
                           <HiOutlinePlus className="h-5 w-5 text-slate-200 group-hover:text-primary transition-colors" />
-                          <p className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-widest group-hover:text-primary">
+                          <p className="text-[8px] font-bold text-slate-600 mt-1 uppercase tracking-widest group-hover:text-primary">
                             Add
                           </p>
                         </>
@@ -587,7 +587,7 @@ const AddProduct = () => {
                 </div>
               </div>
 
-              <p className="text-[10px] text-slate-400 font-medium italic text-center pt-4 border-t border-slate-50">
+              <p className="text-xs text-slate-600 font-medium italic text-center pt-4 border-t border-slate-50">
                 Quick Tip: Using WebP format at 800x800px makes your store load
                 3x faster.
               </p>

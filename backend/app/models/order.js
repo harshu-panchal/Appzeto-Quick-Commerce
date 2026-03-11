@@ -113,17 +113,100 @@ const orderSchema = new mongoose.Schema(
         acceptedAt: {
             type: Date,
         },
+        deliveredAt: {
+            type: Date,
+        },
         skippedBy: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Delivery",
             },
         ],
+
+        // Return / refund lifecycle (separate from main delivery status)
+        returnStatus: {
+            type: String,
+            enum: [
+                "none",
+                "return_requested",
+                "return_approved",
+                "return_rejected",
+                "return_pickup_assigned",
+                "return_in_transit",
+                "returned",
+                "refund_completed",
+            ],
+            default: "none",
+        },
+        returnRequestedAt: {
+            type: Date,
+        },
+        returnDeadline: {
+            type: Date,
+        },
+        returnReason: {
+            type: String,
+        },
+        returnImages: [
+            {
+                type: String,
+            },
+        ],
+        returnItems: [
+            {
+                product: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "Product",
+                    required: true,
+                },
+                name: String,
+                quantity: {
+                    type: Number,
+                    required: true,
+                    min: 1,
+                },
+                price: {
+                    type: Number,
+                    required: true,
+                },
+                variantSlot: String,
+                itemIndex: {
+                    type: Number,
+                },
+                status: {
+                    type: String,
+                    enum: ["requested", "approved", "rejected", "returned"],
+                    default: "requested",
+                },
+            },
+        ],
+        returnRejectedReason: {
+            type: String,
+        },
+        returnDeliveryBoy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Delivery",
+        },
+        returnDeliveryCommission: {
+            type: Number,
+            default: 0,
+        },
+        returnRefundAmount: {
+            type: Number,
+            default: 0,
+        },
+        returnPickedAt: {
+            type: Date,
+        },
+        returnDeliveredBackAt: {
+            type: Date,
+        },
     },
     { timestamps: true }
 );
 
 orderSchema.index({ status: 1, seller: 1, deliveryBoy: 1, createdAt: -1 });
 orderSchema.index({ status: 1, expiresAt: 1 });
+orderSchema.index({ seller: 1, returnStatus: 1, returnRequestedAt: -1 });
 
 export default mongoose.model("Order", orderSchema);

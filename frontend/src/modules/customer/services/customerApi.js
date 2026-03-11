@@ -28,6 +28,8 @@ export const customerApi = {
     getMyOrders: () => axiosInstance.get('/orders/my-orders'),
     getOrderDetails: (orderId) => axiosInstance.get(`/orders/details/${orderId}`),
     cancelOrder: (orderId, data) => axiosInstance.put(`/orders/cancel/${orderId}`, data),
+    requestReturn: (orderId, data) => axiosInstance.post(`/orders/${orderId}/returns`, data),
+    getReturnDetails: (orderId) => axiosInstance.get(`/orders/${orderId}/returns`),
 
     // Payments
     createPaymentOrder: (data) => axiosInstance.post('/payments/create-order', data),

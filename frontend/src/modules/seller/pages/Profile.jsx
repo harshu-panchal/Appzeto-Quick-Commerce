@@ -188,7 +188,7 @@ const SellerProfile = () => {
             <form className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
                     Seller Identity
                   </label>
                   <div className="relative group">
@@ -207,7 +207,7 @@ const SellerProfile = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
                     Store Name
                   </label>
                   <div className="relative group">
@@ -226,7 +226,7 @@ const SellerProfile = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
                     Contact Number
                   </label>
                   <div className="relative group">
@@ -245,7 +245,7 @@ const SellerProfile = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
                     Email Address
                   </label>
                   <div className="relative group">
@@ -269,7 +269,7 @@ const SellerProfile = () => {
 
         {/* Sidebar Card */}
         <div className="space-y-8">
-          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[40px] bg-linear-to-br from-slate-900 text-white">
+          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[40px] bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 text-white">
             <h4 className="text-[10px] font-black uppercase tracking-[4px] text-white/40 mb-6">
               Security & Trust
             </h4>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '@shared/components/ui/Card';
 import {
     Save,
@@ -21,56 +21,72 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@shared/components/ui/Toast';
+import { adminApi } from '../services/adminApi';
 
 const AdminSettings = () => {
     const { showToast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('general');
 
-    // Mock initial state - in real app this comes from API
     const [settings, setSettings] = useState({
-        // General
-        appName: 'Appzeto Quick Commerce',
-        supportEmail: 'support@appzeto.com',
-        supportPhone: '+1 (555) 123-4567',
+        appName: '',
+        supportEmail: '',
+        supportPhone: '',
         currencySymbol: '₹',
         currencyCode: 'INR',
         timezone: 'Asia/Kolkata',
-
-        // Branding
         logoUrl: '',
         faviconUrl: '',
         primaryColor: '#0ea5e9',
-
-        // Legal
-        companyName: 'Appzeto Inc.',
-        taxId: 'GSTIN123456789',
-        address: '123 Tech Park, Innovation Street, Bangalore, KA 560001',
-
-        // Social
-        facebook: 'https://facebook.com/appzeto',
-        twitter: 'https://twitter.com/appzeto',
-        instagram: 'https://instagram.com/appzeto',
-        linkedin: 'https://linkedin.com/company/appzeto',
-        youtube: 'https://youtube.com/appzeto',
-
-        // Apps
-        playStoreLink: 'https://play.google.com/store/apps/details?id=com.appzeto',
-        appStoreLink: 'https://apps.apple.com/app/appzeto',
-
-        // SEO
-        metaTitle: 'Appzeto - Fastest Grocery Delivery',
-        metaDescription: 'Get groceries delivered in minutes with Appzeto.',
-        metaKeywords: 'grocery, delivery, quick commerce, fresh, vegetables'
+        companyName: '',
+        taxId: '',
+        address: '',
+        facebook: '',
+        twitter: '',
+        instagram: '',
+        linkedin: '',
+        youtube: '',
+        playStoreLink: '',
+        appStoreLink: '',
+        metaTitle: '',
+        metaDescription: '',
+        metaKeywords: '',
+        returnDeliveryCommission: 0,
     });
 
-    const handleSave = () => {
-        setIsSaving(true);
-        // Simulate API call
-        setTimeout(() => {
-            setIsSaving(false);
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await adminApi.getPlatformSettings();
+                if (res.data?.success && res.data.result) {
+                    setSettings(prev => ({
+                        ...prev,
+                        ...res.data.result,
+                        returnDeliveryCommission: res.data.result.returnDeliveryCommission ?? 0,
+                    }));
+                }
+            } catch (error) {
+                console.error("Failed to load platform settings", error);
+                showToast('Failed to load platform settings', 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSettings();
+    }, [showToast]);
+
+    const handleSave = async () => {
+        try {
+            setIsSaving(true);
+            await adminApi.updatePlatformSettings(settings);
             showToast('Platform settings updated successfully', 'success');
-        }, 1500);
+        } catch (error) {
+            console.error("Failed to update platform settings", error);
+            showToast('Failed to update platform settings', 'error');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleInputChange = (field, value) => {
@@ -139,6 +155,14 @@ const AdminSettings = () => {
 
                 {/* Content Area */}
                 <div className="lg:col-span-9 space-y-6">
+
+                    {isLoading && (
+                        <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-xl overflow-hidden">
+                            <div className="p-8 flex items-center justify-center">
+                                <div className="h-8 w-8 border-2 border-slate-200 border-t-slate-500 rounded-full animate-spin" />
+                            </div>
+                        </Card>
+                    )}
 
                     {/* General Settings */}
                     {activeTab === 'general' && (
@@ -287,6 +311,32 @@ const AdminSettings = () => {
                                             onChange={(e) => handleInputChange('address', e.target.value)}
                                             className="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all resize-none"
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            Return Delivery Commission (per pickup)
+                                        </label>
+                                        <div className="relative group">
+                                            <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={settings.returnDeliveryCommission}
+                                                onChange={(e) =>
+                                                    handleInputChange(
+                                                        'returnDeliveryCommission',
+                                                        Number(e.target.value) || 0
+                                                    )
+                                                }
+                                                className="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all"
+                                            />
+                                        </div>
+                                        <p className="text-[10px] font-bold text-slate-400">
+                                            Flat amount paid to delivery partner for each approved return pickup (deducted from seller earnings).
+                                        </p>
                                     </div>
                                 </div>
                             </div>

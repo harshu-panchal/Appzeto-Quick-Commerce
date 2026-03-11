@@ -118,7 +118,7 @@ const Withdrawals = () => {
     };
 
     if (loading) {
-        return <div className="flex items-center justify-center h-screen font-black text-slate-400">LOADING WITHDRAWALS...</div>;
+        return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING WITHDRAWALS...</div>;
     }
 
     const balances = {
@@ -138,7 +138,7 @@ const Withdrawals = () => {
                                 <Wallet className="h-5 w-5 text-indigo-600" />
                             </div>
                         </h1>
-                        <p className="text-slate-500 text-sm mt-1 font-medium">Request payouts and track your withdrawal history.</p>
+                        <p className="text-slate-600 text-base mt-1 font-medium">Request payouts and track your withdrawal history.</p>
                     </div>
                     <button
                         onClick={() => setIsModalOpen(true)}
@@ -167,9 +167,9 @@ const Withdrawals = () => {
                                 )}>
                                     <stat.icon className="h-5 w-5" />
                                 </div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                                <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">{stat.label}</p>
                                 <h3 className="text-3xl font-black text-slate-900 tracking-tight">{stat.value}</h3>
-                                <p className="text-[10px] font-bold text-slate-400 mt-2 flex items-center gap-1.5 uppercase">
+                                <p className="text-xs font-bold text-slate-600 mt-2 flex items-center gap-1.5 uppercase">
                                     <span className="w-1 h-3 rounded-full bg-slate-100" />
                                     {stat.sub}
                                 </p>
@@ -191,7 +191,7 @@ const Withdrawals = () => {
                             Withdrawal History
                         </h2>
                         <div className="relative w-full md:w-64 group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600 group-focus-within:text-indigo-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search ID or Status..."
@@ -205,16 +205,16 @@ const Withdrawals = () => {
                         <table className="w-full text-left min-w-[640px]">
                             <thead>
                                 <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Request Details</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Status</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Method</th>
+                                    <th className="px-8 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">Request Details</th>
+                                    <th className="px-8 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">Amount</th>
+                                    <th className="px-8 py-4 text-xs font-black text-slate-600 uppercase tracking-widest text-center">Status</th>
+                                    <th className="px-8 py-4 text-xs font-black text-slate-600 uppercase tracking-widest text-right">Method</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {filteredHistory.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-8 py-12 text-center text-slate-500 text-sm font-medium">
+                                        <td colSpan={4} className="px-8 py-12 text-center text-slate-600 text-sm font-medium">
                                             {withdrawalHistory.length === 0 ? "No withdrawal requests yet." : "No matches for your search."}
                                         </td>
                                     </tr>
@@ -222,7 +222,7 @@ const Withdrawals = () => {
                                     <tr key={item.id || item.ref || item.reference || `wd-${idx}`} className="group hover:bg-slate-50/50 transition-all">
                                         <td className="px-8 py-5">
                                             <p className="text-sm font-black text-slate-900">{item.id}</p>
-                                            <p className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-tighter">{item.date} • {item.time}</p>
+                                            <p className="text-xs font-bold text-slate-600 mt-0.5 uppercase tracking-tighter">{item.date} • {item.time}</p>
                                         </td>
                                         <td className="px-8 py-5">
                                             <p className="text-sm font-black text-slate-900">₹{Math.abs(item.amount).toLocaleString()}</p>
@@ -281,7 +281,7 @@ const Withdrawals = () => {
                 <form onSubmit={handleSubmitRequest} className="space-y-6 py-4">
                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-center justify-between">
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Available to Withdraw</p>
+                            <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">Available to Withdraw</p>
                             <h4 className="text-2xl font-black text-emerald-600">₹{balances.available.toLocaleString()}</h4>
                         </div>
                         <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
@@ -291,7 +291,7 @@ const Withdrawals = () => {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Enter Amount</label>
+                            <label className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 block ml-1">Enter Amount</label>
                             <div className="relative group">
                                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-300 group-focus-within:text-indigo-500 transition-colors">₹</span>
                                 <input
@@ -312,7 +312,7 @@ const Withdrawals = () => {
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-xs font-black text-slate-900 uppercase">HDFC Bank Limited</p>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Acct Ending in **** 4589</p>
+                                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Acct Ending in **** 4589</p>
                                 </div>
                                 <ArrowRight className="h-4 w-4 text-slate-300" />
                             </div>
@@ -330,7 +330,7 @@ const Withdrawals = () => {
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(false)}
-                            className="w-full py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+                            className="w-full py-2 text-xs font-black text-slate-600 uppercase tracking-widest hover:text-slate-600 transition-colors"
                         >
                             Nevermind, keep funds
                         </button>

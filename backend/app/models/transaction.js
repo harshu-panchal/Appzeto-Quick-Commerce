@@ -10,7 +10,7 @@ const transactionSchema = new mongoose.Schema(
         userModel: {
             type: String,
             required: true,
-            enum: ["Seller", "Delivery", "Admin"],
+            enum: ["Seller", "Delivery", "Admin", "User"],
         },
         order: {
             type: mongoose.Schema.Types.ObjectId,
@@ -38,6 +38,9 @@ const transactionSchema = new mongoose.Schema(
         date: {
             type: Date,
             default: Date.now,
+        },
+        meta: {
+            type: Object,
         },
     },
     { timestamps: true }

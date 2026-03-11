@@ -253,24 +253,24 @@ const Orders = () => {
                 {/* Page Header */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
                     <div className="min-w-0">
-                        <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex flex-wrap items-center gap-2">
+                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
                             Order Management
-                            <Badge variant="primary" className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">Real-time</Badge>
+                            <Badge variant="primary" className="text-[10px] px-1.5 py-0 font-bold tracking-wider uppercase bg-blue-100 text-blue-700">Real-time</Badge>
                         </h1>
-                        <p className="text-slate-500 text-xs sm:text-sm mt-0.5 font-medium">Process and track your customer orders with ease.</p>
+                        <p className="text-slate-600 text-sm sm:text-base mt-0.5 font-medium">Process and track your customer orders with ease.</p>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
                         <Button
                             onClick={exportOrders}
                             variant="outline"
-                            className="flex items-center space-x-1.5 sm:space-x-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold text-slate-600 bg-white hover:bg-slate-50 border-slate-200"
+                            className="flex items-center space-x-1.5 sm:space-x-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 border-slate-200"
                         >
                             <HiOutlinePrinter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             <span className="hidden sm:inline">EXPORT ALL</span>
                         </Button>
                         <ShimmerButton
                             onClick={() => setIsQuickViewModalOpen(true)}
-                            className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg text-[10px] sm:text-xs font-bold text-white shadow-xl flex items-center space-x-1.5 sm:space-x-2"
+                            className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold text-white shadow-xl flex items-center space-x-1.5 sm:space-x-2"
                         >
                             <HiOutlineEye className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-0" />
                             <span className="hidden sm:inline">QUICK VIEW</span>
@@ -283,7 +283,7 @@ const Orders = () => {
             {loading ? (
                 <div className="min-h-[400px] flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-100 shadow-sm">
                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                    <p className="text-slate-400 font-bold mt-4 uppercase tracking-widest text-xs">Fetching Active Orders...</p>
+                    <p className="text-slate-600 font-bold mt-4 uppercase tracking-widest text-xs">Fetching Active Orders...</p>
                 </div>
             ) : (
                 <>
@@ -299,7 +299,7 @@ const Orders = () => {
                                             <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{stat.label}</p>
+                                            <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest truncate">{stat.label}</p>
                                             <h4 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">{stat.value}</h4>
                                         </div>
                                     </div>
@@ -319,10 +319,10 @@ const Orders = () => {
                                             key={tab}
                                             onClick={() => setActiveTab(tab)}
                                             className={cn(
-                                                "relative py-3 sm:py-4 px-2.5 sm:px-4 text-[10px] sm:text-xs font-bold whitespace-nowrap transition-all duration-300",
+                                                "relative py-3 sm:py-4 px-2.5 sm:px-4 text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-300",
                                                 activeTab === tab
                                                     ? "text-primary scale-105"
-                                                    : "text-slate-400 hover:text-slate-600"
+                                                    : "text-slate-600 hover:text-slate-700"
                                             )}
                                         >
                                             {tab}
@@ -340,13 +340,13 @@ const Orders = () => {
                             {/* Toolbox */}
                             <div className="p-3 sm:p-4 border-b border-slate-100 flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
                                 <div className="relative flex-1 group w-full">
-                                    <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-all" />
+                                    <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-primary transition-all" />
                                     <input
                                         type="text"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         placeholder="Search by Order ID or Customer Name..."
-                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-lg text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 border-none rounded-lg text-sm font-semibold text-slate-700 placeholder:text-slate-500 focus:ring-2 focus:ring-primary/5 transition-all outline-none"
                                     />
                                 </div>
                                 <div className="flex gap-3 shrink-0 w-full lg:w-auto items-center justify-end flex-wrap">
@@ -377,7 +377,7 @@ const Orders = () => {
                                                 placeholder="From date"
                                             />
                                         </div>
-                                        <span className="text-[10px] font-semibold text-slate-400 hidden sm:inline">
+                                        <span className="text-xs font-semibold text-slate-600 hidden sm:inline">
                                             to
                                         </span>
                                         <div className="w-full sm:w-32 mt-2 sm:mt-0">
@@ -413,7 +413,7 @@ const Orders = () => {
                                     <button
                                         type="button"
                                         onClick={() => { setStartDate(''); setEndDate(''); setPage(1); }}
-                                        className="text-[10px] font-semibold text-slate-400 hover:text-slate-600"
+                                        className="text-xs font-semibold text-slate-600 hover:text-slate-700"
                                     >
                                         Clear dates
                                     </button>
@@ -428,7 +428,7 @@ const Orders = () => {
                                             <HiOutlineInboxStack className="h-7 w-7" />
                                         </div>
                                         <h3 className="text-sm font-bold text-slate-900">No orders found</h3>
-                                        <p className="text-xs text-slate-400 font-medium text-center mt-1">Adjust filters or search.</p>
+                                        <p className="text-xs text-slate-600 font-medium text-center mt-1">Adjust filters or search.</p>
                                         <Button variant="outline" className="mt-4 rounded-xl text-xs" onClick={() => { setActiveTab('All'); setSearchTerm(''); }}>CLEAR FILTERS</Button>
                                     </div>
                                 ) : (
@@ -446,12 +446,12 @@ const Orders = () => {
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="min-w-0 flex-1" onClick={() => handleViewDetails(order)}>
                                                     <p className="text-xs font-black text-slate-900 truncate">#{order.id}</p>
-                                                    <p className="text-[10px] font-semibold text-slate-400 mt-0.5 flex items-center gap-1">
+                                                    <p className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1">
                                                         <HiOutlineCalendarDays className="h-3 w-3 shrink-0" />
                                                         {order.date} • {order.time}
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-2">
-                                                        <div className="h-7 w-7 rounded-full bg-slate-900 flex items-center justify-center text-[9px] font-black text-white shrink-0">
+                                                        <div className="h-7 w-7 rounded-full bg-slate-900 flex items-center justify-center text-[10px] font-black text-white shrink-0">
                                                             {order.customer.avatar}
                                                         </div>
                                                         <p className="text-xs font-bold text-slate-800 truncate">{order.customer.name}</p>
@@ -459,7 +459,7 @@ const Orders = () => {
                                                     <p className="text-sm font-black text-slate-900 mt-2">₹{order.total.toLocaleString()}</p>
                                                 </div>
                                                 <div className="flex flex-col items-end gap-2 shrink-0">
-                                                    <Badge variant={getStatusColor(order.status)} className="text-[8px] font-black uppercase px-2 py-0">
+                                                    <Badge variant={getStatusColor(order.status)} className="text-[10px] font-black uppercase px-2 py-0">
                                                         {order.status}
                                                     </Badge>
                                                     <select
@@ -467,7 +467,7 @@ const Orders = () => {
                                                         onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
                                                         onClick={(e) => e.stopPropagation()}
                                                         className={cn(
-                                                            "w-full min-w-[100px] text-[8px] pl-2 pr-6 py-1.5 rounded-lg font-black uppercase cursor-pointer appearance-none border outline-none",
+                                                            "w-full min-w-[100px] text-[10px] pl-2 pr-6 py-1.5 rounded-lg font-black uppercase cursor-pointer appearance-none border outline-none",
                                                             order.status === 'pending' ? "bg-amber-100 text-amber-700" :
                                                                 order.status === 'delivered' ? "bg-emerald-100 text-emerald-700" :
                                                                     order.status === 'cancelled' ? "bg-rose-100 text-rose-700" : "bg-slate-100 text-slate-700"
@@ -482,7 +482,7 @@ const Orders = () => {
                                                     </select>
                                                     <button
                                                         onClick={() => handleViewDetails(order)}
-                                                        className="p-2 hover:bg-slate-100 rounded-lg text-slate-500"
+                                                        className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"
                                                     >
                                                         <HiOutlineEye className="h-4 w-4" />
                                                     </button>
@@ -499,11 +499,11 @@ const Orders = () => {
                                 <table className="w-full text-left border-collapse min-w-[640px]">
                                     <thead>
                                         <tr className="bg-slate-50/50 border-b border-slate-100">
-                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order Details</th>
-                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Customer</th>
-                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total</th>
-                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
-                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Order Details</th>
+                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Customer</th>
+                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Total</th>
+                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-xs font-bold text-slate-600 uppercase tracking-widest">Status</th>
+                                            <th className="px-4 lg:px-6 py-3 lg:py-4 text-xs font-bold text-slate-600 uppercase tracking-widest text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-50">
@@ -524,7 +524,7 @@ const Orders = () => {
                                                             <span className="text-xs font-bold text-slate-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => handleViewDetails(order)}>
                                                                 #{order.id}
                                                             </span>
-                                                            <div className="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400 mt-1">
+                                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 mt-1">
                                                                 <HiOutlineCalendarDays className="h-3 w-3" />
                                                                 {order.date} • {order.time}
                                                             </div>
@@ -537,14 +537,14 @@ const Orders = () => {
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs font-bold text-slate-900">{order.customer.name}</p>
-                                                                <p className="text-[9px] font-semibold text-slate-400">{order.customer.phone}</p>
+                                                                <p className="text-xs font-semibold text-slate-600">{order.customer.phone}</p>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-4 lg:px-6 py-3 lg:py-4">
                                                         <div className="flex flex-col">
                                                             <span className="text-xs font-bold text-slate-900">₹{order.total.toLocaleString()}</span>
-                                                            <span className="text-[9px] font-semibold text-slate-400">{order.items.length} items</span>
+                                                            <span className="text-xs font-semibold text-slate-600">{order.items.length} items</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-4 lg:px-6 py-3 lg:py-4">
@@ -553,7 +553,7 @@ const Orders = () => {
                                                                 value={order.status}
                                                                 onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
                                                                 className={cn(
-                                                                    "w-full text-[9px] pl-2.5 pr-8 py-1.5 rounded-full font-black uppercase tracking-widest cursor-pointer appearance-none focus:ring-2 focus:ring-offset-1 transition-all border-none outline-none shadow-sm",
+                                                                    "w-full text-[10px] pl-2.5 pr-8 py-1.5 rounded-full font-black uppercase tracking-widest cursor-pointer appearance-none focus:ring-2 focus:ring-offset-1 transition-all border-none outline-none shadow-sm",
                                                                     order.status === 'pending' ? "bg-amber-100 text-amber-700 focus:ring-amber-200" :
                                                                         order.status === 'confirmed' ? "bg-blue-100 text-blue-700 focus:ring-blue-200" :
                                                                             order.status === 'packed' ? "bg-indigo-100 text-indigo-700 focus:ring-indigo-200" :
@@ -577,7 +577,7 @@ const Orders = () => {
                                                         <div className="flex items-center justify-end space-x-1.5">
                                                             <button
                                                                 onClick={() => handleViewDetails(order)}
-                                                                className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100"
+                                                                className="p-1.5 hover:bg-white hover:text-primary rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-100"
                                                             >
                                                                 <HiOutlineEye className="h-4 w-4" />
                                                             </button>
@@ -588,7 +588,7 @@ const Orders = () => {
                                                                             e.stopPropagation();
                                                                             handleStatusUpdate(order.id, 'Processing');
                                                                         }}
-                                                                        className="p-1.5 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100"
+                                                                        className="p-1.5 hover:bg-emerald-50 hover:text-emerald-600 rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-100"
                                                                     >
                                                                         <HiOutlineCheck className="h-4 w-4" />
                                                                     </button>
@@ -597,7 +597,7 @@ const Orders = () => {
                                                                             e.stopPropagation();
                                                                             handleStatusUpdate(order.id, 'Cancelled');
                                                                         }}
-                                                                        className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-slate-100"
+                                                                        className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-100"
                                                                     >
                                                                         <HiOutlineXMark className="h-4 w-4" />
                                                                     </button>
@@ -616,19 +616,19 @@ const Orders = () => {
                                             <HiOutlineInboxStack className="h-8 w-8" />
                                         </div>
                                         <h3 className="text-sm font-bold text-slate-900">No orders found</h3>
-                                        <p className="text-xs text-slate-400 font-medium max-w-xs text-center mt-1">We couldn't find any orders matching your current filters. Try adjusting your search.</p>
+                                        <p className="text-xs text-slate-600 font-medium max-w-xs text-center mt-1">We couldn't find any orders matching your current filters. Try adjusting your search.</p>
                                         <Button variant="outline" className="mt-6 rounded-xl text-xs" onClick={() => { setActiveTab('All'); setSearchTerm(''); }}>CLEAR ALL FILTERS</Button>
                                     </div>
                                 )}
                             </div>
 
                             <div className="p-3 sm:p-4 border-t border-slate-50 bg-slate-50/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-3 sm:px-6">
-                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center sm:text-left">
+                                <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest text-center sm:text-left">
                                     Showing {filteredOrders.length} of {orders.length} Orders
                                 </p>
                                 <div className="flex gap-1 justify-center sm:justify-end">
-                                    <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 opacity-50 cursor-not-allowed" aria-hidden><HiOutlineChevronRight className="h-3.5 w-3.5 rotate-180" /></button>
-                                    <button className="p-1.5 rounded-lg border border-slate-200 text-slate-400 opacity-50 cursor-not-allowed" aria-hidden><HiOutlineChevronRight className="h-3.5 w-3.5" /></button>
+                                    <button className="p-1.5 rounded-lg border border-slate-200 text-slate-600 opacity-50 cursor-not-allowed" aria-hidden><HiOutlineChevronRight className="h-3.5 w-3.5 rotate-180" /></button>
+                                    <button className="p-1.5 rounded-lg border border-slate-200 text-slate-600 opacity-50 cursor-not-allowed" aria-hidden><HiOutlineChevronRight className="h-3.5 w-3.5" /></button>
                                 </div>
                             </div>
                         </Card>
@@ -677,10 +677,10 @@ const Orders = () => {
                                             </div>
                                             <div className="min-w-0">
                                                 <h3 className="text-sm sm:text-base font-black text-slate-900 truncate">Quick Snapshot</h3>
-                                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Today's Performance</p>
+                                                <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">Today's Performance</p>
                                             </div>
                                         </div>
-                                        <button onClick={() => setIsQuickViewModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400 shrink-0">
+                                        <button onClick={() => setIsQuickViewModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-600 shrink-0">
                                             <HiOutlineXMark className="h-5 w-5" />
                                         </button>
                                     </div>
@@ -689,11 +689,11 @@ const Orders = () => {
                                         {/* Summary Grid */}
                                         <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                             <div className="p-3 sm:p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
-                                                <p className="text-[8px] sm:text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Revenue</p>
+                                                <p className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest mb-1">Total Revenue</p>
                                                 <p className="text-base sm:text-xl font-black text-indigo-700 truncate">₹{safeOrders.reduce((acc, o) => acc + o.total, 0).toLocaleString()}</p>
                                             </div>
                                             <div className="p-3 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-                                                <p className="text-[8px] sm:text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Avg. Order Value</p>
+                                                <p className="text-[10px] sm:text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">Avg. Order Value</p>
                                                 <p className="text-base sm:text-xl font-black text-emerald-700">₹{safeOrders.length ? (safeOrders.reduce((acc, o) => acc + o.total, 0) / safeOrders.length).toFixed(0) : '0'}</p>
                                             </div>
                                         </div>
@@ -739,12 +739,12 @@ const Orders = () => {
                                             <div>
                                                 <h3 className="text-base font-black text-slate-900">Order Details</h3>
                                                 <div className="flex items-center space-x-2 mt-0.5">
-                                                    <Badge variant={getStatusColor(selectedOrder.status)} className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0">{selectedOrder.status}</Badge>
-                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">#{selectedOrder.id}</span>
+                                                    <Badge variant={getStatusColor(selectedOrder.status)} className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0">{selectedOrder.status}</Badge>
+                                                    <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">#{selectedOrder.id}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <button onClick={() => setIsDetailsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
+                                        <button onClick={() => setIsDetailsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600">
                                             <HiOutlineXMark className="h-5 w-5" />
                                         </button>
                                     </div>
@@ -753,7 +753,7 @@ const Orders = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                                             <div className="space-y-3 sm:space-y-4">
                                                 <div>
-                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                    <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                                                         <HiOutlineMapPin className="h-3 w-3 text-primary" /> Delivery Address
                                                     </h4>
                                                     <p className="text-xs font-bold text-slate-800 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-sm">
@@ -761,25 +761,25 @@ const Orders = () => {
                                                     </p>
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                    <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                                                         <HiOutlinePhone className="h-3 w-3 text-emerald-500" /> Contact Info
                                                     </h4>
                                                     <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-sm">
                                                         <p className="text-xs font-bold text-slate-800">{selectedOrder.customer.name}</p>
-                                                        <p className="text-[11px] font-semibold text-slate-400 mt-0.5">{selectedOrder.customer.phone}</p>
+                                                        <p className="text-xs font-semibold text-slate-600 mt-0.5">{selectedOrder.customer.phone}</p>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="space-y-3 sm:space-y-4">
                                                 <div className="bg-primary/5 p-3 sm:p-4 rounded-3xl border border-primary/10">
-                                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">Order Summary</h4>
+                                                    <h4 className="text-xs font-black text-primary uppercase tracking-widest mb-3">Order Summary</h4>
                                                     <div className="space-y-2">
                                                         <div className="flex justify-between text-xs">
-                                                            <span className="font-bold text-slate-500">Subtotal</span>
+                                                            <span className="font-bold text-slate-600">Subtotal</span>
                                                             <span className="font-black text-slate-900">₹{(selectedOrder.total - 10).toFixed(2)}</span>
                                                         </div>
                                                         <div className="flex justify-between text-xs">
-                                                            <span className="font-bold text-slate-500">Delivery Fee</span>
+                                                            <span className="font-bold text-slate-600">Delivery Fee</span>
                                                             <span className="font-black text-emerald-600">₹10.00</span>
                                                         </div>
                                                         <div className="h-px bg-primary/10 my-2" />
@@ -790,7 +790,7 @@ const Orders = () => {
                                                     </div>
                                                 </div>
                                                 <div className="bg-slate-900 p-3 sm:p-4 rounded-3xl text-white shadow-xl shadow-slate-900/10">
-                                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Payment Status</h4>
+                                                    <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2">Payment Status</h4>
                                                     <div className="flex items-center gap-2">
                                                         <HiOutlineBanknotes className="h-5 w-5 text-emerald-400" />
                                                         <span className="text-xs font-bold tracking-tight">{selectedOrder.payment}</span>
@@ -799,7 +799,7 @@ const Orders = () => {
                                             </div>
                                         </div>
 
-                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 sm:mb-4">Items Ordered ({selectedOrder.items.length})</h4>
+                                        <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-3 sm:mb-4">Items Ordered ({selectedOrder.items.length})</h4>
                                         <div className="space-y-3 max-h-52 sm:max-h-64 overflow-y-auto pr-1">
                                             {selectedOrder.items.map((item, idx) => (
                                                 <div key={idx} className="flex items-center justify-between p-3 bg-white ring-1 ring-slate-100 rounded-2xl group hover:shadow-md transition-all">
@@ -809,7 +809,7 @@ const Orders = () => {
                                                         </div>
                                                         <div>
                                                             <p className="text-xs font-bold text-slate-900">{item.name}</p>
-                                                            <p className="text-[10px] font-semibold text-slate-400 mt-0.5">₹{item.price.toFixed(2)} × {item.qty}</p>
+                                                            <p className="text-xs font-semibold text-slate-600 mt-0.5">₹{item.price.toFixed(2)} × {item.qty}</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
@@ -823,13 +823,13 @@ const Orders = () => {
                                     {/* Modal Footer */}
                                     <div className="px-4 py-3 sm:px-6 sm:py-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-3 sm:gap-0 sm:items-center justify-end">
                                         <div className="flex gap-2 items-center">
-                                            <button onClick={() => setIsDetailsModalOpen(false)} className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-100 transition-all">CLOSE</button>
+                                            <button onClick={() => setIsDetailsModalOpen(false)} className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all">CLOSE</button>
                                             <div className="relative inline-block w-40">
                                                 <select
                                                     value={selectedOrder.status.toLowerCase()}
                                                     onChange={(e) => handleStatusUpdate(selectedOrder.id, e.target.value)}
                                                     className={cn(
-                                                        "w-full text-[10px] pl-3 pr-8 py-2 rounded-xl font-black uppercase tracking-wider border appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 transition-all outline-none shadow-sm",
+                                                        "w-full text-xs pl-3 pr-8 py-2 rounded-xl font-black uppercase tracking-wider border appearance-none cursor-pointer focus:ring-2 focus:ring-offset-1 transition-all outline-none shadow-sm",
                                                         getStatusColor(selectedOrder.status) === 'warning' ? "bg-amber-100 text-amber-700 focus:ring-amber-200" :
                                                             getStatusColor(selectedOrder.status) === 'info' ? "bg-blue-100 text-blue-700 focus:ring-blue-200" :
                                                                 getStatusColor(selectedOrder.status) === 'primary' ? "bg-indigo-100 text-indigo-700 focus:ring-indigo-200" :

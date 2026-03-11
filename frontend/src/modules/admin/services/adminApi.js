@@ -12,6 +12,8 @@ export const adminApi = {
     getProfile: () => axiosInstance.get('/admin/profile'),
     updateProfile: (data) => axiosInstance.put('/admin/profile', data),
     updatePassword: (data) => axiosInstance.put('/admin/profile/password', data),
+    getPlatformSettings: () => axiosInstance.get('/admin/settings/platform'),
+    updatePlatformSettings: (data) => axiosInstance.put('/admin/settings/platform', data),
 
     // Category Management
     getCategories: (params) => axiosInstance.get('/admin/categories', { params }),
