@@ -1053,3 +1053,18 @@ export const getUserById = async (req, res) => {
         return handleResponse(res, 500, error.message);
     }
 };
+
+/* ===============================
+   GET ALL SELLERS (Admin) – for offer sections etc.
+================================ */
+export const getSellers = async (req, res) => {
+    try {
+        const sellers = await Seller.find({})
+            .select("_id shopName name email phone")
+            .sort({ shopName: 1 })
+            .lean();
+        return handleResponse(res, 200, "Sellers fetched", sellers);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};

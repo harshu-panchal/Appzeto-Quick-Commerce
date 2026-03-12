@@ -25,68 +25,117 @@ const OrdersPage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="animate-spin text-green-600" size={32} />
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white shadow-sm border border-slate-100">
+                    <Loader2 className="animate-spin text-emerald-600" size={22} />
+                    <span className="text-sm font-medium text-slate-600">Loading your orders…</span>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
-            <div className="sticky top-0 z-30 bg-gray-50/95 backdrop-blur-sm px-4 py-4 border-b border-gray-200/50 mb-4 flex items-center gap-2">
+        <div className="min-h-screen bg-slate-50 pb-24">
+            <div className="sticky top-0 z-30 bg-slate-50/95 backdrop-blur-sm px-4 pt-4 pb-3 border-b border-slate-200/60 mb-4 flex items-center gap-2">
                 <button
                     onClick={() => navigate(-1)}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-gray-200/50 rounded-full transition-colors -ml-1"
+                    className="w-10 h-10 flex items-center justify-center hover:bg-slate-200/70 rounded-full transition-colors -ml-1"
                 >
-                    <ChevronLeft size={24} className="text-gray-800" />
+                    <ChevronLeft size={22} className="text-slate-800" />
                 </button>
-                <h1 className="text-2xl font-black text-gray-800">My Orders</h1>
+                <h1 className="text-xl font-semibold text-slate-900 tracking-tight">My Orders</h1>
             </div>
 
-            <div className="space-y-4 px-4">
+            <div className="space-y-4 px-4 pb-2">
                 {orders.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <Package size={64} className="text-gray-300 mb-4" />
-                        <h3 className="text-lg font-bold text-gray-800">No orders yet</h3>
-                        <p className="text-gray-500 text-sm mb-6">Looks like you haven't ordered anything yet.</p>
-                        <Link to="/" className="bg-[#0c831f] text-white px-8 py-3 rounded-xl font-bold">
+                        <Package size={56} className="text-slate-300 mb-4" />
+                        <h3 className="text-base font-semibold text-slate-900 mb-1">No orders yet</h3>
+                        <p className="text-slate-500 text-sm mb-6 max-w-[260px]">
+                            When you place an order, it will appear here so you can track it easily.
+                        </p>
+                        <Link to="/" className="bg-[#0c831f] hover:bg-[#0a6d19] text-white px-7 py-2.5 rounded-full font-semibold text-sm shadow-sm transition-colors">
                             Start Shopping
                         </Link>
                     </div>
                 ) : (
                     orders.map((order) => (
-                        <Link to={`/orders/${order.orderId}`} key={order._id} className="block bg-white rounded-2xl p-4 shadow-sm border border-gray-100 active:scale-[0.98] transition-transform cursor-pointer hover:shadow-md">
-                            <div className="flex justify-between items-start mb-3">
-                                <div className="flex gap-3">
-                                    <div className="h-12 w-12 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center">
+                        <Link
+                            to={`/orders/${order.orderId}`}
+                            key={order._id}
+                            className="block bg-white rounded-2xl px-4 py-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] border border-slate-100/80 active:scale-[0.985] transition-transform cursor-pointer hover:shadow-[0_10px_30px_rgba(15,23,42,0.08)]"
+                        >
+                            <div className="flex justify-between items-start gap-3 mb-3.5">
+                                <div className="flex gap-3.5 flex-1 min-w-0">
+                                    <div className="h-12 w-12 rounded-xl overflow-hidden flex items-center justify-center bg-slate-50 ring-1 ring-slate-200/90 shrink-0">
                                         {order.items[0]?.image ? (
-                                            <img src={order.items[0].image} alt="" className="w-full h-full object-cover" />
+                                            <img
+                                                src={order.items[0].image}
+                                                alt={order.items[0]?.name || 'Order thumbnail'}
+                                                className="w-full h-full object-cover"
+                                            />
                                         ) : (
-                                            <Package size={24} className="text-gray-400" />
+                                            <Package size={22} className="text-slate-400" />
                                         )}
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 text-sm">Order #{order.orderId.slice(-6)}</h3>
-                                        <p className="text-xs text-gray-500 font-medium">
-                                            {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                    <div className="min-w-0">
+                                        <h3 className="font-semibold text-slate-900 text-sm tracking-tight leading-snug">
+                                            Order #{order.orderId.slice(-6)}
+                                        </h3>
+                                        <p className="mt-0.5 text-[11px] text-slate-500 font-medium leading-tight">
+                                            {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                            })}{' '}
+                                            <span className="mx-1 text-slate-400">•</span>
+                                            {new Date(order.createdAt).toLocaleTimeString('en-IN', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
                                         </p>
                                     </div>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide border flex items-center gap-1 ${order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-100' :
-                                    order.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-100' :
-                                        'bg-blue-50 text-blue-700 border-blue-100'
-                                    }`}>
-                                    <CheckCircle size={10} />
-                                    {order.status}
-                                </span>
+                                <div className="flex flex-col items-end gap-1 shrink-0 text-right">
+                                    <span
+                                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                                            order.status === 'delivered'
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                                : order.status === 'cancelled'
+                                                    ? 'bg-rose-50 text-rose-700 border-rose-100'
+                                                    : 'bg-sky-50 text-sky-700 border-sky-100'
+                                        }`}
+                                    >
+                                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/80">
+                                            <CheckCircle
+                                                size={9}
+                                                className={`${
+                                                    order.status === 'delivered'
+                                                        ? 'text-emerald-600'
+                                                        : order.status === 'cancelled'
+                                                            ? 'text-rose-500'
+                                                            : 'text-sky-500'
+                                                }`}
+                                            />
+                                        </span>
+                                        <span>{order.status?.toString().toUpperCase()}</span>
+                                    </span>
+                                    <span className="inline-flex items-center text-[10px] font-medium text-slate-400">
+                                        <span className="h-1 w-1 rounded-full bg-slate-300 mr-1" />
+                                        Tap to view details
+                                    </span>
+                                </div>
                             </div>
 
-                            <div className="border-t border-gray-50 pt-3 flex justify-between items-center">
-                                <div className="text-xs text-gray-500 font-medium truncate max-w-[200px]">
-                                    {order.items.map(i => i.name).join(', ')}
+                            <div className="border-t border-slate-100 pt-3 flex justify-between items-center gap-3">
+                                <div className="text-[11px] text-slate-500 font-medium truncate max-w-[230px]">
+                                    {order.items.map((i) => i.name).join(', ')}
                                 </div>
-                                <div className="text-sm font-black text-gray-800">
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                    <span className="text-[11px] font-medium text-slate-400">Total</span>
+                                    <span className="text-sm font-semibold text-slate-900">
                                     ₹{order.pricing.total}
+                                    </span>
+                                    <ChevronRight size={16} className="text-slate-300" />
                                 </div>
                             </div>
                         </Link>

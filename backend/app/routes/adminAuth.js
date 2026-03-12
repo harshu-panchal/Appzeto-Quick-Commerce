@@ -26,6 +26,7 @@ import {
     getCashSettlementHistory,
     getUsers,
     getUserById,
+    getSellers,
     getPlatformSettings,
     updatePlatformSettings
 } from "../controller/adminController.js";
@@ -79,6 +80,7 @@ router.put(
 );
 router.get("/users", verifyToken, allowRoles("admin"), getUsers);
 router.get("/users/:id", verifyToken, allowRoles("admin"), getUserById);
+router.get("/sellers", verifyToken, allowRoles("admin"), getSellers);
 
 router.get(
     "/delivery-partners",

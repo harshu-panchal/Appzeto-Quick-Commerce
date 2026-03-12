@@ -69,13 +69,10 @@ const OrderDetailPage = () => {
         if (returnDetails && returnDetails.returnStatus && returnDetails.returnStatus !== 'none' && returnDetails.returnStatus !== null) {
             return false;
         }
-        if (!order.deliveredAt && !order.returnDeadline) return true;
-        try {
-            const deadline = order.returnDeadline ? new Date(order.returnDeadline) : new Date(order.deliveredAt);
-            return new Date() <= deadline;
-        } catch {
-            return true;
-        }
+        // Frontend will always allow initiating a return for delivered
+        // orders without an existing return; backend can still validate
+        // the actual return window and reject if it's expired.
+        return true;
     };
 
     const toggleItemSelection = (index) => {

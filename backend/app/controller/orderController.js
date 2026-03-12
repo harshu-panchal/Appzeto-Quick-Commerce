@@ -382,6 +382,16 @@ export const getReturnDetails = async (req, res) => {
             );
         }
 
+        let returnDeliveryCommission = order.returnDeliveryCommission;
+        if (returnDeliveryCommission === undefined || returnDeliveryCommission === null) {
+            try {
+                const settings = await Setting.findOne({});
+                returnDeliveryCommission = settings?.returnDeliveryCommission ?? 0;
+            } catch {
+                returnDeliveryCommission = 0;
+            }
+        }
+
         const payload = {
             orderId: order.orderId,
             status: order.status,
@@ -393,7 +403,7 @@ export const getReturnDetails = async (req, res) => {
             returnImages: order.returnImages || [],
             returnItems: order.returnItems || [],
             returnRefundAmount: order.returnRefundAmount,
-            returnDeliveryCommission: order.returnDeliveryCommission,
+            returnDeliveryCommission,
             returnDeliveryBoy: order.returnDeliveryBoy || null,
         };
 

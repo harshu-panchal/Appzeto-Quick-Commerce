@@ -9,7 +9,7 @@ import getPagination from "../utils/pagination.js";
 ================================ */
 export const getProducts = async (req, res) => {
     try {
-        const { search, category, subcategory, header, status, sellerId, featured, categoryId, subcategoryId, headerId } = req.query;
+        const { search, category, subcategory, header, status, sellerId, featured, categoryId, subcategoryId, headerId, categoryIds, sellerIds } = req.query;
 
         const query = {};
         if (search) {
@@ -25,8 +25,20 @@ export const getProducts = async (req, res) => {
         if (finalCategoryId) query.categoryId = finalCategoryId;
         if (finalSubcategoryId) query.subcategoryId = finalSubcategoryId;
 
+        // Multiple categories: categoryIds=id1,id2
+        if (categoryIds && typeof categoryIds === "string") {
+            const ids = categoryIds.split(",").map((id) => id.trim()).filter(Boolean);
+            if (ids.length) query.categoryId = { $in: ids };
+        }
+        // Multiple sellers: sellerIds=id1,id2 (or single sellerId)
+        if (sellerIds && typeof sellerIds === "string") {
+            const ids = sellerIds.split(",").map((id) => id.trim()).filter(Boolean);
+            if (ids.length) query.sellerId = { $in: ids };
+        } else if (sellerId) {
+            query.sellerId = sellerId;
+        }
+
         if (status) query.status = status;
-        if (sellerId) query.sellerId = sellerId;
         if (featured !== undefined) query.isFeatured = featured === 'true';
 
         const { page, limit, skip } = getPagination(req, { defaultLimit: 24, maxLimit: 100 });

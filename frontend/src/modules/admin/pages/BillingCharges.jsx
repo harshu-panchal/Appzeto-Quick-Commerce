@@ -1,7 +1,6 @@
 // Premium Billing & Financial Configuration System
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
-import Badge from '@shared/components/ui/Badge';
 import {
     RotateCcw,
     Save,
@@ -14,13 +13,15 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@shared/components/ui/Toast';
+import { adminApi } from '../services/adminApi';
 
 const BillingCharges = () => {
     const { showToast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
     const [deliveryMode, setDeliveryMode] = useState('distance'); // 'fixed' or 'distance'
+    const [returnDeliveryCommission, setReturnDeliveryCommission] = useState(0);
 
-    // Billing State
+    // Local-only billing preview state (not persisted yet)
     const [config, setConfig] = useState({
         platformFee: 5,
         freeDeliveryThreshold: 500,
@@ -35,12 +36,33 @@ const BillingCharges = () => {
         cancellationFee: 15
     });
 
-    const handleSave = () => {
-        setIsSaving(true);
-        setTimeout(() => {
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await adminApi.getPlatformSettings();
+                if (res.data?.success && res.data.result) {
+                    setReturnDeliveryCommission(res.data.result.returnDeliveryCommission ?? 0);
+                }
+            } catch (error) {
+                console.error('Failed to load platform settings', error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            setIsSaving(true);
+            await adminApi.updatePlatformSettings({
+                returnDeliveryCommission,
+            });
+            showToast('Fees & return delivery settings updated', 'success');
+        } catch (error) {
+            console.error('Failed to update platform settings', error);
+            showToast('Failed to update fees settings', 'error');
+        } finally {
             setIsSaving(false);
-            showToast('Global financial nodes updated successfully', 'success');
-        }, 1500);
+        }
     };
 
     const handleInputChange = (field, value) => {
@@ -224,6 +246,29 @@ const BillingCharges = () => {
                                     </div>
                                 </div>
                             )}
+
+                            <div className="mt-8 pt-6 border-t border-dashed border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        Return Delivery Commission (per pickup)
+                                    </label>
+                                    <div className="relative group max-w-md">
+                                        <span className="absolute left-5 top-1/2 -translate-y-1/2 font-bold text-slate-300 group-focus-within:text-slate-900 transition-colors">₹</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={returnDeliveryCommission}
+                                            onChange={(e) =>
+                                                setReturnDeliveryCommission(Number(e.target.value) || 0)
+                                            }
+                                            className="w-full pl-10 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-black text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all"
+                                        />
+                                    </div>
+                                    <p className="text-[10px] font-bold text-slate-400">
+                                        Flat amount paid to delivery partner for each approved return pickup (deducted from seller earnings).
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </Card>
                 </div>

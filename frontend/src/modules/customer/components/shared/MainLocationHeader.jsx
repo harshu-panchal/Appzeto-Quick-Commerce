@@ -320,6 +320,7 @@ const MainLocationHeader = ({
               className="flex items-center md:justify-center gap-2 md:gap-4 lg:gap-8 overflow-x-auto no-scrollbar pb-1 -mx-2 px-2 md:mx-0 md:px-0 relative z-10 snap-x">
               {categories.slice(0, 10).map((cat, idx) => {
                 const isActive = activeCategory?.id === cat.id;
+                const pillColor = cat.headerColor || "#0c831f";
                 return (
                   <motion.div
                     key={cat.id}
@@ -328,10 +329,15 @@ const MainLocationHeader = ({
                     onClick={() => onCategorySelect && onCategorySelect(cat)}
                     className="flex flex-col items-center gap-1 group cursor-pointer shrink-0 snap-start min-w-[50px] md:min-w-[65px] transition-all duration-200">
                     <div
-                      className={`h-9 w-9 md:h-12 md:w-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md ${isActive
-                        ? "bg-white text-emerald-800 shadow-lg scale-105"
-                        : "bg-white/10 text-white shadow-inner border border-white/10 group-hover:bg-white/20"
-                        }`}>
+                      className={`h-9 w-9 md:h-12 md:w-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-300 backdrop-blur-md border ${isActive
+                        ? "shadow-lg scale-105"
+                        : "shadow-inner group-hover:bg-white/10"
+                        }`}
+                      style={{
+                        backgroundColor: isActive ? pillColor : "rgba(255,255,255,0.08)",
+                        borderColor: isActive ? pillColor : "rgba(255,255,255,0.18)",
+                        color: isActive ? "#ffffff" : "#ffffff",
+                      }}>
                       {typeof cat.icon === "function" ||
                         (typeof cat.icon === "object" && cat.icon.$$typeof) ? (
                         <cat.icon

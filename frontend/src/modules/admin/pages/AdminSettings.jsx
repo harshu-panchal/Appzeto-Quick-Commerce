@@ -314,31 +314,7 @@ const AdminSettings = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            Return Delivery Commission (per pickup)
-                                        </label>
-                                        <div className="relative group">
-                                            <CreditCard className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={settings.returnDeliveryCommission}
-                                                onChange={(e) =>
-                                                    handleInputChange(
-                                                        'returnDeliveryCommission',
-                                                        Number(e.target.value) || 0
-                                                    )
-                                                }
-                                                className="w-full pl-12 pr-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all"
-                                            />
-                                        </div>
-                                        <p className="text-[10px] font-bold text-slate-400">
-                                            Flat amount paid to delivery partner for each approved return pickup (deducted from seller earnings).
-                                        </p>
-                                    </div>
-                                </div>
+                                {/* Return delivery commission input moved to Fees & Charges → Delivery Fee Settings */}
                             </div>
                         </Card>
                     )}
