@@ -139,7 +139,24 @@ const OrderDetails = () => {
   };
 
   const handleNavigate = () => {
-    // Open Google Maps or internal navigation
+    // When delivering (step 3-4), use order's precise coordinates if set at checkout
+    if (step >= 3) {
+      const loc = order?.address?.location;
+      if (
+        loc &&
+        typeof loc.lat === "number" &&
+        typeof loc.lng === "number" &&
+        Number.isFinite(loc.lat) &&
+        Number.isFinite(loc.lng)
+      ) {
+        window.open(
+          `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`,
+          "_blank",
+        );
+        return;
+      }
+    }
+    // Store (step 1-2) or fallback when no coordinates
     window.open("https://maps.google.com", "_blank");
   };
 

@@ -109,6 +109,7 @@ const Orders = () => {
                 address: order.address
                     ? `${order.address.address || ''}, ${order.address.city || ''}`.trim()
                     : '',
+                location: order.address?.location || null,
                 payment: order.payment?.method === 'cash' || order.payment?.method === 'cod'
                     ? 'Cash on Delivery'
                     : 'Online Paid'
@@ -753,9 +754,28 @@ const Orders = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
                                             <div className="space-y-3 sm:space-y-4">
                                                 <div>
-                                                    <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                        <HiOutlineMapPin className="h-3 w-3 text-primary" /> Delivery Address
-                                                    </h4>
+                                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                                        <h4 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                                            <HiOutlineMapPin className="h-3 w-3 text-primary" /> Delivery Address
+                                                        </h4>
+                                                        {selectedOrder.location &&
+                                                            typeof selectedOrder.location.lat === "number" &&
+                                                            typeof selectedOrder.location.lng === "number" && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const { lat, lng } = selectedOrder.location;
+                                                                        window.open(
+                                                                            `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+                                                                            "_blank",
+                                                                        );
+                                                                    }}
+                                                                    className="text-[10px] font-bold text-primary hover:underline"
+                                                                >
+                                                                    View on map
+                                                                </button>
+                                                            )}
+                                                    </div>
                                                     <p className="text-xs font-bold text-slate-800 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-sm">
                                                         {selectedOrder.address}
                                                     </p>

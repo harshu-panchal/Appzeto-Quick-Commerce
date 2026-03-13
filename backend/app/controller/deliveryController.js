@@ -3,6 +3,7 @@ import Transaction from "../models/transaction.js";
 import Delivery from "../models/delivery.js";
 import handleResponse from "../utils/helper.js";
 import mongoose from "mongoose";
+import { writeDeliveryLocation, appendTrailPoint } from "../services/firebaseService.js";
 
 /* ===============================
    GET DELIVERY DASHBOARD STATS
@@ -206,3 +207,81 @@ export const requestWithdrawal = async (req, res) => {
         return handleResponse(res, 500, error.message);
     }
 };
+
+/* ===============================
+   UPDATE LIVE LOCATION (Delivery)
+================================ */
+export const updateDeliveryLocation = async (req, res) => {
+    try {
+        const deliveryId = req.user.id;
+        const { lat, lng, accuracy, heading, speed, orderId } = req.body || {};
+
+        if (
+            typeof lat !== "number" ||
+            typeof lng !== "number" ||
+            Number.isNaN(lat) ||
+            Number.isNaN(lng)
+        ) {
+            return handleResponse(res, 400, "Valid numeric lat and lng are required");
+        }
+
+        // Normalize to [lng, lat] as required by GeoJSON
+        const coordinates = [Number(lng), Number(lat)];
+
+        const delivery = await Delivery.findByIdAndUpdate(
+            deliveryId,
+            {
+                $set: {
+                    location: {
+                        type: "Point",
+                        coordinates,
+                    },
+                    lastLocationAt: new Date(),
+                },
+            },
+            { new: true }
+        ).select("_id location isOnline");
+
+        if (!delivery) {
+            return handleResponse(res, 404, "Delivery partner not found");
+        }
+
+        // Optional: if orderId is provided, ensure this rider is assigned to that order
+        let activeOrderId = orderId || null;
+        if (orderId) {
+            const order = await Order.findOne({ orderId }).select("orderId deliveryBoy status");
+            if (!order || order.deliveryBoy?.toString() !== deliveryId) {
+                activeOrderId = null;
+            }
+        }
+
+        const snapshot = {
+            lat,
+            lng,
+            accuracy: typeof accuracy === "number" ? accuracy : undefined,
+            heading: typeof heading === "number" ? heading : undefined,
+            speed: typeof speed === "number" ? speed : undefined,
+            lastUpdatedAt: new Date().toISOString(),
+            deliveryId,
+            orderId: activeOrderId,
+        };
+
+        // Fan out to Firebase (no-op until fully wired) and keep a short trail
+        await writeDeliveryLocation(deliveryId, activeOrderId, snapshot);
+        if (activeOrderId) {
+            await appendTrailPoint(activeOrderId, {
+                lat,
+                lng,
+                t: Date.now(),
+            });
+        }
+
+        return handleResponse(res, 200, "Location updated", {
+            location: delivery.location,
+            activeOrderId,
+        });
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+

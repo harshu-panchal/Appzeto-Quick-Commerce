@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../../../core/context/AuthContext';
@@ -44,6 +44,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// Lazy Google Maps JS SDK loader (singleton)
+const loadGoogleMapsScript = (() => {
+    let googleMapsPromise = null;
+
+    return () => {
+        if (typeof window !== "undefined" && window.google && window.google.maps) {
+            return Promise.resolve(window.google.maps);
+        }
+
+        if (googleMapsPromise) return googleMapsPromise;
+
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+            console.warn("[Checkout] VITE_GOOGLE_MAPS_API_KEY is not set; map will not load.");
+            return Promise.reject(new Error("Missing Google Maps API key"));
+        }
+
+        googleMapsPromise = new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+            script.async = true;
+            script.defer = true;
+            script.onload = () => {
+                if (window.google && window.google.maps) {
+                    resolve(window.google.maps);
+                } else {
+                    reject(new Error("Google Maps SDK failed to initialize"));
+                }
+            };
+            script.onerror = () => reject(new Error("Failed to load Google Maps SDK"));
+            document.head.appendChild(script);
+        });
+
+        return googleMapsPromise;
+    };
+})();
+
 const CheckoutPage = () => {
     const { cart, addToCart, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart } = useCart();
     const { wishlist, addToWishlist } = useWishlist();
@@ -69,6 +106,9 @@ const CheckoutPage = () => {
         city: 'Indore - 452018'
     });
     const [isLocationConfirmed, setIsLocationConfirmed] = useState(true);
+    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+    const [preciseLocation, setPreciseLocation] = useState(null); // { lat, lng }
+    const mapRef = useRef(null);
     const [showRecipientForm, setShowRecipientForm] = useState(false);
     const [recipientData, setRecipientData] = useState({
         // city: 'Select city',
@@ -229,7 +269,10 @@ const CheckoutPage = () => {
             // Note: The backend placeOrder can derive items from cart if not passed, 
             // but let's pass it for consistency with frontend logic.
             const orderData = {
-                address: currentAddress, // Using the selected address state
+                address: {
+                    ...currentAddress,
+                    location: preciseLocation || null,
+                }, // Using the selected address state plus optional map coordinates
                 payment: {
                     method: selectedPayment,
                     status: selectedPayment === 'cash' ? 'pending' : 'completed' // For simulation
@@ -277,6 +320,77 @@ const CheckoutPage = () => {
             setIsPlacingOrder(false);
         }
     };
+
+    // Initialize Google Map when the modal opens
+    useEffect(() => {
+        if (!isMapModalOpen) return;
+
+        let cancelled = false;
+
+        const initMap = async () => {
+            try {
+                const maps = await loadGoogleMapsScript();
+                if (cancelled) return;
+
+                const container = document.getElementById("checkout-precise-location-map");
+                if (!container) return;
+
+                const defaultCenter = preciseLocation || { lat: 22.9734, lng: 78.6569 }; // India center fallback
+
+                const mapInstance = new maps.Map(container, {
+                    center: defaultCenter,
+                    zoom: 16,
+                    disableDefaultUI: true, // remove default Google controls
+                    draggable: true,
+                    gestureHandling: "greedy", // allow drag/zoom with mouse and touch
+                });
+
+                mapRef.current = mapInstance;
+
+                // Keep center as the source of truth; whenever map stops moving,
+                // capture its center as the selected location.
+                const updateFromCenter = () => {
+                    const center = mapInstance.getCenter();
+                    if (!center) return;
+                    const next = {
+                        lat: center.lat(),
+                        lng: center.lng(),
+                    };
+                    setPreciseLocation(next);
+                };
+
+                maps.event.addListener(mapInstance, "idle", updateFromCenter);
+
+                // Try to center on user's current location first time
+                if (!preciseLocation && navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            if (cancelled) return;
+                            const next = {
+                                lat: pos.coords.latitude,
+                                lng: pos.coords.longitude,
+                            };
+                            setPreciseLocation(next);
+                            mapInstance.setCenter(next);
+                        },
+                        () => {
+                            // Ignore errors and keep default center
+                        },
+                        { enableHighAccuracy: true, timeout: 5000 },
+                    );
+                }
+            } catch (err) {
+                console.warn("[Checkout] Failed to initialize Google Map:", err);
+            }
+        };
+
+        initMap();
+
+        return () => {
+            cancelled = true;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isMapModalOpen]);
 
     if (cart.length === 0 && !showSuccess) {
         return (
@@ -543,7 +657,6 @@ const CheckoutPage = () => {
                                     ? 'border-[#0c831f] bg-green-50/50'
                                     : 'border-slate-200 hover:bg-slate-50'
                                     }`}
-                                onClick={() => setIsLocationConfirmed(!isLocationConfirmed)}
                             >
                                 <div className="flex items-start gap-3">
                                     {/* Radio/Check Button */}
@@ -584,6 +697,7 @@ const CheckoutPage = () => {
                                     <motion.button
                                         key="update-btn"
                                         className="w-full py-3 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center gap-2 text-[#0c831f] font-bold text-sm hover:bg-green-100 transition-colors"
+                                        onClick={() => setIsMapModalOpen(true)}
                                     >
                                         <MapPin size={18} />
                                         Update Precise Location on Map
@@ -920,6 +1034,101 @@ const CheckoutPage = () => {
                             onClick={() => navigate('/addresses')}
                         >
                             <Plus size={16} className="mr-2" /> Add New Address
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Precise Location Map Modal (Google Maps skeleton) */}
+            <Dialog open={isMapModalOpen} onOpenChange={setIsMapModalOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>Set Precise Location</DialogTitle>
+                        <DialogDescription>
+                            Drag and drop the pin to mark the exact delivery location on the map.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-2 space-y-3">
+                        {/* Map wrapper with sticky center pin */}
+                        <div className="relative w-full h-72 rounded-2xl border border-slate-200 overflow-hidden bg-slate-100">
+                            <div
+                                id="checkout-precise-location-map"
+                                className="w-full h-full"
+                            />
+                            {/* Sticky center pin overlay */}
+                            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                <div className="flex flex-col items-center translate-y-[-10px]">
+                                    {/* Pin body with white inner dot */}
+                                    <div className="relative flex items-center justify-center">
+                                        <div className="h-10 w-10 rounded-full bg-[#0c831f] shadow-lg shadow-green-500/30 border-2 border-white flex items-center justify-center">
+                                            <div className="h-3 w-3 rounded-full bg-white" />
+                                        </div>
+                                        {/* Pin tail */}
+                                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[7px] border-r-[7px] border-l-transparent border-r-transparent border-t-[10px] border-t-[#0c831f]" />
+                                    </div>
+                                    {/* Soft shadow on ground */}
+                                    <div className="mt-2 h-1.5 w-6 rounded-full bg-black/10 blur-[2px]" />
+                                </div>
+                            </div>
+                            {/* Live location button (top-right) */}
+                            <button
+                                type="button"
+                                className="pointer-events-auto absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-md border border-slate-200 hover:bg-slate-50 active:scale-95 transition"
+                                onClick={() => {
+                                    if (!navigator.geolocation) {
+                                        return;
+                                    }
+                                    navigator.geolocation.getCurrentPosition(
+                                        (pos) => {
+                                            const next = {
+                                                lat: pos.coords.latitude,
+                                                lng: pos.coords.longitude,
+                                            };
+                                            setPreciseLocation(next);
+                                            if (mapRef.current) {
+                                                mapRef.current.setCenter(next);
+                                                mapRef.current.setZoom(17);
+                                            }
+                                        },
+                                        () => {
+                                            // silently ignore errors
+                                        },
+                                        { enableHighAccuracy: true, timeout: 7000 },
+                                    );
+                                }}
+                            >
+                                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#0c831f] text-white text-[10px]">
+                                    •
+                                </span>
+                                Use my location
+                            </button>
+                        </div>
+                        {preciseLocation && (
+                            <div className="text-xs text-slate-500 font-medium mt-1">
+                                Selected coordinates:&nbsp;
+                                <span className="font-bold text-slate-700">
+                                    {preciseLocation.lat.toFixed(6)}, {preciseLocation.lng.toFixed(6)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter className="mt-4 flex gap-2 justify-end">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsMapModalOpen(false)}
+                            className="border-slate-200 text-slate-600 hover:bg-slate-50"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                // Deselect saved address; precise map location becomes the delivery address
+                                setIsLocationConfirmed(false);
+                                setIsMapModalOpen(false);
+                            }}
+                            className="bg-[#0c831f] hover:bg-[#0b721b] text-white font-bold"
+                        >
+                            Confirm Location
                         </Button>
                     </DialogFooter>
                 </DialogContent>

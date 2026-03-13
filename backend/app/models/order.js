@@ -50,6 +50,11 @@ const orderSchema = new mongoose.Schema(
             city: String,
             phone: String,
             landmark: String,
+            // Precise coordinates from checkout map (order-only; does not mutate saved addresses)
+            location: {
+                lat: Number,
+                lng: Number,
+            },
         },
         payment: {
             method: {

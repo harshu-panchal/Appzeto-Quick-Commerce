@@ -83,6 +83,7 @@ const DeliveryTracking = () => {
             address: order.address
               ? `${order.address.address || ""}, ${order.address.city || ""}`.trim()
               : "",
+            addressCoords: order.address?.location || null,
           };
         });
 
@@ -343,10 +344,29 @@ const DeliveryTracking = () => {
                           </div>
 
                           <div className="bg-slate-50/50 p-3 sm:p-4 rounded-lg border border-slate-100/50 min-w-0">
-                            <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-widest mb-1.5 sm:mb-2 flex items-center gap-2">
-                              <HiOutlineMapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
-                              Customer Address
-                            </p>
+                            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+                              <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                                <HiOutlineMapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
+                                Customer Address
+                              </p>
+                              {dlv.addressCoords &&
+                                typeof dlv.addressCoords.lat === "number" &&
+                                typeof dlv.addressCoords.lng === "number" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const { lat, lng } = dlv.addressCoords;
+                                      window.open(
+                                        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+                                        "_blank",
+                                      );
+                                    }}
+                                    className="text-[10px] font-bold text-primary hover:underline"
+                                  >
+                                    View on map
+                                  </button>
+                                )}
+                            </div>
                             <p className="text-[11px] sm:text-xs font-bold text-slate-700 leading-relaxed break-words">
                               {dlv.address}
                             </p>

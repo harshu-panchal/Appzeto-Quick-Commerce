@@ -23,7 +23,8 @@ import {
     Package,
     Navigation,
     Store,
-    Info
+    Info,
+    MapPin
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@shared/components/ui/Toast';
@@ -294,7 +295,27 @@ const OrderDetail = () => {
                                 </span>
                             </div>
                             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Destination Protocol</span>
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Destination Protocol</span>
+                                    {order?.address?.location &&
+                                        typeof order.address.location.lat === "number" &&
+                                        typeof order.address.location.lng === "number" && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const { lat, lng } = order.address.location;
+                                                    window.open(
+                                                        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+                                                        "_blank",
+                                                    );
+                                                }}
+                                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-primary hover:bg-primary/5 transition-colors"
+                                            >
+                                                <MapPin className="h-3 w-3" />
+                                                Open in Maps
+                                            </button>
+                                        )}
+                                </div>
                                 <p className="text-xs font-bold text-slate-600 leading-relaxed italic">"{order.address?.address}, {order.address?.landmark}, {order.address?.city}"</p>
                             </div>
                         </div>
