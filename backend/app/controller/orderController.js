@@ -217,7 +217,8 @@ export const getOrderDetails = async (req, res) => {
     const order = await Order.findOne({ orderId })
       .populate("customer")
       .populate("items.product")
-      .populate("deliveryBoy");
+      .populate("deliveryBoy")
+      .populate("seller", "shopName name");
 
     if (!order) {
       return handleResponse(res, 404, "Order not found");

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Home, Briefcase, MapPin, Trash2, Edit2, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,9 +15,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { customerApi } from '../services/customerApi';
+import { useLocation } from '../context/LocationContext';
 
 const AddressesPage = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { refreshAddresses } = useLocation();
     const [addresses, setAddresses] = useState([]);
     const [rawAddresses, setRawAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -55,6 +58,15 @@ const AddressesPage = () => {
         fetchAddresses();
     }, [fetchAddresses]);
 
+    // Auto-open Add modal when navigated from LocationDrawer with ?add=1
+    useEffect(() => {
+        if (searchParams.get('add') === '1' && !loading) {
+            setSearchParams({}, { replace: true });
+            openAddModal();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams, loading]);
+
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -66,13 +78,23 @@ const AddressesPage = () => {
         name: '',
         phone: '',
         address: '',
+        landmark: '',
         city: '',
         state: '',
         pincode: ''
     });
 
     const openAddModal = () => {
-        setAddForm({ type: 'home', name: profileName, phone: profilePhone || '', address: '', city: '', state: '', pincode: '' });
+        setAddForm({
+            type: 'home',
+            name: profileName,
+            phone: profilePhone || '',
+            address: '',
+            landmark: '',
+            city: '',
+            state: '',
+            pincode: ''
+        });
         setIsAddOpen(true);
     };
 
@@ -80,6 +102,7 @@ const AddressesPage = () => {
         const name = addForm.name?.trim();
         const address = addForm.address?.trim();
         const city = addForm.city?.trim();
+        const landmark = addForm.landmark?.trim();
         const state = addForm.state?.trim();
         const pincode = addForm.pincode?.trim();
         if (!address) {
@@ -89,6 +112,7 @@ const AddressesPage = () => {
         const newAddr = {
             label: addForm.type.toLowerCase(),
             fullAddress: address,
+            ...(landmark && { landmark }),
             ...(city && { city }),
             ...(state && { state }),
             ...(pincode && { pincode })
@@ -104,6 +128,7 @@ const AddressesPage = () => {
             setIsAddOpen(false);
             setLoading(true);
             await fetchAddresses();
+            await refreshAddresses?.();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to save address');
         } finally {
@@ -116,6 +141,7 @@ const AddressesPage = () => {
         name: '',
         phone: '',
         address: '',
+        landmark: '',
         city: '',
         state: '',
         pincode: ''
@@ -129,6 +155,7 @@ const AddressesPage = () => {
             name: addr.name ?? '',
             phone: addr.phone ?? '',
             address: addr.address ?? '',
+            landmark: addr.landmark ?? '',
             city: addr.city ?? '',
             state: addr.state ?? '',
             pincode: addr.pincode ?? ''
@@ -152,6 +179,7 @@ const AddressesPage = () => {
             ...(rawAddresses[idx] && typeof rawAddresses[idx] === 'object' ? rawAddresses[idx] : {}),
             label: editForm.type.toLowerCase(),
             fullAddress: address,
+            ...(editForm.landmark?.trim() && { landmark: editForm.landmark.trim() }),
             ...(editForm.city?.trim() && { city: editForm.city.trim() }),
             ...(editForm.state?.trim() && { state: editForm.state.trim() }),
             ...(editForm.pincode?.trim() && { pincode: editForm.pincode.trim() })
@@ -169,6 +197,7 @@ const AddressesPage = () => {
             setSelectedAddress(null);
             setLoading(true);
             await fetchAddresses();
+            await refreshAddresses?.();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to update address');
         } finally {
@@ -199,6 +228,7 @@ const AddressesPage = () => {
             setSelectedAddress(null);
             setLoading(true);
             await fetchAddresses();
+            await refreshAddresses?.();
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to delete address');
         } finally {
@@ -320,6 +350,15 @@ const AddressesPage = () => {
                             <Label htmlFor="address">Address</Label>
                             <Textarea id="address" placeholder="Flat No, Building, Street" value={addForm.address} onChange={e => setAddForm(f => ({ ...f, address: e.target.value }))} />
                         </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="landmark">Nearest Landmark (optional)</Label>
+                            <Input
+                                id="landmark"
+                                placeholder="Near City Mall, Opp. Temple"
+                                value={addForm.landmark}
+                                onChange={e => setAddForm(f => ({ ...f, landmark: e.target.value }))}
+                            />
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="city">City</Label>
@@ -371,6 +410,15 @@ const AddressesPage = () => {
                         <div className="grid gap-2">
                             <Label htmlFor="edit-address">Address</Label>
                             <Textarea id="edit-address" value={editForm.address} onChange={e => setEditForm(f => ({ ...f, address: e.target.value }))} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="edit-landmark">Nearest Landmark (optional)</Label>
+                            <Input
+                                id="edit-landmark"
+                                placeholder="Near City Mall, Opp. Temple"
+                                value={editForm.landmark}
+                                onChange={e => setEditForm(f => ({ ...f, landmark: e.target.value }))}
+                            />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">

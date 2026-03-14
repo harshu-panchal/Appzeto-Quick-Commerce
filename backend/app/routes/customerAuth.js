@@ -4,7 +4,8 @@ import {
     loginCustomer,
     verifyCustomerOTP,
     getCustomerProfile,
-    updateCustomerProfile
+    updateCustomerProfile,
+    getCustomerTransactions,
 } from "../controller/customerAuthController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -16,5 +17,8 @@ router.post("/verify-otp", verifyCustomerOTP);
 // Profile routes
 router.get("/profile", verifyToken, getCustomerProfile);
 router.put("/profile", verifyToken, updateCustomerProfile);
+
+// Wallet
+router.get("/transactions", verifyToken, getCustomerTransactions);
 
 export default router;

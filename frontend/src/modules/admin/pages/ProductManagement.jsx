@@ -54,7 +54,6 @@ const ProductManagement = () => {
         description: '',
         price: '',
         salePrice: '',
-        salePrice: '',
         stock: '',
         lowStockAlert: 5,
         unit: 'packet',

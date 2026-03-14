@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-    User, MapPin, Package, CreditCard, Settings, ChevronRight,
+    User, MapPin, Package, CreditCard, Wallet, ChevronRight,
     LogOut, ShieldCheck, Heart, Gift, HelpCircle, Info, Edit2, ChevronLeft,
     ChevronDown, ChevronUp
 } from 'lucide-react';
@@ -93,6 +93,14 @@ const ProfilePage = () => {
                                 path="/transactions"
                                 color="#f97316"
                                 bg="rgba(249,115,22,0.10)"
+                            />
+                            <MenuItem
+                                icon={Wallet}
+                                label="Wallet"
+                                sub="Balance & return refunds"
+                                path="/wallet"
+                                color="#10b981"
+                                bg="rgba(16,185,129,0.10)"
                             />
                             <MenuItem
                                 icon={Heart}

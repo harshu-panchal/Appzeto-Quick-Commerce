@@ -2,13 +2,7 @@ import Delivery from "../models/delivery.js";
 import jwt from "jsonwebtoken";
 import handleResponse from "../utils/helper.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
-
-/* ===============================
-   Utils
-================================ */
-
-const generateOTP = () =>
-    Math.floor(1000 + Math.random() * 9000).toString();
+import { generateOTP, useRealSMS } from "../utils/otp.js";
 
 const generateToken = (delivery) =>
     jwt.sign(
@@ -87,7 +81,11 @@ export const signupDelivery = async (req, res) => {
         console.log("-------------------");
         console.log("Delivery Signup Request Received");
         console.log("Data:", { name, phone, vehicleType, email });
-        console.log("Generated OTP:", otp);
+        if (useRealSMS()) {
+            console.log("Generated OTP (real SMS mode):", otp);
+        } else {
+            console.log("OTP (mock mode): use 1234");
+        }
         console.log("-------------------");
 
         return handleResponse(res, 200, "OTP sent successfully");
@@ -122,7 +120,11 @@ export const loginDelivery = async (req, res) => {
         console.log("-------------------");
         console.log("Delivery Login Request Received");
         console.log("Phone:", phone);
-        console.log("Generated OTP:", otp);
+        if (useRealSMS()) {
+            console.log("Generated OTP (real SMS mode):", otp);
+        } else {
+            console.log("OTP (mock mode): use 1234");
+        }
         console.log("-------------------");
 
         return handleResponse(res, 200, "OTP sent successfully");

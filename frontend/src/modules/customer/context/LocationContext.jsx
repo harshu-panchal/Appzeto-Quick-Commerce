@@ -1,62 +1,258 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { customerApi } from "../services/customerApi";
 
 const LocationContext = createContext(undefined);
+// v2 key to force one-time refresh from Google Maps for users
+// who previously only had the default/static location cached.
+const STORAGE_KEY = "appzeto_customer_location_v2";
 
 export const LocationProvider = ({ children }) => {
-    // Default location (Dhakad Snazzy, Indore)
-    const [currentLocation, setCurrentLocation] = useState({
-        name: "Indore, Madhya Pradesh 452010...",
-        storeName: "DHAKAD SNAZZY",
-        time: "12-15 mins"
-    });
+  // Default location (used until we can resolve a better one)
+  const [currentLocation, setCurrentLocation] = useState({
+    name: "Indore, Madhya Pradesh 452010...",
+    storeName: "DHAKAD SNAZZY",
+    time: "12-15 mins",
+  });
 
-    // Address list (Mocking saved addresses)
-    const [savedAddresses, setSavedAddresses] = useState([
-        {
-            id: 'home',
-            label: "Home",
-            address: "Indore, Madhya Pradesh 452010...",
-            phone: "6264715409",
-            isCurrent: true
-        }
+  // Address list for drawer UI – will be hydrated from profile API.
+  const [savedAddresses, setSavedAddresses] = useState([]);
+
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const [locationError, setLocationError] = useState(null);
+
+  // Update the current location.
+  // By default this does NOT change saved addresses; only explicit
+  // address actions should touch the saved list.
+  const updateLocation = (
+    newLoc,
+    { persist = true, updateSavedHome = false } = {},
+  ) => {
+    setCurrentLocation(newLoc);
+
+    if (updateSavedHome) {
+      setSavedAddresses((prev) =>
+        prev.map((addr) =>
+          addr.label === "Home" ? { ...addr, address: newLoc.name } : addr,
+        ),
+      );
+    }
+
+    if (persist && typeof window !== "undefined") {
+      try {
+        const payload = {
+          name: newLoc.name,
+          storeName: newLoc.storeName,
+          time: newLoc.time,
+          // Optional extras for richer checkout address:
+          city: newLoc.city,
+          state: newLoc.state,
+          pincode: newLoc.pincode,
+        };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch {
+        // ignore storage errors
+      }
+    }
+  };
+
+  const addAddress = (newAddress) => {
+    setSavedAddresses((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        label: newAddress.label || "Other",
+        address: newAddress.address,
+        phone: newAddress.phone || "N/A",
+        isCurrent: false,
+      },
     ]);
+  };
 
-    // Update the home address when the top location is clicked/updated
-    const updateLocation = (newLoc) => {
-        setCurrentLocation(newLoc);
+  // Resolve location once using browser geolocation + Google Maps Geocoding
+  const fetchAndCacheLocation = () => {
+    if (
+      typeof window === "undefined" ||
+      !("navigator" in window) ||
+      !navigator.geolocation
+    ) {
+      return;
+    }
 
-        // Update the Home address in the list to match the selected location
-        setSavedAddresses(prev => prev.map(addr =>
-            addr.label === "Home"
-                ? { ...addr, address: newLoc.name }
-                : addr
-        ));
-    };
+    setIsFetchingLocation(true);
+    setLocationError(null);
 
-    const addAddress = (newAddress) => {
-        setSavedAddresses(prev => [
-            ...prev,
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+
+          const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+          if (!apiKey) {
+            throw new Error("Google Maps API key is missing");
+          }
+
+          const params = new URLSearchParams({
+            latlng: `${latitude},${longitude}`,
+            key: apiKey,
+          });
+
+          const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?${params.toString()}`,
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch address from Google Maps");
+          }
+
+          const data = await response.json();
+          if (!data.results || data.results.length === 0) {
+            throw new Error("No address found for current location");
+          }
+
+          const components = data.results[0].address_components || [];
+
+          const getComponent = (types) =>
+            components.find((c) => types.every((t) => c.types.includes(t)))
+              ?.long_name;
+
+          // From your sample response we want:
+          // "Rajshri Palace Colony, Pipliyahana" (neighborhood + sublocality)
+          // and then, if needed, ", Indore".
+          const neighborhood = getComponent(["neighborhood"]);
+          const sublocality =
+            getComponent(["sublocality_level_1", "sublocality"]) ||
+            getComponent(["sublocality_level_2"]);
+          const city =
+            getComponent(["locality"]) ||
+            getComponent(["administrative_area_level_2"]) ||
+            getComponent(["administrative_area_level_1"]);
+          const state = getComponent(["administrative_area_level_1"]);
+          const pincode = getComponent(["postal_code"]);
+
+          const displayParts = [];
+          if (neighborhood) displayParts.push(neighborhood);
+          if (sublocality && sublocality !== neighborhood)
+            displayParts.push(sublocality);
+          if (city && city !== neighborhood && city !== sublocality)
+            displayParts.push(city);
+
+          const friendlyName =
+            displayParts.length > 0
+              ? displayParts.join(", ")
+              : data.results[0].formatted_address || "Current location";
+
+          updateLocation(
             {
-                id: Date.now().toString(),
-                label: newAddress.label || "Other",
-                address: newAddress.address,
-                phone: newAddress.phone || "N/A",
-                isCurrent: false
-            }
-        ]);
-    };
-
-    return (
-        <LocationContext.Provider value={{ currentLocation, savedAddresses, updateLocation, addAddress }}>
-            {children}
-        </LocationContext.Provider>
+              name: friendlyName,
+              storeName: "DHAKAD SNAZZY",
+              time: "12-15 mins",
+              city: city || undefined,
+              state: state || undefined,
+              pincode: pincode || undefined,
+            },
+            { persist: true, updateSavedHome: false },
+          );
+        } catch (err) {
+          setLocationError(err.message || "Unable to fetch address");
+        } finally {
+          setIsFetchingLocation(false);
+        }
+      },
+      (error) => {
+        setLocationError(error.message || "Location permission denied");
+        setIsFetchingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      },
     );
+  };
+
+  const refreshAddresses = useCallback(async () => {
+    try {
+      const { data } = await customerApi.getProfile();
+      const profile = data?.result ?? data?.data ?? data;
+      const raw = Array.isArray(profile?.addresses) ? profile.addresses : [];
+      setSavedAddresses(
+        raw.map((addr, idx) => ({
+          id: addr._id ?? String(idx),
+          label:
+            (addr.label || "Home").charAt(0).toUpperCase() +
+            (addr.label || "home").slice(1),
+          address:
+            addr.fullAddress ||
+            [addr.landmark, addr.city, addr.state, addr.pincode]
+              .filter(Boolean)
+              .join(", ") ||
+            "",
+          phone: profile?.phone ?? "",
+          isCurrent: idx === 0,
+        })),
+      );
+    } catch {
+      // If API fails, keep existing in-memory addresses.
+    }
+  }, []);
+
+  // On mount: hydrate saved addresses from profile
+  useEffect(() => {
+    refreshAddresses();
+  }, [refreshAddresses]);
+
+  // On mount: use cached location if available, otherwise fetch once
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.name) {
+          updateLocation(
+            {
+              name: parsed.name,
+              storeName: parsed.storeName || "DHAKAD SNAZZY",
+              time: parsed.time || "12-15 mins",
+              city: parsed.city,
+              state: parsed.state,
+              pincode: parsed.pincode,
+            },
+            { persist: false, updateSavedHome: false },
+          );
+          return; // do not hit Google again
+        }
+      }
+    } catch {
+      // ignore parse errors and fall back to live fetch
+    }
+
+    fetchAndCacheLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <LocationContext.Provider
+      value={{
+        currentLocation,
+        savedAddresses,
+        updateLocation,
+        addAddress,
+        refreshAddresses,
+        isFetchingLocation,
+        locationError,
+        refreshLocation: fetchAndCacheLocation,
+      }}>
+      {children}
+    </LocationContext.Provider>
+  );
 };
 
 export const useLocation = () => {
-    const context = useContext(LocationContext);
-    if (context === undefined) {
-        throw new Error('useLocation must be used within a LocationProvider');
-    }
-    return context;
+  const context = useContext(LocationContext);
+  if (context === undefined) {
+    throw new Error("useLocation must be used within a LocationProvider");
+  }
+  return context;
 };

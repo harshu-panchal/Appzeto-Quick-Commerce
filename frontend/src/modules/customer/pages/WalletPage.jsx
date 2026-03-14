@@ -1,14 +1,61 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, ArrowDownLeft, ChevronLeft, Wallet } from 'lucide-react';
+import { customerApi } from '../services/customerApi';
+
+const formatDate = (d) => {
+    if (!d) return '';
+    const date = new Date(d);
+    const now = new Date();
+    const today = now.toDateString();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === today) return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
 
 const WalletPage = () => {
     const navigate = useNavigate();
-    const transactions = [
-        { id: 1, type: 'credit', title: 'Added to Wallet', date: 'Today, 10:30 AM', amount: 500 },
-        { id: 2, type: 'debit', title: 'Order Payment', date: 'Yesterday, 8:15 PM', amount: 350 },
-        { id: 3, type: 'credit', title: 'Refund Processed', date: '15 Feb, 2:00 PM', amount: 120 },
-    ];
+    const [balance, setBalance] = useState(0);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [profileRes, ordersRes] = await Promise.all([
+                    customerApi.getProfile(),
+                    customerApi.getMyOrders(),
+                ]);
+                const profile = profileRes.data?.result ?? profileRes.data?.data ?? profileRes.data;
+                const rawOrders = ordersRes.data?.results ?? ordersRes.data?.result ?? [];
+                const orders = Array.isArray(rawOrders) ? rawOrders : [];
+                setBalance(profile?.walletBalance ?? 0);
+                // Only orders purchased using wallet
+                const walletOrders = orders.filter(
+                    (o) => (o.payment?.method || '').toLowerCase() === 'wallet'
+                );
+                const items = walletOrders.map((o) => ({
+                    _id: o._id,
+                    type: 'debit',
+                    title: 'Order Payment',
+                    amount: o.pricing?.total ?? o.payableAmount ?? 0,
+                    date: o.createdAt,
+                    orderId: o.orderId,
+                }));
+                setTransactions(items);
+            } catch (err) {
+                console.error('Wallet fetch error:', err);
+                setBalance(0);
+                setTransactions([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     return (
         <div className="min-h-screen bg-slate-50 pb-24 font-sans">
@@ -29,10 +76,10 @@ const WalletPage = () => {
 
                 <div className="relative z-10 flex flex-col items-center text-center">
                     <p className="text-green-50 text-sm font-bold uppercase tracking-widest mb-1">Available Balance</p>
-                    <h2 className="text-6xl font-black text-white">₹1,250</h2>
-                    <button className="mt-8 px-8 py-3 bg-white text-[#0c831f] font-black rounded-2xl shadow-xl hover:-translate-y-1 transition-all active:scale-95">
-                        Add Money
-                    </button>
+                    <h2 className="text-6xl font-black text-white">
+                        {loading ? '...' : `₹${(balance || 0).toLocaleString('en-IN')}`}
+                    </h2>
+                    <p className="text-green-50/80 text-xs font-medium mt-2">Return refunds are credited here</p>
                 </div>
             </div>
 
@@ -43,32 +90,40 @@ const WalletPage = () => {
                         <Wallet size={20} className="text-slate-300" />
                     </div>
 
-                    <div className="divide-y divide-slate-50">
-                        {transactions.map((tx) => (
-                            <div key={tx.id} className="px-8 py-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                                        }`}>
-                                        {tx.type === 'credit' ? <ArrowDownLeft size={24} /> : <ArrowUpRight size={24} />}
+                    {loading ? (
+                        <div className="py-12 flex justify-center text-slate-400 text-sm font-semibold">
+                            Loading...
+                        </div>
+                    ) : transactions.length === 0 ? (
+                        <div className="py-12 flex flex-col items-center justify-center text-center px-6">
+                            <p className="text-sm font-semibold text-slate-500 mb-1">No wallet payments yet</p>
+                            <p className="text-xs text-slate-400">
+                                Orders paid using wallet will appear here.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-slate-50">
+                            {transactions.map((tx) => (
+                                <div key={tx._id} className="px-8 py-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-600'}`}>
+                                            {tx.type === 'credit' ? <ArrowDownLeft size={24} /> : <ArrowUpRight size={24} />}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-800">{tx.title}</h4>
+                                            <p className="text-xs text-slate-400 font-medium">{formatDate(tx.date)}</p>
+                                            {tx.orderId && (
+                                                <p className="text-[10px] text-slate-400">#{tx.orderId}</p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-slate-800">{tx.title}</h4>
-                                        <p className="text-xs text-slate-400 font-medium">{tx.date}</p>
+                                    <div className={`text-lg font-black ${tx.type === 'credit' ? 'text-green-600' : 'text-slate-800'}`}>
+                                        {tx.type === 'credit' ? '+' : '-'}₹{(tx.amount || 0).toLocaleString('en-IN')}
                                     </div>
                                 </div>
-                                <div className={`text-lg font-black ${tx.type === 'credit' ? 'text-green-600' : 'text-slate-800'
-                                    }`}>
-                                    {tx.type === 'credit' ? '+' : '-'}₹{tx.amount}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="p-6 text-center">
-                        <button className="text-sm font-bold text-slate-400 hover:text-[#0c831f] transition-colors">
-                            View All Transactions
-                        </button>
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

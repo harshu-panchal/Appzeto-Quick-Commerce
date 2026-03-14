@@ -6,6 +6,7 @@ export const customerApi = {
     verifyOtp: (data) => axiosInstance.post('/customer/verify-otp', data),
     getProfile: () => axiosInstance.get('/customer/profile'),
     updateProfile: (data) => axiosInstance.put('/customer/profile', data),
+    getWalletTransactions: (params) => axiosInstance.get('/customer/transactions', { params }),
     getCategories: (params) => axiosInstance.get('/categories', { params }),
     getProducts: (params) => axiosInstance.get('/products', { params }),
     getProductById: (id) => axiosInstance.get(`/products/${id}`),

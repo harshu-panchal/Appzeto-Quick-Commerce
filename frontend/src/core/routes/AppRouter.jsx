@@ -42,6 +42,7 @@ const OrderDetailPage = lazy(() => import('../../modules/customer/pages/OrderDet
 const ProductDetailPage = lazy(() => import('../../modules/customer/pages/ProductDetailPage'));
 const CheckoutPage = lazy(() => import('../../modules/customer/pages/CheckoutPage'));
 const SearchPage = lazy(() => import('../../modules/customer/pages/SearchPage'));
+const WalletPage = lazy(() => import('../../modules/customer/pages/WalletPage'));
 
 // Lazy load heavy modules
 const SellerModule = lazy(() => import('../../modules/seller/routes/index'));
@@ -153,6 +154,7 @@ const AppRouter = () => {
                         { path: 'checkout', element: <ProtectedRoute><CheckoutPage /></ProtectedRoute> },
                         { path: 'profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
                         { path: 'profile/edit', element: <ProtectedRoute><EditProfilePage /></ProtectedRoute> },
+                        { path: 'wallet', element: <ProtectedRoute><WalletPage /></ProtectedRoute> },
                         { path: 'cart', element: <CartPage /> },
                         { path: 'search', element: <SearchPage /> },
                     ]

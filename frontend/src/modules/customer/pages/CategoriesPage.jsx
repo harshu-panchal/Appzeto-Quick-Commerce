@@ -18,7 +18,9 @@ const CategoriesPage = () => {
             const res = await customerApi.getCategories({ tree: true });
             if (res.data.success) {
                 const tree = res.data.results || res.data.result || [];
-                const formattedGroups = tree.map((header, idx) => ({
+                const formattedGroups = tree
+                    .filter((header) => (header.name || '').trim().toLowerCase() !== 'all')
+                    .map((header, idx) => ({
                     title: header.name,
                     categories: (header.children || []).map((cat, cIdx) => ({
                         id: cat._id,

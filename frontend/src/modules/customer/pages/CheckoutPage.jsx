@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../../../core/context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { customerApi } from '../services/customerApi';
+import { useLocation as useAppLocation } from "../context/LocationContext";
 import {
     MapPin,
     Clock,
@@ -44,48 +45,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// Lazy Google Maps JS SDK loader (singleton)
-const loadGoogleMapsScript = (() => {
-    let googleMapsPromise = null;
-
-    return () => {
-        if (typeof window !== "undefined" && window.google && window.google.maps) {
-            return Promise.resolve(window.google.maps);
-        }
-
-        if (googleMapsPromise) return googleMapsPromise;
-
-        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-        if (!apiKey) {
-            console.warn("[Checkout] VITE_GOOGLE_MAPS_API_KEY is not set; map will not load.");
-            return Promise.reject(new Error("Missing Google Maps API key"));
-        }
-
-        googleMapsPromise = new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
-            script.async = true;
-            script.defer = true;
-            script.onload = () => {
-                if (window.google && window.google.maps) {
-                    resolve(window.google.maps);
-                } else {
-                    reject(new Error("Google Maps SDK failed to initialize"));
-                }
-            };
-            script.onerror = () => reject(new Error("Failed to load Google Maps SDK"));
-            document.head.appendChild(script);
-        });
-
-        return googleMapsPromise;
-    };
-})();
-
 const CheckoutPage = () => {
     const { cart, addToCart, cartTotal, cartCount, updateQuantity, removeFromCart, clearCart } = useCart();
     const { wishlist, addToWishlist } = useWishlist();
     const { showToast } = useToast();
     const { user } = useAuth();
+    const { savedAddresses: locationSavedAddresses, currentLocation } = useAppLocation();
     const navigate = useNavigate();
 
     // State management
@@ -103,12 +68,19 @@ const CheckoutPage = () => {
         type: 'Home',
         name: 'Harshvardhan Panchal',
         address: '81 Pipliyahana Road, Near 214',
-        city: 'Indore - 452018'
+        landmark: '',
+        city: 'Indore - 452018',
+        phone: '6268423925',
     });
-    const [isLocationConfirmed, setIsLocationConfirmed] = useState(true);
-    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-    const [preciseLocation, setPreciseLocation] = useState(null); // { lat, lng }
-    const mapRef = useRef(null);
+    const [isEditAddressOpen, setIsEditAddressOpen] = useState(false);
+    const [editAddressForm, setEditAddressForm] = useState({
+        type: 'Home',
+        name: 'Harshvardhan Panchal',
+        address: '81 Pipliyahana Road, Near 214',
+        landmark: '',
+        city: 'Indore - 452018',
+        phone: '6268423925',
+    });
     const [showRecipientForm, setShowRecipientForm] = useState(false);
     const [recipientData, setRecipientData] = useState({
         // city: 'Select city',
@@ -119,24 +91,6 @@ const CheckoutPage = () => {
         phone: ''
     });
     const [savedRecipient, setSavedRecipient] = useState(null);
-
-    // Mock saved addresses
-    const savedAddresses = [
-        {
-            id: 1,
-            type: 'Home',
-            name: 'Harshvardhan Panchal',
-            address: '81 Pipliyahana Road, Near 214',
-            city: 'Indore - 452018'
-        },
-        {
-            id: 2,
-            type: 'Work',
-            name: 'John Doe',
-            address: 'Office No. 5, Technohub, Cyber City',
-            city: 'Gurugram - 122002'
-        }
-    ];
 
     // Mock data for recommendations
     const recommendedProducts = [
@@ -182,6 +136,15 @@ const CheckoutPage = () => {
 
     const displayCartItems = showAllCartItems ? cart : cart;
 
+    const RECIPIENT_STORAGE_KEY = 'appzeto_checkout_recipient_v1';
+
+    // Derived display values for primary delivery card
+    const displayName = savedRecipient?.name || currentAddress.name;
+    const displayPhone = savedRecipient?.phone || currentAddress.phone || '6268423925';
+    const displayAddress = savedRecipient
+        ? `${savedRecipient.completeAddress}${savedRecipient.landmark ? `, ${savedRecipient.landmark}` : ''}${savedRecipient.pincode ? ` - ${savedRecipient.pincode}` : ''}`
+        : `${currentAddress.address}${currentAddress.landmark ? `, ${currentAddress.landmark}` : ''}, ${currentAddress.city}`;
+
     const handleSaveRecipient = () => {
         if (!recipientData.completeAddress || !recipientData.name || recipientData.phone.length !== 10) {
             showToast('Please fill all required fields', 'error');
@@ -189,6 +152,13 @@ const CheckoutPage = () => {
         }
         setSavedRecipient(recipientData);
         setShowRecipientForm(false);
+        try {
+            if (typeof window !== 'undefined') {
+                window.localStorage.setItem(RECIPIENT_STORAGE_KEY, JSON.stringify(recipientData));
+            }
+        } catch {
+            // ignore storage errors
+        }
         showToast('Recipient details saved!', 'success');
     };
 
@@ -196,6 +166,25 @@ const CheckoutPage = () => {
         addToWishlist(item);
         removeFromCart(item.id);
         showToast(`${item.name} moved to wishlist`, 'success');
+    };
+
+    const handleOpenEditAddress = () => {
+        setEditAddressForm(currentAddress);
+        setIsEditAddressOpen(true);
+    };
+
+    const handleSaveEditedAddress = () => {
+        if (
+            !editAddressForm.name.trim() ||
+            !editAddressForm.address.trim() ||
+            !editAddressForm.city.trim()
+        ) {
+            showToast('Please fill name, address and city', 'error');
+            return;
+        }
+        setCurrentAddress(editAddressForm);
+        setIsEditAddressOpen(false);
+        showToast('Delivery address updated', 'success');
     };
 
     const handleShare = async () => {
@@ -248,6 +237,22 @@ const CheckoutPage = () => {
     const getCartItem = (productId) => cart.find(item => item.id === productId);
 
     useEffect(() => {
+        // Hydrate "order for someone else" address from localStorage, if present
+        try {
+            if (typeof window !== 'undefined') {
+                const raw = window.localStorage.getItem(RECIPIENT_STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.completeAddress && parsed.name && parsed.phone) {
+                        setRecipientData(parsed);
+                        setSavedRecipient(parsed);
+                    }
+                }
+            }
+        } catch {
+            // ignore parse errors
+        }
+
         const fetchCoupons = async () => {
             try {
                 const res = await customerApi.getActiveCoupons();
@@ -268,11 +273,21 @@ const CheckoutPage = () => {
             // Create order object for API
             // Note: The backend placeOrder can derive items from cart if not passed, 
             // but let's pass it for consistency with frontend logic.
-            const orderData = {
-                address: {
+            const addressForOrder = savedRecipient
+                ? {
+                    type: 'Other',
+                    name: savedRecipient.name,
+                    address: savedRecipient.completeAddress,
+                    landmark: savedRecipient.landmark || '',
+                    city: savedRecipient.pincode ? `${savedRecipient.pincode}` : '',
+                    phone: savedRecipient.phone,
+                }
+                : {
                     ...currentAddress,
-                    location: preciseLocation || null,
-                }, // Using the selected address state plus optional map coordinates
+                };
+
+            const orderData = {
+                address: addressForOrder,
                 payment: {
                     method: selectedPayment,
                     status: selectedPayment === 'cash' ? 'pending' : 'completed' // For simulation
@@ -321,76 +336,7 @@ const CheckoutPage = () => {
         }
     };
 
-    // Initialize Google Map when the modal opens
-    useEffect(() => {
-        if (!isMapModalOpen) return;
-
-        let cancelled = false;
-
-        const initMap = async () => {
-            try {
-                const maps = await loadGoogleMapsScript();
-                if (cancelled) return;
-
-                const container = document.getElementById("checkout-precise-location-map");
-                if (!container) return;
-
-                const defaultCenter = preciseLocation || { lat: 22.9734, lng: 78.6569 }; // India center fallback
-
-                const mapInstance = new maps.Map(container, {
-                    center: defaultCenter,
-                    zoom: 16,
-                    disableDefaultUI: true, // remove default Google controls
-                    draggable: true,
-                    gestureHandling: "greedy", // allow drag/zoom with mouse and touch
-                });
-
-                mapRef.current = mapInstance;
-
-                // Keep center as the source of truth; whenever map stops moving,
-                // capture its center as the selected location.
-                const updateFromCenter = () => {
-                    const center = mapInstance.getCenter();
-                    if (!center) return;
-                    const next = {
-                        lat: center.lat(),
-                        lng: center.lng(),
-                    };
-                    setPreciseLocation(next);
-                };
-
-                maps.event.addListener(mapInstance, "idle", updateFromCenter);
-
-                // Try to center on user's current location first time
-                if (!preciseLocation && navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            if (cancelled) return;
-                            const next = {
-                                lat: pos.coords.latitude,
-                                lng: pos.coords.longitude,
-                            };
-                            setPreciseLocation(next);
-                            mapInstance.setCenter(next);
-                        },
-                        () => {
-                            // Ignore errors and keep default center
-                        },
-                        { enableHighAccuracy: true, timeout: 5000 },
-                    );
-                }
-            } catch (err) {
-                console.warn("[Checkout] Failed to initialize Google Map:", err);
-            }
-        };
-
-        initMap();
-
-        return () => {
-            cancelled = true;
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isMapModalOpen]);
+    // Map-based precise location has been removed; manual addresses are used instead.
 
     if (cart.length === 0 && !showSuccess) {
         return (
@@ -653,65 +599,98 @@ const CheckoutPage = () => {
 
                             {/* Address Card */}
                             <div
-                                className={`border rounded-xl p-3 mb-3 relative cursor-pointer transition-all ${isLocationConfirmed
-                                    ? 'border-[#0c831f] bg-green-50/50'
-                                    : 'border-slate-200 hover:bg-slate-50'
-                                    }`}
+                                className="border rounded-xl p-3 mb-3 relative cursor-pointer transition-all border-[#0c831f] bg-green-50/50"
                             >
                                 <div className="flex items-start gap-3">
                                     {/* Radio/Check Button */}
                                     <div className="mt-1">
-                                        {isLocationConfirmed ? (
-                                            <div className="h-5 w-5 rounded-full bg-[#0c831f] flex items-center justify-center">
-                                                <Check size={12} className="text-white stroke-[4]" />
-                                            </div>
-                                        ) : (
-                                            <div className="h-5 w-5 rounded-full border-2 border-slate-300" />
-                                        )}
+                                        <div className="h-5 w-5 rounded-full bg-[#0c831f] flex items-center justify-center">
+                                            <Check size={12} className="text-white stroke-[4]" />
+                                        </div>
                                     </div>
 
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start">
-                                            <h4 className="font-bold text-slate-800 text-sm">{currentAddress.name}</h4>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setIsAddressModalOpen(true);
-                                                }}
-                                                className="text-[#0c831f] text-xs font-bold hover:underline"
-                                            >
-                                                Edit
-                                            </button>
+                                            <h4 className="font-bold text-slate-800 text-sm">{displayName}</h4>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenEditAddress();
+                                                    }}
+                                                    className="text-slate-500 text-xs font-bold hover:underline"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsAddressModalOpen(true);
+                                                    }}
+                                                    className="text-[#0c831f] text-xs font-bold hover:underline"
+                                                >
+                                                    Change
+                                                </button>
+                                            </div>
                                         </div>
-                                        <p className="text-xs text-slate-500 font-medium mt-0.5">6268423925</p>
+                                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                                            {displayPhone}
+                                        </p>
                                         <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                                            {currentAddress.address}, {currentAddress.city}
+                                            {displayAddress}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Location Actions */}
-                            <AnimatePresence mode="wait">
-                                {isLocationConfirmed ? (
-                                    <motion.button
-                                        key="update-btn"
-                                        className="w-full py-3 rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center gap-2 text-[#0c831f] font-bold text-sm hover:bg-green-100 transition-colors"
-                                        onClick={() => setIsMapModalOpen(true)}
-                                    >
-                                        <MapPin size={18} />
-                                        Update Precise Location on Map
-                                    </motion.button>
-                                ) : (
-                                    <motion.div
-                                        key="precise-banner"
-                                        className="bg-green-50 border border-green-100 rounded-xl p-3 flex items-center justify-center gap-2 overflow-hidden"
-                                    >
-                                        <Check size={16} className="text-[#0c831f] stroke-[3]" />
-                                        <span className="text-[#0c831f] font-bold text-sm">Precise Location Selected</span>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            {/* Use current location button */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    try {
+                                        const lsRaw = typeof window !== 'undefined'
+                                            ? window.localStorage.getItem('appzeto_customer_location_v2')
+                                            : null;
+                                        const parsed = lsRaw ? JSON.parse(lsRaw) : null;
+                                        const nameFromCache = parsed?.name || currentLocation?.name;
+                                        if (!nameFromCache) {
+                                            showToast('No saved current location found yet', 'error');
+                                            return;
+                                        }
+                                        setCurrentAddress((prev) => ({
+                                            ...prev,
+                                            address: nameFromCache,
+                                            landmark: '',
+                                            city:
+                                                [parsed?.city, parsed?.state, parsed?.pincode]
+                                                    .filter(Boolean)
+                                                    .join(', ') || prev.city,
+                                        }));
+                                        showToast('Using your current saved location', 'success');
+                                    } catch {
+                                        showToast('Unable to read saved location', 'error');
+                                    }
+                                }}
+                                className="mt-3 w-full py-2.5 rounded-2xl border border-dashed border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                            >
+                                Use current location (from last detected)
+                            </button>
+                            {/* Manual address info banner */}
+                            <motion.div
+                                className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 flex items-center gap-3 shadow-sm"
+                            >
+                                <div className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center shadow-emerald-500/40 shadow-md">
+                                    <Check size={16} className="text-white stroke-[3]" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-[13px] font-semibold text-emerald-900">
+                                        Delivery address confirmed
+                                    </p>
+                                    <p className="text-[11px] font-medium text-emerald-800/80">
+                                        We&apos;ll deliver to the address you&apos;ve entered above.
+                                    </p>
+                                </div>
+                            </motion.div>
                         </motion.div>
 
                         {/* Cart Items */}
@@ -1003,11 +982,18 @@ const CheckoutPage = () => {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                        {savedAddresses.map((addr) => (
+                        {locationSavedAddresses.map((addr) => (
                             <button
                                 key={addr.id}
                                 onClick={() => {
-                                    setCurrentAddress(addr);
+                                    setCurrentAddress({
+                                        type: addr.label,
+                                        name: user?.name || currentAddress.name,
+                                        address: addr.address,
+                                        city: "", // already part of addr.address string
+                                        phone: addr.phone || currentAddress.phone,
+                                        landmark: "", // already baked into addr.address if present
+                                    });
                                     setIsAddressModalOpen(false);
                                 }}
                                 className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${currentAddress.id === addr.id
@@ -1019,11 +1005,19 @@ const CheckoutPage = () => {
                                     <div className={`p-2 rounded-full ${currentAddress.id === addr.id ? 'bg-[#0c831f] text-white' : 'bg-slate-100 text-slate-500'}`}>
                                         <MapPin size={16} />
                                     </div>
-                                    <span className="font-black text-slate-800 uppercase tracking-widest text-[10px]">{addr.type}</span>
+                                    <span className="font-black text-slate-800 uppercase tracking-widest text-[10px]">
+                                        {addr.label}
+                                    </span>
                                 </div>
-                                <p className="text-sm font-bold text-slate-800">{addr.name}</p>
+                                <p className="text-sm font-bold text-slate-800">
+                                    {user?.name || currentAddress.name}
+                                </p>
                                 <p className="text-xs text-slate-500 leading-relaxed mb-1">{addr.address}</p>
-                                <p className="text-xs text-slate-400">{addr.city}</p>
+                                {addr.phone && (
+                                    <p className="text-[11px] text-slate-400 font-medium">
+                                        Phone: {addr.phone}
+                                    </p>
+                                )}
                             </button>
                         ))}
                     </div>
@@ -1039,98 +1033,76 @@ const CheckoutPage = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Precise Location Map Modal (Google Maps skeleton) */}
-            <Dialog open={isMapModalOpen} onOpenChange={setIsMapModalOpen}>
-                <DialogContent className="sm:max-w-[600px]">
-                    <DialogHeader>
-                        <DialogTitle>Set Precise Location</DialogTitle>
-                        <DialogDescription>
-                            Drag and drop the pin to mark the exact delivery location on the map.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="mt-2 space-y-3">
-                        {/* Map wrapper with sticky center pin */}
-                        <div className="relative w-full h-72 rounded-2xl border border-slate-200 overflow-hidden bg-slate-100">
-                            <div
-                                id="checkout-precise-location-map"
-                                className="w-full h-full"
-                            />
-                            {/* Sticky center pin overlay */}
-                            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                                <div className="flex flex-col items-center translate-y-[-10px]">
-                                    {/* Pin body with white inner dot */}
-                                    <div className="relative flex items-center justify-center">
-                                        <div className="h-10 w-10 rounded-full bg-[#0c831f] shadow-lg shadow-green-500/30 border-2 border-white flex items-center justify-center">
-                                            <div className="h-3 w-3 rounded-full bg-white" />
-                                        </div>
-                                        {/* Pin tail */}
-                                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[7px] border-r-[7px] border-l-transparent border-r-transparent border-t-[10px] border-t-[#0c831f]" />
-                                    </div>
-                                    {/* Soft shadow on ground */}
-                                    <div className="mt-2 h-1.5 w-6 rounded-full bg-black/10 blur-[2px]" />
-                                </div>
-                            </div>
-                            {/* Live location button (top-right) */}
-                            <button
-                                type="button"
-                                className="pointer-events-auto absolute top-3 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-md border border-slate-200 hover:bg-slate-50 active:scale-95 transition"
-                                onClick={() => {
-                                    if (!navigator.geolocation) {
-                                        return;
+            {/* Edit Current Address Modal - slides up from bottom */}
+            <Dialog open={isEditAddressOpen} onOpenChange={setIsEditAddressOpen}>
+                <DialogContent className="sm:max-w-[425px] overflow-hidden p-0">
+                    <motion.div
+                        initial={{ y: '100%', opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: '100%', opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 25 }}
+                        className="p-6"
+                    >
+                        <DialogHeader>
+                            <DialogTitle>Edit Delivery Address</DialogTitle>
+                            <DialogDescription>
+                                Update the details of your current delivery address.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-address" className="text-xs font-semibold text-slate-700">Address</Label>
+                                <Input
+                                    id="edit-address"
+                                    value={editAddressForm.address}
+                                    onChange={(e) =>
+                                        setEditAddressForm((prev) => ({ ...prev, address: e.target.value }))
                                     }
-                                    navigator.geolocation.getCurrentPosition(
-                                        (pos) => {
-                                            const next = {
-                                                lat: pos.coords.latitude,
-                                                lng: pos.coords.longitude,
-                                            };
-                                            setPreciseLocation(next);
-                                            if (mapRef.current) {
-                                                mapRef.current.setCenter(next);
-                                                mapRef.current.setZoom(17);
-                                            }
-                                        },
-                                        () => {
-                                            // silently ignore errors
-                                        },
-                                        { enableHighAccuracy: true, timeout: 7000 },
-                                    );
-                                }}
-                            >
-                                <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[#0c831f] text-white text-[10px]">
-                                    •
-                                </span>
-                                Use my location
-                            </button>
-                        </div>
-                        {preciseLocation && (
-                            <div className="text-xs text-slate-500 font-medium mt-1">
-                                Selected coordinates:&nbsp;
-                                <span className="font-bold text-slate-700">
-                                    {preciseLocation.lat.toFixed(6)}, {preciseLocation.lng.toFixed(6)}
-                                </span>
+                                    className="h-10"
+                                    placeholder="House, street, area"
+                                />
                             </div>
-                        )}
-                    </div>
-                    <DialogFooter className="mt-4 flex gap-2 justify-end">
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsMapModalOpen(false)}
-                            className="border-slate-200 text-slate-600 hover:bg-slate-50"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={() => {
-                                // Deselect saved address; precise map location becomes the delivery address
-                                setIsLocationConfirmed(false);
-                                setIsMapModalOpen(false);
-                            }}
-                            className="bg-[#0c831f] hover:bg-[#0b721b] text-white font-bold"
-                        >
-                            Confirm Location
-                        </Button>
-                    </DialogFooter>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-landmark" className="text-xs font-semibold text-slate-700">Nearest Landmark (optional)</Label>
+                                <Input
+                                    id="edit-landmark"
+                                    value={editAddressForm.landmark || ''}
+                                    onChange={(e) =>
+                                        setEditAddressForm((prev) => ({ ...prev, landmark: e.target.value }))
+                                    }
+                                    className="h-10"
+                                    placeholder="e.g. Near City Mall, Opp. Temple"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="edit-city" className="text-xs font-semibold text-slate-700">City / Pincode</Label>
+                                <Input
+                                    id="edit-city"
+                                    value={editAddressForm.city}
+                                    onChange={(e) =>
+                                        setEditAddressForm((prev) => ({ ...prev, city: e.target.value }))
+                                    }
+                                    className="h-10"
+                                    placeholder="City - Pincode"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter className="mt-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsEditAddressOpen(false)}
+                                className="border-slate-200 text-slate-600 hover:bg-slate-50"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleSaveEditedAddress}
+                                className="bg-[#0c831f] hover:bg-[#0b721b] text-white font-bold"
+                            >
+                                Save changes
+                            </Button>
+                        </DialogFooter>
+                    </motion.div>
                 </DialogContent>
             </Dialog>
 

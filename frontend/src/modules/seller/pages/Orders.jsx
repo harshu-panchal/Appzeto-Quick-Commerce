@@ -743,6 +743,19 @@ const Orders = () => {
                                                     <Badge variant={getStatusColor(selectedOrder.status)} className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0">{selectedOrder.status}</Badge>
                                                     <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">#{selectedOrder.id}</span>
                                                 </div>
+                                                {(selectedOrder.date || selectedOrder.time) && (
+                                                    <p className="text-[11px] font-bold text-slate-500 mt-1.5 flex items-center gap-1.5">
+                                                        <HiOutlineCalendarDays className="h-3.5 w-3.5" />
+                                                        {selectedOrder.date}
+                                                        {selectedOrder.time && (
+                                                            <>
+                                                                <span className="text-slate-300">•</span>
+                                                                <HiOutlineClock className="h-3.5 w-3.5" />
+                                                                {selectedOrder.time}
+                                                            </>
+                                                        )}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <button onClick={() => setIsDetailsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600">

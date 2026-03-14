@@ -278,11 +278,15 @@ const OrderDetail = () => {
                         </h4>
                         <div className="flex items-center gap-4">
                             <div className="h-16 w-16 bg-indigo-50 rounded-2xl flex items-center justify-center ds-h2 font-black text-indigo-600 uppercase">
-                                {order.customer?.name?.split(' ').map(n => n[0]).join('') || 'C'}
+                                {order.customer?.name?.split(" ").map((n) => n[0]).join("") || "C"}
                             </div>
                             <div className="text-left">
-                                <h3 className="text-lg font-black text-slate-900 leading-tight">{order.customer?.name}</h3>
-                                <p className="text-xs font-bold text-slate-400">Node ID: {order.customer?._id}</p>
+                                <h3 className="text-lg font-black text-slate-900 leading-tight">
+                                    {order.customer?.name}
+                                </h3>
+                                <p className="text-xs font-bold text-slate-400">
+                                    Node ID: {order.customer?._id}
+                                </p>
                             </div>
                         </div>
                         <div className="space-y-6 text-left mt-6">
@@ -296,7 +300,9 @@ const OrderDetail = () => {
                             </div>
                             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
                                 <div className="flex items-center justify-between gap-2 mb-1">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Destination Protocol</span>
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        Destination Protocol
+                                    </span>
                                     {order?.address?.location &&
                                         typeof order.address.location.lat === "number" &&
                                         typeof order.address.location.lng === "number" && (
@@ -316,8 +322,29 @@ const OrderDetail = () => {
                                             </button>
                                         )}
                                 </div>
-                                <p className="text-xs font-bold text-slate-600 leading-relaxed italic">"{order.address?.address}, {order.address?.landmark}, {order.address?.city}"</p>
+                                <p className="text-xs font-bold text-slate-600 leading-relaxed italic">
+                                    "{order.address?.address}, {order.address?.landmark}, {order.address?.city}"
+                                </p>
                             </div>
+                            {order.address?.type === "Other" &&
+                                (order.address?.name || order.address?.phone) && (
+                                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 space-y-2">
+                                        <div className="flex items-center justify-between gap-2 mb-1">
+                                            <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
+                                                Recipient (Order For Someone Else)
+                                            </span>
+                                        </div>
+                                        <p className="text-xs font-black text-slate-800">
+                                            {order.address?.name}
+                                        </p>
+                                        {order.address?.phone && (
+                                            <p className="text-[11px] font-bold text-emerald-700 flex items-center gap-2">
+                                                <Phone className="h-3.5 w-3.5" />
+                                                {order.address.phone}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
                         </div>
                     </Card>
 

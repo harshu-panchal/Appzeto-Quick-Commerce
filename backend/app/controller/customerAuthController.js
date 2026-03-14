@@ -1,13 +1,8 @@
 import Customer from "../models/customer.js";
+import Transaction from "../models/transaction.js";
 import jwt from "jsonwebtoken";
 import handleResponse from "../utils/helper.js";
-
-/* ===============================
-   Utils
-================================ */
-
-const generateOTP = () =>
-    Math.floor(1000 + Math.random() * 9000).toString();
+import { generateOTP, useRealSMS } from "../utils/otp.js";
 
 const generateToken = (customer) =>
     jwt.sign(
@@ -56,8 +51,12 @@ export const signupCustomer = async (req, res) => {
             await customer.save();
         }
 
-        // TODO: SMS integration
-        console.log("Signup OTP:", otp);
+        if (useRealSMS()) {
+            // TODO: Send OTP via SMS (Twilio/SMS India Hub)
+            console.log("Signup OTP (real SMS mode):", otp);
+        } else {
+            console.log("Signup OTP (mock mode): use 1234");
+        }
 
         return handleResponse(
             res,
@@ -100,8 +99,12 @@ export const loginCustomer = async (req, res) => {
         customer.otpExpiry = Date.now() + 5 * 60 * 1000;
         await customer.save();
 
-        // TODO: SMS integration
-        console.log("Login OTP:", otp);
+        if (useRealSMS()) {
+            // TODO: Send OTP via SMS (Twilio/SMS India Hub)
+            console.log("Login OTP (real SMS mode):", otp);
+        } else {
+            console.log("Login OTP (mock mode): use 1234");
+        }
 
         return handleResponse(
             res,
@@ -199,6 +202,47 @@ export const updateCustomerProfile = async (req, res) => {
         await customer.save();
 
         return handleResponse(res, 200, "Profile updated successfully", customer);
+    } catch (error) {
+        return handleResponse(res, 500, error.message);
+    }
+};
+
+/* ===============================
+   GET WALLET TRANSACTIONS
+================================ */
+export const getCustomerTransactions = async (req, res) => {
+    try {
+        const customerId = req.user.id;
+        const { page = 1, limit = 20 } = req.query;
+        const skip = (Math.max(1, parseInt(page, 10)) - 1) * Math.min(50, Math.max(1, parseInt(limit, 10)));
+        const perPage = Math.min(50, Math.max(1, parseInt(limit, 10)));
+
+        const [transactions, total] = await Promise.all([
+            Transaction.find({ user: customerId, userModel: "User" })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(perPage)
+                .populate("order", "orderId")
+                .lean(),
+            Transaction.countDocuments({ user: customerId, userModel: "User" }),
+        ]);
+
+        const items = transactions.map((t) => ({
+            _id: t._id,
+            type: t.type === "Refund" ? "credit" : "debit",
+            title: t.type === "Refund" ? "Refund" : t.type,
+            amount: Math.abs(t.amount),
+            date: t.createdAt,
+            reference: t.reference,
+            orderId: t.order?.orderId,
+        }));
+
+        return handleResponse(res, 200, "Transactions fetched", {
+            items,
+            total,
+            page: parseInt(page, 10),
+            totalPages: Math.ceil(total / perPage) || 1,
+        });
     } catch (error) {
         return handleResponse(res, 500, error.message);
     }

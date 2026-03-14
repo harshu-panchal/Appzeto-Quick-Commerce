@@ -2,7 +2,7 @@ import React from 'react';
 
 const MobileFooterMessage = () => {
     return (
-        <div className="md:hidden w-full flex flex-col items-center pt-8 pb-28 px-6 bg-transparent mt-4">
+        <div className="md:hidden w-full flex flex-col items-center -mt-8 pt-0 pb-28 px-6 bg-transparent">
             <div className="w-full flex flex-col">
                 <h2 className="text-[38px] leading-[1.1] font-black text-slate-300 tracking-tight text-left">
                     India's last<br />minute app <span className="text-red-500">❤️</span>
