@@ -24,7 +24,7 @@ const MainLocationHeader = ({
 }) => {
   const { scrollY } = useScroll();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const { currentLocation } = useLocation();
+  const { currentLocation, refreshLocation } = useLocation();
   const { isOpen: isProductDetailOpen } = useProductDetail();
   const navigate = useNavigate();
 
@@ -191,7 +191,10 @@ const MainLocationHeader = ({
                   </span>
                 </div>
                 <div
-                  onClick={() => setIsLocationOpen(true)}
+                  onClick={() => {
+                    refreshLocation();
+                    setIsLocationOpen(true);
+                  }}
                   className="flex items-center gap-1 text-white hover:text-yellow-300 cursor-pointer group active:scale-95 transition-all">
                   <LocationOnIcon sx={{ fontSize: 14, color: 'inherit' }} />
                   <div className="text-[13px] font-bold leading-tight max-w-[150px] lg:max-w-[180px] truncate">
@@ -275,7 +278,10 @@ const MainLocationHeader = ({
                   </span>
                 </div>
                 <div
-                  onClick={() => setIsLocationOpen(true)}
+                  onClick={() => {
+                    refreshLocation();
+                    setIsLocationOpen(true);
+                  }}
                   className="flex items-center gap-1 text-white/80 cursor-pointer group active:scale-95 transition-transform">
                   <LocationOnIcon sx={{ fontSize: 14, color: 'white' }} />
                   <div className="text-[10px] font-medium leading-tight max-w-[200px] truncate">

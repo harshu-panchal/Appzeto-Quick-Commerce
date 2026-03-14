@@ -13,7 +13,7 @@ const Header = () => {
     const location = useLocation();
     const isCheckoutPage = location.pathname === '/checkout';
     const [isLocationOpen, setIsLocationOpen] = useState(false);
-    const { currentLocation } = useAppLocation();
+    const { currentLocation, refreshLocation } = useAppLocation();
 
     // Search placeholder animation
     const [searchPlaceholder, setSearchPlaceholder] = useState('Search ');
@@ -73,7 +73,10 @@ const Header = () => {
                 {/* Mobile Top Row: Location & Profile */}
                 <div className="md:hidden flex items-center justify-between mb-4 px-2 animate-in slide-in-from-top duration-500">
                     <div
-                        onClick={() => setIsLocationOpen(true)}
+                        onClick={() => {
+                            refreshLocation();
+                            setIsLocationOpen(true);
+                        }}
                         className="flex items-center gap-3 cursor-pointer active:scale-95 transition-transform"
                     >
                         <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-sm">
@@ -101,7 +104,10 @@ const Header = () => {
 
                         {/* Location Selector (Desktop ONLY) */}
                         <div
-                            onClick={() => setIsLocationOpen(true)}
+                            onClick={() => {
+                                refreshLocation();
+                                setIsLocationOpen(true);
+                            }}
                             className="hidden md:flex items-center gap-2 pl-6 border-l border-slate-200 cursor-pointer active:scale-95 transition-transform"
                         >
                             <div className="flex flex-col items-start leading-none group">

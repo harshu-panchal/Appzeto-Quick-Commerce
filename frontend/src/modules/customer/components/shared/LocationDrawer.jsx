@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  X,
-  Search,
-  MapPin,
-  Plus,
-  Home,
-  ChevronRight,
-} from "lucide-react";
+import { X, Search, MapPin, Plus, Home, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "../../context/LocationContext";
 

@@ -212,7 +212,8 @@ export const LocationProvider = ({ children }) => {
     refreshAddresses();
   }, [refreshAddresses]);
 
-  // On mount: use cached location if available, otherwise fetch once
+  // On mount: only restore from cache. Do NOT auto-fetch – browsers block the
+  // location prompt unless it's triggered by a user gesture (e.g. tap).
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -232,14 +233,12 @@ export const LocationProvider = ({ children }) => {
             },
             { persist: false, updateSavedHome: false },
           );
-          return; // do not hit Google again
         }
       }
     } catch {
-      // ignore parse errors and fall back to live fetch
+      // ignore parse errors
     }
-
-    fetchAndCacheLocation();
+    // Live fetch happens only when user taps location pill or "Use current location"
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
