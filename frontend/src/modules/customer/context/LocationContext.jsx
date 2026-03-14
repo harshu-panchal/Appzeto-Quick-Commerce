@@ -171,6 +171,8 @@ export const LocationProvider = ({ children }) => {
   };
 
   const refreshAddresses = useCallback(async () => {
+    // Skip if user is not logged in – getProfile would 401 and trigger axios reload loop
+    if (!localStorage.getItem("auth_customer")) return;
     try {
       const { data } = await customerApi.getProfile();
       const profile = data?.result ?? data?.data ?? data;
@@ -196,7 +198,7 @@ export const LocationProvider = ({ children }) => {
     }
   }, []);
 
-  // On mount: hydrate saved addresses from profile
+  // On mount: hydrate saved addresses from profile (only when customer is logged in)
   useEffect(() => {
     refreshAddresses();
   }, [refreshAddresses]);

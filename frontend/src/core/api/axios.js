@@ -65,6 +65,15 @@ axiosInstance.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
+            // Only reload when we had a token that's now invalid (expired/logged out elsewhere).
+            // If no token exists, skip reload to avoid infinite loop on public pages.
+            const hasToken = ['auth_seller', 'auth_admin', 'auth_delivery', 'auth_customer', 'token'].some(
+                (key) => localStorage.getItem(key)
+            );
+            if (!hasToken) {
+                return Promise.reject(error);
+            }
+
             // Clear all possible auth tokens from localStorage
             const storageKeys = ['auth_seller', 'auth_admin', 'auth_delivery', 'auth_customer', 'token'];
             storageKeys.forEach(key => localStorage.removeItem(key));
