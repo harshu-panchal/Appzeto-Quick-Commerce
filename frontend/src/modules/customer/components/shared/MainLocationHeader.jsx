@@ -192,10 +192,10 @@ const MainLocationHeader = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    refreshLocation();
-                    setIsLocationOpen(true);
-                  }}
+                  data-lenis-prevent
+                  data-lenis-prevent-touch
+                  onPointerDown={() => refreshLocation()}
+                  onClick={() => setIsLocationOpen(true)}
                   className="flex items-center gap-1 text-white hover:text-yellow-300 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left">
                   <LocationOnIcon sx={{ fontSize: 14, color: 'inherit' }} />
                   <div className="text-[13px] font-bold leading-tight max-w-[150px] lg:max-w-[180px] truncate">
@@ -280,10 +280,10 @@ const MainLocationHeader = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    refreshLocation();
-                    setIsLocationOpen(true);
-                  }}
+                  data-lenis-prevent
+                  data-lenis-prevent-touch
+                  onPointerDown={() => refreshLocation()}
+                  onClick={() => setIsLocationOpen(true)}
                   className="flex items-center gap-1 text-white/80 cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left">
                   <LocationOnIcon sx={{ fontSize: 14, color: 'white' }} />
                   <div className="text-[10px] font-medium leading-tight max-w-[200px] truncate">

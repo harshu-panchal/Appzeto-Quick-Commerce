@@ -74,10 +74,10 @@ const Header = () => {
                 <div className="md:hidden flex items-center justify-between mb-4 px-2 animate-in slide-in-from-top duration-500">
                     <button
                         type="button"
-                        onClick={() => {
-                            refreshLocation();
-                            setIsLocationOpen(true);
-                        }}
+                        data-lenis-prevent
+                        data-lenis-prevent-touch
+                        onPointerDown={() => refreshLocation()}
+                        onClick={() => setIsLocationOpen(true)}
                         className="flex items-center gap-3 cursor-pointer active:scale-95 transition-transform border-0 bg-transparent p-0 text-left"
                     >
                         <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-sm">
@@ -106,10 +106,10 @@ const Header = () => {
                         {/* Location Selector (Desktop ONLY) */}
                         <button
                             type="button"
-                            onClick={() => {
-                                refreshLocation();
-                                setIsLocationOpen(true);
-                            }}
+                            data-lenis-prevent
+                            data-lenis-prevent-touch
+                            onPointerDown={() => refreshLocation()}
+                            onClick={() => setIsLocationOpen(true)}
                             className="hidden md:flex items-center gap-2 pl-6 border-l border-slate-200 cursor-pointer active:scale-95 transition-transform border-0 bg-transparent p-0"
                         >
                             <div className="flex flex-col items-start leading-none group">

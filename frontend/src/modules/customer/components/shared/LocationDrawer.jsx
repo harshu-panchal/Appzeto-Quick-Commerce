@@ -32,12 +32,15 @@ const LocationDrawer = ({ isOpen, onClose }) => {
   }, [isOpen]);
 
   const handleSelectCurrentLocation = (e) => {
-    // Must run synchronously in the click handler for browser to show permission prompt
     e.preventDefault();
     e.stopPropagation();
     refreshLocation();
     // Keep drawer open so user sees "Detecting..." and the browser prompt can appear
-    // Don't call onClose() here - let them see the result
+  };
+
+  // onPointerDown fires before click - captures user gesture for permission prompt (Chrome requires direct gesture)
+  const handleLocationPointerDown = () => {
+    refreshLocation();
   };
 
   const handleSelectAddress = (address) => {
@@ -113,9 +116,12 @@ const LocationDrawer = ({ isOpen, onClose }) => {
 
             {/* Options List */}
             <div className="px-4 flex flex-col gap-3">
-              {/* Current Location - native button ensures browser shows location permission prompt */}
+              {/* Current Location - onPointerDown for earliest gesture capture; data-lenis-prevent so Lenis doesn't consume touch */}
               <button
                 type="button"
+                data-lenis-prevent
+                data-lenis-prevent-touch
+                onPointerDown={handleLocationPointerDown}
                 onClick={handleSelectCurrentLocation}
                 className="flex items-center gap-4 bg-white p-4 rounded-2xl hover:bg-slate-50 transition-colors group text-left shadow-sm w-full">
                 <div className="h-10 w-10 flex items-center justify-center text-[#0c831f]">
