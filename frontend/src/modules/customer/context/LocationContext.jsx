@@ -68,7 +68,8 @@ export const LocationProvider = ({ children }) => {
     ]);
   };
 
-  // Resolve location once using browser geolocation + Google Maps Geocoding
+  // Resolve location once using browser geolocation + Google Maps Geocoding.
+  // Must be called directly from a user gesture (click/tap) for the browser to show the permission prompt.
   const fetchAndCacheLocation = () => {
     if (
       typeof window === "undefined" ||
@@ -81,6 +82,7 @@ export const LocationProvider = ({ children }) => {
     setIsFetchingLocation(true);
     setLocationError(null);
 
+    // Call getCurrentPosition immediately - must run in same synchronous stack as user click
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {

@@ -190,18 +190,19 @@ const MainLocationHeader = ({
                     {currentLocation.time}
                   </span>
                 </div>
-                <div
+                <button
+                  type="button"
                   onClick={() => {
                     refreshLocation();
                     setIsLocationOpen(true);
                   }}
-                  className="flex items-center gap-1 text-white hover:text-yellow-300 cursor-pointer group active:scale-95 transition-all">
+                  className="flex items-center gap-1 text-white hover:text-yellow-300 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left">
                   <LocationOnIcon sx={{ fontSize: 14, color: 'inherit' }} />
                   <div className="text-[13px] font-bold leading-tight max-w-[150px] lg:max-w-[180px] truncate">
                     {currentLocation.name}
                   </div>
                   <ChevronDownIcon sx={{ fontSize: 12, opacity: 0.5 }} />
-                </div>
+                </button>
               </div>
             </div>
 
@@ -277,18 +278,19 @@ const MainLocationHeader = ({
                     {currentLocation.time}
                   </span>
                 </div>
-                <div
+                <button
+                  type="button"
                   onClick={() => {
                     refreshLocation();
                     setIsLocationOpen(true);
                   }}
-                  className="flex items-center gap-1 text-white/80 cursor-pointer group active:scale-95 transition-transform">
+                  className="flex items-center gap-1 text-white/80 cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left">
                   <LocationOnIcon sx={{ fontSize: 14, color: 'white' }} />
                   <div className="text-[10px] font-medium leading-tight max-w-[200px] truncate">
                     {currentLocation.name}
                   </div>
                   <ChevronDownIcon sx={{ fontSize: 12, opacity: 0.5 }} />
-                </div>
+                </button>
               </div>
             </motion.div>
           </div>

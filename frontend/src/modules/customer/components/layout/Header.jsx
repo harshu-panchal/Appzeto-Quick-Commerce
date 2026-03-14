@@ -72,12 +72,13 @@ const Header = () => {
             <div className="container mx-auto max-w-6xl">
                 {/* Mobile Top Row: Location & Profile */}
                 <div className="md:hidden flex items-center justify-between mb-4 px-2 animate-in slide-in-from-top duration-500">
-                    <div
+                    <button
+                        type="button"
                         onClick={() => {
                             refreshLocation();
                             setIsLocationOpen(true);
                         }}
-                        className="flex items-center gap-3 cursor-pointer active:scale-95 transition-transform"
+                        className="flex items-center gap-3 cursor-pointer active:scale-95 transition-transform border-0 bg-transparent p-0 text-left"
                     >
                         <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-sm">
                             <MapPin size={22} className="text-white fill-current" />
@@ -91,7 +92,7 @@ const Header = () => {
                                 <span className="max-w-[150px] truncate">{currentLocation.name}</span> <span className="text-[10px] opacity-70">▼</span>
                             </div>
                         </div>
-                    </div>
+                    </button>
                 </div>
 
                 {/* Main Header Capsule */}
@@ -103,12 +104,13 @@ const Header = () => {
                         </Link>
 
                         {/* Location Selector (Desktop ONLY) */}
-                        <div
+                        <button
+                            type="button"
                             onClick={() => {
                                 refreshLocation();
                                 setIsLocationOpen(true);
                             }}
-                            className="hidden md:flex items-center gap-2 pl-6 border-l border-slate-200 cursor-pointer active:scale-95 transition-transform"
+                            className="hidden md:flex items-center gap-2 pl-6 border-l border-slate-200 cursor-pointer active:scale-95 transition-transform border-0 bg-transparent p-0"
                         >
                             <div className="flex flex-col items-start leading-none group">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 group-hover:text-[#0c831f] transition-colors">
@@ -118,7 +120,7 @@ const Header = () => {
                                     <span className="max-w-[150px] truncate">{currentLocation.name}</span> <MapPin size={14} className="fill-current" />
                                 </div>
                             </div>
-                        </div>
+                        </button>
                     </div>
 
                     {/* Desktop Navigation */}
