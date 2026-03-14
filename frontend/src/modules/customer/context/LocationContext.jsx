@@ -105,8 +105,17 @@ export const LocationProvider = ({ children }) => {
           }
 
           const data = await response.json();
+
+          // Handle Google Geocoding API error responses
+          if (data.status === "REQUEST_DENIED") {
+            const msg = data.error_message || "Geocoding API rejected (check API key restrictions)";
+            throw new Error(msg);
+          }
+          if (data.status === "OVER_QUERY_LIMIT") {
+            throw new Error("Geocoding API quota exceeded");
+          }
           if (!data.results || data.results.length === 0) {
-            throw new Error("No address found for current location");
+            throw new Error(data.error_message || "No address found for current location");
           }
 
           const components = data.results[0].address_components || [];
